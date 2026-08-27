@@ -8,103 +8,129 @@
         :root {
             --bg-dark: #282828;
             --bg-panel: #1d2021;
-            --bg-sidebar: #3c3836;
-            --bg-chat: #32302f;
+            --bg-chat: #282828;
             --fg-text: #ebdbb2;
             --fg-sub: #a89984;
             --accent-green: #b8bb26;
             --accent-yellow: #fabd2f;
+            --accent-pink: #d3869b;
             --accent-blue: #83a598;
-            --bubble-me: #458588;
-            --bubble-other: #504945;
-            --border-color: #504945;
+            --border-color: #3c3836;
+            --hover-bg: #32302f;
+            --danger-red: #fb4934;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-dark); color: var(--fg-text); height: 100vh; display: flex; overflow: hidden; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-dark); color: var(--fg-text); height: 100vh; display: flex; overflow: hidden; }
 
-        /* MODAL (KULLANICI ADI GİRİŞİ) */
+        /* MODAL (KULLANICI ADI & AVATAR GİRİŞİ) */
         #userModal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; z-index: 99; }
-        .modal-card { background: var(--bg-panel); border: 2px solid var(--accent-yellow); padding: 30px; border-radius: 12px; width: 90%; max-width: 400px; text-align: center; }
+        .modal-card { background: var(--bg-panel); border: 1px solid var(--border-color); padding: 30px; border-radius: 8px; width: 90%; max-width: 400px; text-align: center; }
         .modal-card h3 { color: var(--accent-yellow); margin-bottom: 15px; }
-        .modal-card input { width: 100%; padding: 12px; background: var(--bg-dark); border: 1px solid var(--border-color); color: var(--fg-text); border-radius: 6px; font-size: 16px; margin-bottom: 15px; outline: none; }
+        .modal-card input { width: 100%; padding: 12px; background: var(--bg-dark); border: 1px solid var(--border-color); color: var(--fg-text); border-radius: 6px; font-size: 14px; margin-bottom: 12px; outline: none; }
         .modal-card input:focus { border-color: var(--accent-yellow); }
-        .modal-card button { width: 100%; padding: 12px; background: var(--accent-yellow); border: none; font-weight: bold; color: var(--bg-dark); border-radius: 6px; cursor: pointer; font-size: 16px; }
+        .modal-card button { width: 100%; padding: 12px; background: var(--accent-yellow); border: none; font-weight: bold; color: var(--bg-dark); border-radius: 6px; cursor: pointer; font-size: 16px; margin-top: 5px; }
+
+        /* DÜZENLEME MODALI */
+        #editModal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 100; }
+        .edit-card { background: var(--bg-panel); border: 1px solid var(--border-color); padding: 20px; border-radius: 8px; width: 90%; max-width: 500px; }
+        .edit-card h4 { color: var(--accent-yellow); margin-bottom: 10px; }
+        .edit-card textarea { width: 100%; height: 80px; background: var(--bg-dark); border: 1px solid var(--border-color); color: var(--fg-text); border-radius: 6px; padding: 10px; resize: none; outline: none; font-family: inherit; margin-bottom: 10px; }
+        .edit-actions { display: flex; justify-content: flex-end; gap: 10px; }
+        .edit-actions button { padding: 8px 16px; border-radius: 4px; border: none; cursor: pointer; font-weight: bold; }
+        .btn-cancel { background: var(--border-color); color: var(--fg-text); }
+        .btn-save { background: var(--accent-yellow); color: var(--bg-dark); }
 
         /* ANA EKRAN DÜZENİ */
-        .app-container { display: flex; width: 100%; height: 100%; }
+        .app-container { display: flex; width: 100%; height: 100%; flex-direction: column; }
 
-        /* SIDEBAR */
-        .sidebar { width: 280px; background: var(--bg-sidebar); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; }
-        .sidebar-header { padding: 20px; border-bottom: 1px solid var(--border-color); font-weight: bold; color: var(--accent-yellow); font-size: 18px; }
-        .room-list { flex: 1; padding: 15px 10px; }
-        .room-item { background: var(--bg-panel); padding: 12px; border-radius: 8px; border-left: 4px solid var(--accent-green); color: var(--fg-text); }
-        .user-profile { padding: 15px; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: var(--bg-panel); }
-        .user-profile span { font-size: 14px; color: var(--accent-blue); font-weight: bold; }
-        .btn-change-user { background: transparent; border: 1px solid var(--fg-sub); color: var(--fg-sub); padding: 4px 8px; font-size: 12px; border-radius: 4px; cursor: pointer; }
+        /* BİLGİ VE KULLANICI BAR (ÜST) */
+        .top-bar { padding: 12px 20px; background: var(--bg-panel); border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+        .chat-info { display: flex; align-items: center; gap: 8px; font-weight: bold; font-size: 15px; }
+        .status-dot { height: 8px; width: 8px; background-color: var(--accent-green); border-radius: 50%; display: inline-block; }
+        .user-profile { display: flex; align-items: center; gap: 10px; }
+        .user-profile img { width: 28px; height: 28px; border-radius: 4px; object-fit: cover; }
+        .user-profile span { font-size: 13px; color: var(--accent-blue); font-weight: bold; }
+        .btn-change-user { background: transparent; border: 1px solid var(--fg-sub); color: var(--fg-sub); padding: 2px 8px; font-size: 11px; border-radius: 4px; cursor: pointer; }
 
         /* SOHBET ALANI */
-        .chat-area { flex: 1; display: flex; flex-direction: column; background: var(--bg-chat); }
-        .chat-header { padding: 18px 25px; background: var(--bg-panel); border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
-        .chat-header h2 { font-size: 16px; color: var(--fg-text); }
-        .status-dot { height: 8px; width: 8px; background-color: var(--accent-green); border-radius: 50%; display: inline-block; margin-right: 6px; }
+        .chat-area { flex: 1; display: flex; flex-direction: column; background: var(--bg-chat); overflow: hidden; }
 
         /* MESAJ LİSTESİ */
-        .messages-container { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
-        .message-row { display: flex; flex-direction: column; max-width: 70%; }
-        .message-row.me { align-self: flex-end; align-items: flex-end; }
-        .message-row.other { align-self: flex-start; align-items: flex-start; }
+        .messages-container { flex: 1; padding: 20px 0; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
 
-        .sender-name { font-size: 11px; color: var(--fg-sub); margin-bottom: 4px; }
-        .bubble { padding: 12px 16px; border-radius: 12px; font-size: 14px; line-height: 1.4; word-break: break-word; }
-        .message-row.me .bubble { background: var(--bubble-me); color: #fff; border-bottom-right-radius: 2px; }
-        .message-row.other .bubble { background: var(--bubble-other); color: var(--fg-text); border-bottom-left-radius: 2px; }
-        .timestamp { font-size: 10px; color: rgba(255,255,255,0.6); margin-top: 5px; text-align: right; }
+        /* MESAJ GRUBU (GÖRSELDEKİ FORMAT) */
+        .message-group { display: flex; padding: 4px 20px; position: relative; width: 100%; }
+        .message-group:hover { background-color: var(--hover-bg); }
+
+        .group-avatar { width: 36px; height: 36px; border-radius: 4px; margin-right: 12px; flex-shrink: 0; object-fit: cover; }
+        
+        .group-body { flex: 1; min-width: 0; }
+        .group-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+        .sender-name { font-weight: bold; font-size: 14px; color: var(--accent-pink); }
+        .header-time { font-size: 11px; color: var(--fg-sub); }
+
+        .message-text-list { display: flex; flex-direction: column; gap: 4px; }
+        .message-item { font-size: 14px; line-height: 1.5; color: var(--fg-text); word-break: break-word; white-space: pre-wrap; position: relative; display: flex; justify-content: space-between; align-items: center; }
+        .message-item:hover .message-actions { display: flex; }
+
+        /* DÜZENLE/SİL HOVER BUTONLARI */
+        .message-actions { display: none; gap: 6px; background: var(--bg-panel); border: 1px solid var(--border-color); padding: 2px 6px; border-radius: 4px; position: absolute; right: 10px; top: -6px; z-index: 10; }
+        .action-btn { background: transparent; border: none; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; padding: 2px; }
+        .action-btn.edit { color: var(--fg-sub); }
+        .action-btn.edit:hover { color: var(--fg-text); }
+        .action-btn.delete { color: var(--danger-red); }
+        .action-btn.delete:hover { opacity: 0.8; }
 
         /* MESAJ INPUT */
-        .input-area { padding: 15px 25px; background: var(--bg-panel); border-top: 1px solid var(--border-color); display: flex; gap: 10px; }
-        .input-area textarea { flex: 1; background: var(--bg-dark); border: 1px solid var(--border-color); color: var(--fg-text); border-radius: 8px; padding: 12px; resize: none; height: 48px; font-family: inherit; font-size: 14px; outline: none; }
+        .input-area { padding: 15px 20px; background: var(--bg-panel); border-top: 1px solid var(--border-color); display: flex; gap: 10px; }
+        .input-area textarea { flex: 1; background: var(--bg-dark); border: 1px solid var(--border-color); color: var(--fg-text); border-radius: 6px; padding: 12px; resize: none; height: 46px; font-family: inherit; font-size: 14px; outline: none; }
         .input-area textarea:focus { border-color: var(--accent-yellow); }
-        .input-area button { background: var(--accent-yellow); border: none; padding: 0 24px; border-radius: 8px; font-weight: bold; color: var(--bg-dark); cursor: pointer; }
-
-        @media (max-width: 768px) { .sidebar { display: none; } }
+        .input-area button { background: var(--accent-yellow); border: none; padding: 0 20px; border-radius: 6px; font-weight: bold; color: var(--bg-dark); cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <!-- KULLANICI ADI MODALI -->
+    <!-- KULLANICI ADI & AVATAR MODALI -->
     <div id="userModal">
         <div class="modal-card">
             <h3>Instant Chat</h3>
-            <p style="color: var(--fg-sub); font-size: 13px; margin-bottom: 15px;">Kullanıcı adınızı girin ve anlık sohbete başlayın.</p>
-            <input type="text" id="usernameInput" placeholder="Kullanıcı Adınız..." />
+            <p style="color: var(--fg-sub); font-size: 13px; margin-bottom: 15px;">Bilgilerinizi girin ve anlık sohbete başlayın.</p>
+            <input type="text" id="usernameInput" placeholder="Kullanıcı Adınız..." required />
+            <input type="url" id="avatarInput" placeholder="Profil Resmi URL (İsteğe bağlı)" />
             <button id="joinBtn">Sohbete Katıl</button>
+        </div>
+    </div>
+
+    <!-- MESAJ DÜZENLEME MODALI -->
+    <div id="editModal">
+        <div class="edit-card">
+            <h4>Mesajı Düzenle</h4>
+            <textarea id="editMessageInput"></textarea>
+            <div class="edit-actions">
+                <button class="btn-cancel" id="cancelEditBtn">İptal</button>
+                <button class="btn-save" id="saveEditBtn">Kaydet</button>
+            </div>
         </div>
     </div>
 
     <!-- ANA ARAYÜZ -->
     <div class="app-container">
-        <div class="sidebar">
-            <div class="sidebar-header">Instant Messenger</div>
-            <div class="room-list">
-                <div class="room-item">
-                    <strong># global-chat</strong>
-                    <p style="font-size: 12px; color: var(--fg-sub); margin-top: 4px;">Anlık Mesajlaşma</p>
-                </div>
+        <div class="top-bar">
+            <div class="chat-info">
+                <span class="status-dot"></span>
+                <span># global-chat</span>
             </div>
             <div class="user-profile">
+                <img id="myAvatar" src="" alt="Profil">
                 <span id="displayUsername">...</span>
                 <button class="btn-change-user" id="resetUserBtn">Değiştir</button>
             </div>
         </div>
 
         <div class="chat-area">
-            <div class="chat-header">
-                <h2><span class="status-dot"></span># global-chat</h2>
-            </div>
-
             <div class="messages-container" id="messagesList">
-                <div style="color:var(--fg-sub); text-align:center;">Bağlanıyor...</div>
+                <div style="color:var(--fg-sub); text-align:center; padding-top: 20px;">Bağlanıyor...</div>
             </div>
 
             <form class="input-area" id="chatForm">
@@ -117,9 +143,8 @@
     <!-- FIREBASE MODULE SCRIPT -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, push, onValue, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, push, onValue, serverTimestamp, remove, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // MessGes projesinin güncel konfigürasyon bilgileri
         const firebaseConfig = {
             apiKey: "AIzaSyDRiCdkBRsKMeUpCmznQ3Sn8R6SvBk0C9U",
             authDomain: "messges-87869.firebaseapp.com",
@@ -135,66 +160,176 @@
         const messagesRef = ref(database, 'messages');
 
         let currentUser = localStorage.getItem('gh_chat_username') || "";
+        let currentAvatar = localStorage.getItem('gh_chat_avatar') || "";
+        let activeEditKey = null;
 
         const userModal = document.getElementById('userModal');
+        const editModal = document.getElementById('editModal');
+        const editMessageInput = document.getElementById('editMessageInput');
         const displayUsername = document.getElementById('displayUsername');
+        const myAvatar = document.getElementById('myAvatar');
         const messagesList = document.getElementById('messagesList');
         const chatForm = document.getElementById('chatForm');
         const messageInput = document.getElementById('messageInput');
 
-        // Kullanıcı Kontrolü
+        function getAvatarUrl(username, customUrl) {
+            if (customUrl && customUrl.trim() !== "") return customUrl;
+            return `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(username)}`;
+        }
+
         if (currentUser) {
             userModal.style.display = 'none';
             displayUsername.innerText = currentUser;
+            myAvatar.src = getAvatarUrl(currentUser, currentAvatar);
         }
 
         document.getElementById('joinBtn').addEventListener('click', () => {
-            const input = document.getElementById('usernameInput').value.trim();
-            if (input) {
-                currentUser = input;
-                localStorage.setItem('gh_chat_username', input);
+            const username = document.getElementById('usernameInput').value.trim();
+            const avatarUrl = document.getElementById('avatarInput').value.trim();
+
+            if (username) {
+                currentUser = username;
+                currentAvatar = avatarUrl;
+
+                localStorage.setItem('gh_chat_username', currentUser);
+                localStorage.setItem('gh_chat_avatar', currentAvatar);
+
                 userModal.style.display = 'none';
                 displayUsername.innerText = currentUser;
+                myAvatar.src = getAvatarUrl(currentUser, currentAvatar);
             }
         });
 
         document.getElementById('resetUserBtn').addEventListener('click', () => {
             localStorage.removeItem('gh_chat_username');
+            localStorage.removeItem('gh_chat_avatar');
             location.reload();
         });
 
-        // 1. ANLIK MESAJ DİNLEME (Realtime WebSocket)
+        // MESAJ DİNLEME VE BİRLEŞTİRME
         onValue(messagesRef, (snapshot) => {
             const data = snapshot.val();
             messagesList.innerHTML = "";
 
             if (!data) {
-                messagesList.innerHTML = '<div style="color:var(--fg-sub); text-align:center;">Henüz mesaj yok. İlk mesajı sen at!</div>';
+                messagesList.innerHTML = '<div style="color:var(--fg-sub); text-align:center; padding-top: 20px;">Henüz mesaj yok. İlk mesajı sen at!</div>';
                 return;
             }
 
-            Object.values(data).forEach(msg => {
-                const isMe = msg.sender.toLowerCase() === currentUser.toLowerCase();
-                const row = document.createElement('div');
-                row.className = `message-row ${isMe ? 'me' : 'other'}`;
+            const rawMessages = Object.entries(data).map(([key, value]) => ({ key, ...value }));
+            
+            let lastSender = null;
+            let lastTimestamp = 0;
+            let currentGroupEl = null;
+            let currentTextContainer = null;
 
-                const dateStr = msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) : '';
+            rawMessages.forEach(msg => {
+                const isSameSender = lastSender === msg.sender;
+                const timeDiff = (msg.timestamp - lastTimestamp) / 1000; // Saniye cinsinden
+                const isWithin1Min = timeDiff < 60; // 1 dakika (60 sn) sınırı
 
-                row.innerHTML = `
-                    <div class="sender-name">${escapeHTML(msg.sender)}</div>
-                    <div class="bubble">
-                        ${escapeHTML(msg.text)}
-                        <div class="timestamp">${dateStr}</div>
-                    </div>
-                `;
-                messagesList.appendChild(row);
+                const dateObj = msg.timestamp ? new Date(msg.timestamp) : new Date();
+                const timeStr = dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+
+                // Aynı kişi yazdıysa VE 1 dakika geçmediyse mesajları birleştir
+                if (isSameSender && isWithin1Min && currentGroupEl) {
+                    addMessageToGroup(currentTextContainer, msg);
+                } else {
+                    // Yeni Mesaj Grubu Oluştur
+                    currentGroupEl = document.createElement('div');
+                    currentGroupEl.className = 'message-group';
+
+                    const avatarUrl = getAvatarUrl(msg.sender, msg.avatar);
+
+                    currentGroupEl.innerHTML = `
+                        <img class="group-avatar" src="${escapeHTML(avatarUrl)}" alt="${escapeHTML(msg.sender)}" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(msg.sender)}'">
+                        <div class="group-body">
+                            <div class="group-header">
+                                <span class="sender-name">${escapeHTML(msg.sender)}</span>
+                                <span class="header-time">${timeStr}</span>
+                            </div>
+                            <div class="message-text-list"></div>
+                        </div>
+                    `;
+
+                    currentTextContainer = currentGroupEl.querySelector('.message-text-list');
+                    addMessageToGroup(currentTextContainer, msg);
+                    messagesList.appendChild(currentGroupEl);
+                }
+
+                lastSender = msg.sender;
+                lastTimestamp = msg.timestamp || Date.now();
             });
 
-            // Otomatik en aşağı kaydır
             messagesList.scrollTop = messagesList.scrollHeight;
         });
 
-        // 2. MESAJ GÖNDERME
+        function addMessageToGroup(container, msg) {
+            const item = document.createElement('div');
+            item.className = 'message-item';
+            
+            const isMe = msg.sender.toLowerCase() === currentUser.toLowerCase();
+
+            let actionsHTML = '';
+            if (isMe) {
+                actionsHTML = `
+                    <div class="message-actions">
+                        <button class="action-btn edit" data-key="${msg.key}" data-text="${escapeHTML(msg.text)}" title="Düzenle">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                        </button>
+                        <button class="action-btn delete" data-key="${msg.key}" title="Sil">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                        </button>
+                    </div>
+                `;
+            }
+
+            item.innerHTML = `
+                <span>${escapeHTML(msg.text)}</span>
+                ${actionsHTML}
+            `;
+
+            container.appendChild(item);
+        }
+
+        // MESAJ SİLME VE DÜZENLEME OLAYLARI (DELEGATION)
+        messagesList.addEventListener('click', (e) => {
+            const deleteBtn = e.target.closest('.action-btn.delete');
+            const editBtn = e.target.closest('.action-btn.edit');
+
+            if (deleteBtn) {
+                const key = deleteBtn.getAttribute('data-key');
+                if (confirm('Bu mesajı silmek istediğinize emin misiniz?')) {
+                    remove(ref(database, `messages/${key}`));
+                }
+            }
+
+            if (editBtn) {
+                activeEditKey = editBtn.getAttribute('data-key');
+                const oldText = editBtn.getAttribute('data-text');
+                editMessageInput.value = oldText;
+                editModal.style.display = 'flex';
+            }
+        });
+
+        // DÜZENLEME MODAL İŞLEMLERİ
+        document.getElementById('cancelEditBtn').addEventListener('click', () => {
+            editModal.style.display = 'none';
+            activeEditKey = null;
+        });
+
+        document.getElementById('saveEditBtn').addEventListener('click', () => {
+            const newText = editMessageInput.value.trim();
+            if (newText && activeEditKey) {
+                update(ref(database, `messages/${activeEditKey}`), {
+                    text: newText
+                });
+                editModal.style.display = 'none';
+                activeEditKey = null;
+            }
+        });
+
+        // MESAJ GÖNDERME
         chatForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const text = messageInput.value.trim();
@@ -202,6 +337,7 @@
 
             push(messagesRef, {
                 sender: currentUser,
+                avatar: currentAvatar,
                 text: text,
                 timestamp: serverTimestamp()
             });
@@ -209,7 +345,6 @@
             messageInput.value = "";
         });
 
-        // Enter ile Gönderme (Shift+Enter alt satıra geçer)
         messageInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
@@ -218,6 +353,7 @@
         });
 
         function escapeHTML(str) {
+            if (!str) return '';
             return str.replace(/[&<>'"]/g, 
                 tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
             );
