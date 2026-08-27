@@ -3,437 +3,455 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gruvbox Chat</title>
-    <!-- FontAwesome for Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Instant Gruvbox Chat</title>
     <style>
         :root {
-            --bg-hard: #1d2021;
-            --bg: #282828;
-            --bg-soft: #3c3836;
-            --bg-element: #504945;
-            --fg: #ebdbb2;
-            --fg-dim: #a89984;
-            --yellow: #fabd2f;
-            --green: #b8bb26;
-            --red: #fb4934;
-            --blue: #83a598;
-            --purple: #d3869b;
-            --aqua: #8ec07c;
-            --orange: #fe8019;
+            --bg-dark: #282828;
+            --bg-panel: #1d2021;
+            --bg-chat: #282828;
+            --fg-text: #ebdbb2;
+            --fg-sub: #a89984;
+            --accent-green: #b8bb26;
+            --accent-yellow: #fabd2f;
+            --accent-pink: #d3869b;
+            --accent-blue: #83a598;
+            --border-color: #3c3836;
+            --hover-bg: #32302f;
+            --danger-red: #fb4934;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-dark); color: var(--fg-text); height: 100vh; display: flex; overflow: hidden; }
 
-        body {
-            background-color: var(--bg-hard);
-            color: var(--fg);
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+        /* MODAL (KULLANICI ADI & AVATAR GİRİŞİ) */
+        #userModal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; z-index: 99; }
+        .modal-card { background: var(--bg-panel); border: 1px solid var(--border-color); padding: 30px; border-radius: 8px; width: 90%; max-width: 400px; text-align: center; }
+        .modal-card h3 { color: var(--accent-yellow); margin-bottom: 15px; }
+        .modal-card input { width: 100%; padding: 12px; background: var(--bg-dark); border: 1px solid var(--border-color); color: var(--fg-text); border-radius: 6px; font-size: 14px; margin-bottom: 12px; outline: none; }
+        .modal-card input:focus { border-color: var(--accent-yellow); }
+        .modal-card button { width: 100%; padding: 12px; background: var(--accent-yellow); border: none; font-weight: bold; color: var(--bg-dark); border-radius: 6px; cursor: pointer; font-size: 16px; margin-top: 5px; }
 
-        /* App Layout (Cinny style) */
-        .app-container {
-            width: 100%;
-            max-width: 1200px;
-            height: 95vh;
-            background-color: var(--bg);
-            border-radius: 12px;
-            display: flex;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            border: 1px solid var(--bg-soft);
-        }
+        /* DÜZENLEME MODALI */
+        #editModal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 100; }
+        .edit-card { background: var(--bg-panel); border: 1px solid var(--border-color); padding: 20px; border-radius: 8px; width: 90%; max-width: 500px; }
+        .edit-card h4 { color: var(--accent-yellow); margin-bottom: 10px; }
+        .edit-card textarea { width: 100%; height: 80px; background: var(--bg-dark); border: 1px solid var(--border-color); color: var(--fg-text); border-radius: 6px; padding: 10px; resize: none; outline: none; font-family: inherit; margin-bottom: 10px; }
+        .edit-actions { display: flex; justify-content: flex-end; gap: 10px; }
+        .edit-actions button { padding: 8px 16px; border-radius: 4px; border: none; cursor: pointer; font-weight: bold; }
+        .btn-cancel { background: var(--border-color); color: var(--fg-text); }
+        .btn-save { background: var(--accent-yellow); color: var(--bg-dark); }
 
-        /* Modal / Username Screen */
-        .login-overlay {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: rgba(29, 32, 33, 0.95);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
+        /* ANA EKRAN DÜZENİ */
+        .app-container { display: flex; width: 100%; height: 100%; flex-direction: column; }
 
-        .login-box {
-            background-color: var(--bg);
-            padding: 2rem;
-            border-radius: 12px;
-            border: 1px solid var(--bg-soft);
-            width: 90%;
-            max-width: 400px;
-            text-align: center;
-        }
+        /* BİLGİ VE KULLANICI BAR (ÜST) */
+        .top-bar { padding: 12px 20px; background: var(--bg-panel); border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+        .chat-info { display: flex; align-items: center; gap: 12px; font-weight: bold; font-size: 15px; }
+        .status-dot { height: 8px; width: 8px; background-color: var(--accent-green); border-radius: 50%; display: inline-block; }
+        
+        /* AKTİF KULLANICILAR LİSTESİ */
+        .online-users-list { display: flex; align-items: center; gap: -6px; margin-left: 10px; }
+        .online-user-img { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--bg-panel); object-fit: cover; margin-left: -8px; transition: transform 0.2s; cursor: pointer; }
+        .online-user-img:hover { transform: translateY(-2px) scale(1.1); z-index: 5; }
 
-        .login-box h2 {
-            color: var(--yellow);
-            margin-bottom: 1.5rem;
-        }
+        .user-profile { display: flex; align-items: center; gap: 10px; }
+        .user-profile img { width: 28px; height: 28px; border-radius: 4px; object-fit: cover; }
+        .user-profile span { font-size: 13px; color: var(--accent-blue); font-weight: bold; }
+        .btn-change-user { background: transparent; border: 1px solid var(--fg-sub); color: var(--fg-sub); padding: 2px 8px; font-size: 11px; border-radius: 4px; cursor: pointer; }
 
-        .input-field {
-            width: 100%;
-            padding: 12px 16px;
-            background-color: var(--bg-soft);
-            border: 1px solid var(--bg-element);
-            border-radius: 8px;
-            color: var(--fg);
-            font-size: 1rem;
-            margin-bottom: 1rem;
-            outline: none;
-            transition: border-color 0.2s;
-        }
+        /* SOHBET ALANI */
+        .chat-area { flex: 1; display: flex; flex-direction: column; background: var(--bg-chat); overflow: hidden; position: relative; }
 
-        .input-field:focus {
-            border-color: var(--yellow);
-        }
+        /* MESAJ LİSTESİ */
+        .messages-container { flex: 1; padding: 20px 0; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
 
-        .btn {
-            width: 100%;
-            padding: 12px;
-            background-color: var(--yellow);
-            color: var(--bg-hard);
-            border: none;
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: opacity 0.2s;
-        }
-
-        .btn:hover {
-            opacity: 0.9;
-        }
-
-        /* Sidebar */
-        .sidebar {
-            width: 280px;
-            background-color: var(--bg-hard);
-            border-right: 1px solid var(--bg-soft);
-            display: flex;
-            flex-direction: column;
-            padding: 1rem;
-        }
-
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: var(--yellow);
-            font-size: 1.2rem;
-            font-weight: bold;
-            margin-bottom: 1.5rem;
-            padding-left: 0.5rem;
-        }
-
-        .section-title {
-            color: var(--fg-dim);
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 0.5rem;
-            padding-left: 0.5rem;
-        }
-
-        .user-list {
-            list-style: none;
-            overflow-y: auto;
-            flex: 1;
-        }
-
-        .user-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 8px 10px;
-            border-radius: 6px;
-            margin-bottom: 4px;
-        }
-
-        .user-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background-color: var(--bg-soft);
-        }
-
-        .online-dot {
-            width: 8px;
-            height: 8px;
-            background-color: var(--green);
-            border-radius: 50%;
-            display: inline-block;
-        }
-
-        /* Main Chat Area */
-        .chat-area {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background-color: var(--bg);
-        }
-
-        .chat-header {
-            padding: 1rem 1.5rem;
-            border-bottom: 1px solid var(--bg-soft);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .chat-messages {
-            flex: 1;
-            padding: 1.5rem;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        /* MESAJ ANİMASYONU VE STİLLERİ */
-        @keyframes messagePop {
-            0% {
+        /* MESAJ GRUBU VE ANİMASYON */
+        @keyframes messageAppear {
+            from {
                 opacity: 0;
-                transform: translateY(12px) scale(0.98);
+                transform: translateY(10px);
             }
-            100% {
+            to {
                 opacity: 1;
-                transform: translateY(0) scale(1);
+                transform: translateY(0);
             }
         }
 
-        .message-item {
-            display: flex;
-            gap: 12px;
-            max-width: 80%;
+        .message-group { 
+            display: flex; 
+            padding: 4px 20px; 
+            position: relative; 
+            width: 100%; 
+            animation: messageAppear 0.25s ease-out forwards;
         }
+        .message-group:hover { background-color: var(--hover-bg); }
 
-        .message-animate {
-            animation: messagePop 0.25s ease-out forwards;
-        }
+        .group-avatar { width: 36px; height: 36px; border-radius: 4px; margin-right: 12px; flex-shrink: 0; object-fit: cover; }
+        
+        .group-body { flex: 1; min-width: 0; }
+        .group-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+        .sender-name { font-weight: bold; font-size: 14px; color: var(--accent-pink); }
+        .header-time { font-size: 11px; color: var(--fg-sub); }
 
-        .message-item.me {
-            align-self: flex-end;
-            flex-direction: row-reverse;
-        }
+        .message-text-list { display: flex; flex-direction: column; gap: 4px; }
+        .message-item { font-size: 14px; line-height: 1.5; color: var(--fg-text); word-break: break-word; white-space: pre-wrap; position: relative; display: flex; justify-content: space-between; align-items: center; }
+        .message-item:hover .message-actions { display: flex; }
 
-        .msg-avatar {
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
-            flex-shrink: 0;
-        }
+        /* DÜZENLE/SİL HOVER BUTONLARI */
+        .message-actions { display: none; gap: 6px; background: var(--bg-panel); border: 1px solid var(--border-color); padding: 2px 6px; border-radius: 4px; position: absolute; right: 10px; top: -6px; z-index: 10; }
+        .action-btn { background: transparent; border: none; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; padding: 2px; }
+        .action-btn.edit { color: var(--fg-sub); }
+        .action-btn.edit:hover { color: var(--fg-text); }
+        .action-btn.delete { color: var(--danger-red); }
+        .action-btn.delete:hover { opacity: 0.8; }
 
-        .msg-bubble {
-            background-color: var(--bg-soft);
-            padding: 10px 14px;
-            border-radius: 12px;
-            position: relative;
-        }
+        /* YAZIYOR İNDİKATÖRÜ */
+        .typing-indicator { padding: 4px 20px; font-size: 12px; font-style: italic; color: var(--accent-yellow); height: 20px; display: flex; align-items: center; }
 
-        .message-item.me .msg-bubble {
-            background-color: var(--bg-element);
-            color: var(--fg);
-        }
-
-        .msg-header {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 4px;
-        }
-
-        .msg-sender {
-            font-weight: bold;
-            font-size: 0.85rem;
-            color: var(--yellow);
-        }
-
-        .message-item.me .msg-sender {
-            color: var(--aqua);
-        }
-
-        .msg-time {
-            font-size: 0.7rem;
-            color: var(--fg-dim);
-        }
-
-        .msg-text {
-            font-size: 0.95rem;
-            line-height: 1.4;
-            word-break: break-word;
-        }
-
-        .typing-indicator {
-            padding: 0.5rem 1.5rem;
-            font-size: 0.85rem;
-            color: var(--fg-dim);
-            font-style: italic;
-            height: 24px;
-        }
-
-        /* Input Bar */
-        .chat-input-area {
-            padding: 1rem 1.5rem;
-            border-top: 1px solid var(--bg-soft);
-            display: flex;
-            gap: 10px;
-        }
-
-        .chat-input {
-            flex: 1;
-            background-color: var(--bg-soft);
-            border: 1px solid var(--bg-element);
-            padding: 12px 16px;
-            border-radius: 8px;
-            color: var(--fg);
-            outline: none;
-        }
-
-        .chat-input:focus {
-            border-color: var(--yellow);
-        }
-
-        .send-btn {
-            background-color: var(--yellow);
-            color: var(--bg-hard);
-            border: none;
-            width: 46px;
-            height: 46px;
-            border-radius: 8px;
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 1.1rem;
-        }
-
-        .hidden { display: none !important; }
+        /* MESAJ INPUT */
+        .input-area { padding: 15px 20px; background: var(--bg-panel); border-top: 1px solid var(--border-color); display: flex; gap: 10px; }
+        .input-area textarea { flex: 1; background: var(--bg-dark); border: 1px solid var(--border-color); color: var(--fg-text); border-radius: 6px; padding: 12px; resize: none; height: 46px; font-family: inherit; font-size: 14px; outline: none; }
+        .input-area textarea:focus { border-color: var(--accent-yellow); }
+        .input-area button { background: var(--accent-yellow); border: none; padding: 0 20px; border-radius: 6px; font-weight: bold; color: var(--bg-dark); cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <!-- Login Modal -->
-    <div id="login-overlay" class="login-overlay">
-        <div class="login-box">
-            <h2><i class="fa-solid fa-comments"></i> GruvChat</h2>
-            <input type="text" id="username-input" class="input-field" placeholder="Kullanıcı adı girin..." maxlength="20">
-            <button id="login-btn" class="btn">Sohbete Katıl</button>
+    <!-- KULLANICI ADI & AVATAR MODALI -->
+    <div id="userModal">
+        <div class="modal-card">
+            <h3>Instant Chat</h3>
+            <p style="color: var(--fg-sub); font-size: 13px; margin-bottom: 15px;">Bilgilerinizi girin ve anlık sohbete başlayın.</p>
+            <input type="text" id="usernameInput" placeholder="Kullanıcı Adınız..." required />
+            <input type="url" id="avatarInput" placeholder="Profil Resmi URL (İsteğe bağlı)" />
+            <button id="joinBtn">Sohbete Katıl</button>
         </div>
     </div>
 
-    <!-- Main Container -->
+    <!-- MESAJ DÜZENLEME MODALI -->
+    <div id="editModal">
+        <div class="edit-card">
+            <h4>Mesajı Düzenle</h4>
+            <textarea id="editMessageInput"></textarea>
+            <div class="edit-actions">
+                <button class="btn-cancel" id="cancelEditBtn">İptal</button>
+                <button class="btn-save" id="saveEditBtn">Kaydet</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ANA ARAYÜZ -->
     <div class="app-container">
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <div class="brand">
-                <i class="fa-solid fa-fire"></i> GruvChat
+        <div class="top-bar">
+            <div class="chat-info">
+                <span class="status-dot"></span>
+                <span># global-chat</span>
+                <!-- AKTİF KULLANICILAR BURAYA EKLENECEK -->
+                <div class="online-users-list" id="onlineUsersList"></div>
             </div>
-            <div class="section-title">Çevrimiçi (5 Sınır)</div>
-            <ul class="user-list" id="user-list">
-                <!-- Aktif kullanıcılar buraya dinamik eklenecek -->
-            </ul>
+            <div class="user-profile">
+                <img id="myAvatar" src="" alt="Profil">
+                <span id="displayUsername">...</span>
+                <button class="btn-change-user" id="resetUserBtn">Değiştir</button>
+            </div>
         </div>
 
-        <!-- Chat Area -->
         <div class="chat-area">
-            <div class="chat-header">
-                <div>
-                    <h3 style="color: var(--fg)">Genel Kanal</h3>
-                    <small style="color: var(--fg-dim)">5 Kişilik Özel Sohbet Odası</small>
-                </div>
+            <div class="messages-container" id="messagesList">
+                <div style="color:var(--fg-sub); text-align:center; padding-top: 20px;">Bağlanıyor...</div>
             </div>
 
-            <div class="chat-messages" id="chat-messages">
-                <!-- Mesajlar dinamik yüklenecek -->
-            </div>
+            <!-- YAZIYOR... METNİ -->
+            <div class="typing-indicator" id="typingIndicator"></div>
 
-            <div class="typing-indicator" id="typing-indicator"></div>
-
-            <div class="chat-input-area">
-                <input type="text" id="message-input" class="chat-input" placeholder="Bir mesaj yazın..." autocomplete="off">
-                <button id="send-btn" class="send-btn"><i class="fa-solid fa-paper-plane"></i></button>
-            </div>
+            <form class="input-area" id="chatForm">
+                <textarea id="messageInput" placeholder="Bir mesaj yazın..." required></textarea>
+                <button type="submit">Gönder</button>
+            </form>
         </div>
     </div>
 
-    <!-- Firebase Core SDK (v9 Modüler / CDNs) -->
+    <!-- FIREBASE MODULE SCRIPT -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-        import { getDatabase, ref, push, onValue, serverTimestamp, set, onDisconnect, remove } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, push, onValue, serverTimestamp, remove, update, onDisconnect, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // FIREBASE YAPILANDIRMANIZI BURAYA EKLENİN
         const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-            databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_PROJECT_ID.appspot.com",
-            messagingSenderId: "YOUR_SENDER_ID",
-            appId: "YOUR_APP_ID"
+            apiKey: "AIzaSyDRiCdkBRsKMeUpCmznQ3Sn8R6SvBk0C9U",
+            authDomain: "messges-87869.firebaseapp.com",
+            databaseURL: "https://messges-87869-default-rtdb.firebaseio.com",
+            projectId: "messges-87869",
+            storageBucket: "messges-87869.firebasestorage.app",
+            messagingSenderId: "102076170891",
+            appId: "1:102076170891:web:8786547acdbcdfb1468a8e"
         };
 
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
+        const messagesRef = ref(database, 'messages');
+        const onlineRef = ref(database, 'online_users');
+        const typingRef = ref(database, 'typing');
 
-        // UI Elemanları
-        const loginOverlay = document.getElementById('login-overlay');
-        const usernameInput = document.getElementById('username-input');
-        const loginBtn = document.getElementById('login-btn');
-        const messageInput = document.getElementById('message-input');
-        const sendBtn = document.getElementById('send-btn');
-        const chatMessages = document.getElementById('chat-messages');
-        const userList = document.getElementById('user-list');
-        const typingIndicator = document.getElementById('typing-indicator');
-
-        let currentUser = localStorage.getItem('gruv_username') || null;
-        let currentAvatar = '';
+        let currentUser = localStorage.getItem('gh_chat_username') || "";
+        let currentAvatar = localStorage.getItem('gh_chat_avatar') || "";
+        let activeEditKey = null;
         let typingTimeout = null;
+        let myUserRef = null;
+        let myTypingRef = null;
 
-        // Oturum Yönetimi
-        function initApp() {
-            if (currentUser) {
-                loginOverlay.classList.add('hidden');
-                setupUserSession();
-            }
+        const userModal = document.getElementById('userModal');
+        const editModal = document.getElementById('editModal');
+        const editMessageInput = document.getElementById('editMessageInput');
+        const displayUsername = document.getElementById('displayUsername');
+        const myAvatar = document.getElementById('myAvatar');
+        const messagesList = document.getElementById('messagesList');
+        const chatForm = document.getElementById('chatForm');
+        const messageInput = document.getElementById('messageInput');
+        const onlineUsersList = document.getElementById('onlineUsersList');
+        const typingIndicator = document.getElementById('typingIndicator');
+
+        function getAvatarUrl(username, customUrl) {
+            if (customUrl && customUrl.trim() !== "") return customUrl;
+            return `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(username)}`;
         }
 
-        loginBtn.addEventListener('click', () => {
-            const name = usernameInput.value.trim();
-            if (name) {
-                currentUser = name;
-                localStorage.setItem('gruv_username', currentUser);
-                loginOverlay.classList.add('hidden');
-                setupUserSession();
+        function initUserSession() {
+            if (!currentUser) return;
+
+            userModal.style.display = 'none';
+            displayUsername.innerText = currentUser;
+            myAvatar.src = getAvatarUrl(currentUser, currentAvatar);
+
+            // Çevrimiçi durum yönetimi (Presence System)
+            const connectedRef = ref(database, '.info/connected');
+            onValue(connectedRef, (snap) => {
+                if (snap.val() === true) {
+                    myUserRef = push(onlineRef);
+                    myTypingRef = ref(database, `typing/${currentUser}`);
+
+                    // Sekme kapanınca sil
+                    onDisconnect(myUserRef).remove();
+                    onDisconnect(myTypingRef).remove();
+
+                    // Online listesine ekle
+                    set(myUserRef, {
+                        username: currentUser,
+                        avatar: getAvatarUrl(currentUser, currentAvatar)
+                    });
+                }
+            });
+        }
+
+        if (currentUser) {
+            initUserSession();
+        }
+
+        document.getElementById('joinBtn').addEventListener('click', () => {
+            const username = document.getElementById('usernameInput').value.trim();
+            const avatarUrl = document.getElementById('avatarInput').value.trim();
+
+            if (username) {
+                currentUser = username;
+                currentAvatar = avatarUrl;
+
+                localStorage.setItem('gh_chat_username', currentUser);
+                localStorage.setItem('gh_chat_avatar', currentAvatar);
+
+                initUserSession();
             }
         });
 
-        function setupUserSession() {
-            currentAvatar = `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(currentUser)}`;
-            
-            // Online Durumu Ekleme
-            const userRef = ref(database, `online_users/${currentUser}`);
-            set(userRef, { username: currentUser, avatar: currentAvatar });
-            onDisconnect(userRef).remove();
+        document.getElementById('resetUserBtn').addEventListener('click', () => {
+            if (myUserRef) remove(myUserRef);
+            if (myTypingRef) remove(myTypingRef);
+            localStorage.removeItem('gh_chat_username');
+            localStorage.removeItem('gh_chat_avatar');
+            location.reload();
+        });
 
-            listenMessages();
-            listenOnlineUsers();
-            listenTyping();
+        // AKTİF KULLANICILARI DİNLEME
+        onValue(onlineRef, (snapshot) => {
+            const data = snapshot.val();
+            onlineUsersList.innerHTML = "";
+            if (!data) return;
+
+            // Mükerrer kullanıcı adlarını süzerek benzersiz gösterim
+            const uniqueUsers = {};
+            Object.values(data).forEach(u => {
+                uniqueUsers[u.username] = u.avatar;
+            });
+
+            Object.entries(uniqueUsers).forEach(([username, avatar]) => {
+                const img = document.createElement('img');
+                img.className = 'online-user-img';
+                img.src = avatar;
+                img.title = username; // Mouse ile üzerine gelindiğinde görünen isim (Native Tooltip)
+                img.alt = username;
+                img.onerror = function() {
+                    this.src = `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(username)}`;
+                };
+                onlineUsersList.appendChild(img);
+            });
+        });
+
+        // YAZIYOR DURUMUNU YÖNETME (INPUT EVENT)
+        messageInput.addEventListener('input', () => {
+            if (!currentUser) return;
+
+            set(ref(database, `typing/${currentUser}`), true);
+
+            clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(() => {
+                remove(ref(database, `typing/${currentUser}`));
+            }, 2000);
+        });
+
+        // DİĞER KULLANICILARIN YAZMA DURUMUNU DİNLEME
+        onValue(typingRef, (snapshot) => {
+            const data = snapshot.val();
+            if (!data) {
+                typingIndicator.innerText = "";
+                return;
+            }
+
+            const typers = Object.keys(data).filter(user => user.toLowerCase() !== currentUser.toLowerCase());
+
+            if (typers.length === 1) {
+                typingIndicator.innerText = `${typers[0]} yazıyor...`;
+            } else if (typers.length > 1) {
+                typingIndicator.innerText = `${typers.join(', ')} yazıyor...`;
+            } else {
+                typingIndicator.innerText = "";
+            }
+        });
+
+        // MESAJ DİNLEME VE BİRLEŞTİRME
+        onValue(messagesRef, (snapshot) => {
+            const data = snapshot.val();
+            messagesList.innerHTML = "";
+
+            if (!data) {
+                messagesList.innerHTML = '<div style="color:var(--fg-sub); text-align:center; padding-top: 20px;">Henüz mesaj yok. İlk mesajı sen at!</div>';
+                return;
+            }
+
+            const rawMessages = Object.entries(data).map(([key, value]) => ({ key, ...value }));
+            
+            let lastSender = null;
+            let lastTimestamp = 0;
+            let currentGroupEl = null;
+            let currentTextContainer = null;
+
+            rawMessages.forEach(msg => {
+                const isSameSender = lastSender === msg.sender;
+                const timeDiff = (msg.timestamp - lastTimestamp) / 1000;
+                const isWithin1Min = timeDiff < 60;
+
+                const dateObj = msg.timestamp ? new Date(msg.timestamp) : new Date();
+                const timeStr = dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+
+                if (isSameSender && isWithin1Min && currentGroupEl) {
+                    addMessageToGroup(currentTextContainer, msg);
+                } else {
+                    currentGroupEl = document.createElement('div');
+                    currentGroupEl.className = 'message-group';
+
+                    const avatarUrl = getAvatarUrl(msg.sender, msg.avatar);
+
+                    currentGroupEl.innerHTML = `
+                        <img class="group-avatar" src="${escapeHTML(avatarUrl)}" alt="${escapeHTML(msg.sender)}" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(msg.sender)}'">
+                        <div class="group-body">
+                            <div class="group-header">
+                                <span class="sender-name">${escapeHTML(msg.sender)}</span>
+                                <span class="header-time">${timeStr}</span>
+                            </div>
+                            <div class="message-text-list"></div>
+                        </div>
+                    `;
+
+                    currentTextContainer = currentGroupEl.querySelector('.message-text-list');
+                    addMessageToGroup(currentTextContainer, msg);
+                    messagesList.appendChild(currentGroupEl);
+                }
+
+                lastSender = msg.sender;
+                lastTimestamp = msg.timestamp || Date.now();
+            });
+
+            messagesList.scrollTop = messagesList.scrollHeight;
+        });
+
+        function addMessageToGroup(container, msg) {
+            const item = document.createElement('div');
+            item.className = 'message-item';
+            
+            const isMe = msg.sender.toLowerCase() === currentUser.toLowerCase();
+
+            let actionsHTML = '';
+            if (isMe) {
+                actionsHTML = `
+                    <div class="message-actions">
+                        <button class="action-btn edit" data-key="${msg.key}" data-text="${escapeHTML(msg.text)}" title="Düzenle">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                        </button>
+                        <button class="action-btn delete" data-key="${msg.key}" title="Sil">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                        </button>
+                    </div>
+                `;
+            }
+
+            item.innerHTML = `
+                <span>${escapeHTML(msg.text)}</span>
+                ${actionsHTML}
+            `;
+
+            container.appendChild(item);
         }
 
-        // 1. MESAJ GÖNDERME
-        function sendMessage() {
+        // MESAJ SİLME VE DÜZENLEME OLAYLARI
+        messagesList.addEventListener('click', (e) => {
+            const deleteBtn = e.target.closest('.action-btn.delete');
+            const editBtn = e.target.closest('.action-btn.edit');
+
+            if (deleteBtn) {
+                const key = deleteBtn.getAttribute('data-key');
+                if (confirm('Bu mesajı silmek istediğinize emin misiniz?')) {
+                    remove(ref(database, `messages/${key}`));
+                }
+            }
+
+            if (editBtn) {
+                activeEditKey = editBtn.getAttribute('data-key');
+                const oldText = editBtn.getAttribute('data-text');
+                editMessageInput.value = oldText;
+                editModal.style.display = 'flex';
+            }
+        });
+
+        // DÜZENLEME MODAL İŞLEMLERİ
+        document.getElementById('cancelEditBtn').addEventListener('click', () => {
+            editModal.style.display = 'none';
+            activeEditKey = null;
+        });
+
+        document.getElementById('saveEditBtn').addEventListener('click', () => {
+            const newText = editMessageInput.value.trim();
+            if (newText && activeEditKey) {
+                update(ref(database, `messages/${activeEditKey}`), {
+                    text: newText
+                });
+                editModal.style.display = 'none';
+                activeEditKey = null;
+            }
+        });
+
+        // MESAJ GÖNDERME
+        chatForm.addEventListener('submit', (e) => {
+            e.preventDefault();
             const text = messageInput.value.trim();
             if (!text || !currentUser) return;
 
-            const messagesRef = ref(database, 'messages');
             push(messagesRef, {
                 sender: currentUser,
                 avatar: currentAvatar,
@@ -441,114 +459,26 @@
                 timestamp: serverTimestamp()
             });
 
-            messageInput.value = '';
-            setTypingStatus(false);
-        }
-
-        sendBtn.addEventListener('click', sendMessage);
-        messageInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') sendMessage();
-        });
-
-        // 2. MESAJLARI DİNLEME VE ANİMASYONLU RENDER
-        function listenMessages() {
-            const messagesRef = ref(database, 'messages');
-            onValue(messagesRef, (snapshot) => {
-                chatMessages.innerHTML = '';
-                const data = snapshot.val();
-                if (!data) return;
-
-                Object.values(data).forEach(msg => {
-                    const isMe = msg.sender === currentUser;
-                    const msgDiv = document.createElement('div');
-                    
-                    // 'message-animate' sınıfı sayesinde mesajlar ekrana animasyonla gelir
-                    msgDiv.className = `message-item message-animate ${isMe ? 'me' : ''}`;
-                    
-                    const timeStr = msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
-
-                    msgDiv.innerHTML = `
-                        <img src="${msg.avatar}" class="msg-avatar" alt="avatar">
-                        <div class="msg-bubble">
-                            <div class="msg-header">
-                                <span class="msg-sender">${msg.sender}</span>
-                                <span class="msg-time">${timeStr}</span>
-                            </div>
-                            <div class="msg-text">${escapeHTML(msg.text)}</div>
-                        </div>
-                    `;
-
-                    chatMessages.appendChild(msgDiv);
-                });
-
-                // Otomatik aşağı kaydırma
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            });
-        }
-
-        // 3. ÇEVRİMİÇİ KULLANICILAR DİNLEME
-        function listenOnlineUsers() {
-            const onlineRef = ref(database, 'online_users');
-            onValue(onlineRef, (snapshot) => {
-                userList.innerHTML = '';
-                const users = snapshot.val();
-                if (!users) return;
-
-                Object.values(users).forEach(u => {
-                    const li = document.createElement('li');
-                    li.className = 'user-item';
-                    li.innerHTML = `
-                        <img src="${u.avatar}" class="user-avatar" alt="avatar">
-                        <span style="flex:1; font-size: 0.9rem;">${escapeHTML(u.username)}</span>
-                        <span class="online-dot"></span>
-                    `;
-                    userList.appendChild(li);
-                });
-            });
-        }
-
-        // 4. YAZIYOR... GÖSTERGESİ
-        messageInput.addEventListener('input', () => {
-            setTypingStatus(true);
+            // Yazıyor durumunu hemen temizle
+            remove(ref(database, `typing/${currentUser}`));
             clearTimeout(typingTimeout);
-            typingTimeout = setTimeout(() => setTypingStatus(false), 2000);
+
+            messageInput.value = "";
         });
 
-        function setTypingStatus(isTyping) {
-            if (!currentUser) return;
-            const typingRef = ref(database, `typing/${currentUser}`);
-            if (isTyping) {
-                set(typingRef, true);
-                onDisconnect(typingRef).remove();
-            } else {
-                remove(typingRef);
+        messageInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                chatForm.dispatchEvent(new Event('submit'));
             }
-        }
-
-        function listenTyping() {
-            const typingRef = ref(database, 'typing');
-            onValue(typingRef, (snapshot) => {
-                const data = snapshot.val();
-                if (!data) {
-                    typingIndicator.innerText = '';
-                    return;
-                }
-                const typers = Object.keys(data).filter(name => name !== currentUser);
-                if (typers.length > 0) {
-                    typingIndicator.innerText = `${typers.join(', ')} yazıyor...`;
-                } else {
-                    typingIndicator.innerText = '';
-                }
-            });
-        }
+        });
 
         function escapeHTML(str) {
+            if (!str) return '';
             return str.replace(/[&<>'"]/g, 
                 tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
             );
         }
-
-        initApp();
     </script>
 </body>
 </html>
