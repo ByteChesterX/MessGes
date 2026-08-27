@@ -18,6 +18,8 @@
             --border-color: #3c3836;
             --hover-bg: #32302f;
             --danger-red: #fb4934;
+            --mention-bg: rgba(131, 165, 152, 0.15);
+            --mention-border: #83a598;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -69,7 +71,7 @@
         @keyframes msgSlideIn {
             0% {
                 opacity: 0;
-                transform: translateY(10px);
+                transform: translateY(6px);
             }
             100% {
                 opacity: 1;
@@ -84,7 +86,7 @@
             width: 100%; 
         }
         .message-group.animate-entry {
-            animation: msgSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation: msgSlideIn 0.15s ease-out forwards;
         }
         .message-group:hover { background-color: var(--hover-bg); }
 
@@ -96,13 +98,17 @@
         .header-time { font-size: 11px; color: var(--fg-sub); }
 
         .message-text-list { display: flex; flex-direction: column; gap: 4px; }
-        .message-item { font-size: 14px; line-height: 1.5; color: var(--fg-text); word-break: break-word; white-space: pre-wrap; position: relative; display: flex; justify-content: space-between; align-items: center; }
+        .message-item { font-size: 14px; line-height: 1.5; color: var(--fg-text); word-break: break-word; white-space: pre-wrap; position: relative; display: flex; justify-content: space-between; align-items: center; padding: 2px 6px; border-radius: 4px; }
         .message-item code { background: var(--bg-panel); padding: 2px 5px; border-radius: 4px; font-family: monospace; font-size: 13px; color: var(--accent-yellow); border: 1px solid var(--border-color); }
         .message-item del { text-decoration: line-through; color: var(--fg-sub); }
         .message-item.animate-entry {
-            animation: msgSlideIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation: msgSlideIn 0.15s ease-out forwards;
         }
         .message-item:hover .message-actions { display: flex; }
+
+        /* ETİKETLEME (MENTION) STİLLERİ */
+        .mention-tag { color: var(--accent-blue); font-weight: bold; background: rgba(131, 165, 152, 0.2); padding: 0 4px; border-radius: 3px; }
+        .message-item.is-mentioned { background-color: var(--mention-bg); border-left: 3px solid var(--mention-border); }
 
         /* DÜZENLE/SİL HOVER BUTONLARI */
         .message-actions { display: none; gap: 6px; background: var(--bg-panel); border: 1px solid var(--border-color); padding: 2px 6px; border-radius: 4px; position: absolute; right: 10px; top: -6px; z-index: 10; }
@@ -152,7 +158,7 @@
         <div class="top-bar">
             <div class="chat-info">
                 <span class="status-dot"></span>
-                <span>Linux babaları (vak vak)</span>
+                <span>Linux Adamları (vak vak)</span>
                 <div class="online-users-list" id="onlineUsersList"></div>
             </div>
             <div class="user-profile">
@@ -164,7 +170,7 @@
 
         <div class="chat-area">
             <div class="messages-container" id="messagesList">
-                <div style="color:var(--fg-sub); text-align:center; padding-top: 20px;">Bağlanıyor...</div>
+                <div style="color:var(--fg-sub); text-align:center; padding-top: 20px;" id="loadingText">Bağlanıyor...</div>
             </div>
 
             <div class="typing-indicator" id="typingIndicator"></div>
@@ -179,7 +185,7 @@
     <!-- FIREBASE MODULE SCRIPT -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, push, onValue, serverTimestamp, remove, update, onDisconnect, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, push, onChildAdded, onChildChanged, onChildRemoved, onValue, serverTimestamp, remove, update, onDisconnect, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDRiCdkBRsKMeUpCmznQ3Sn8R6SvBk0C9U",
@@ -203,10 +209,6 @@
         let typingTimeout = null;
         let myUserRef = null;
         let myTypingRef = null;
-        
-        // Takip için render edilmiş mesaj anahtarlarını saklama kümesi
-        const renderedMessageKeys = new Set();
-        let isFirstRender = true;
 
         const userModal = document.getElementById('userModal');
         const editModal = document.getElementById('editModal');
@@ -294,6 +296,13 @@
                 img.onerror = function() {
                     this.src = `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(username)}`;
                 };
+                
+                // Profil resmine tıklayınca input'a @kullanıcı yaz
+                img.addEventListener('click', () => {
+                    messageInput.value += `@${username} `;
+                    messageInput.focus();
+                });
+
                 onlineUsersList.appendChild(img);
             });
         });
@@ -327,67 +336,86 @@
             }
         });
 
-        // MESAJ DİNLEME VE BENZERSİZ KONTROL (ANIMATION FIX)
-        onValue(messagesRef, (snapshot) => {
-            const data = snapshot.val();
-            messagesList.innerHTML = "";
+        // HIZLI VE ANLIK MESAJ DİNLEME (CHILD EVENTS)
+        onChildAdded(messagesRef, (snapshot) => {
+            const loadingEl = document.getElementById('loadingText');
+            if (loadingEl) loadingEl.remove();
 
-            if (!data) {
-                messagesList.innerHTML = '<div style="color:var(--fg-sub); text-align:center; padding-top: 20px;">Henüz mesaj yok. İlk mesajı sen at!</div>';
-                isFirstRender = false;
-                renderedMessageKeys.clear();
-                return;
+            const msg = { key: snapshot.key, ...snapshot.val() };
+            const dateObj = msg.timestamp ? new Date(msg.timestamp) : new Date();
+            const timeStr = dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+
+            const lastGroup = messagesList.lastElementChild;
+            const lastSender = lastGroup ? lastGroup.dataset.sender : null;
+            const lastTime = lastGroup ? parseInt(lastGroup.dataset.timestamp || '0') : 0;
+
+            const isSameSender = lastSender === msg.sender;
+            const isWithin1Min = (msg.timestamp - lastTime) / 1000 < 60;
+
+            if (isSameSender && isWithin1Min && lastGroup) {
+                const textContainer = lastGroup.querySelector('.message-text-list');
+                addMessageToGroup(textContainer, msg, true);
+            } else {
+                const groupEl = document.createElement('div');
+                groupEl.className = 'message-group animate-entry';
+                groupEl.dataset.sender = msg.sender;
+                groupEl.dataset.timestamp = msg.timestamp || Date.now();
+
+                const avatarUrl = getAvatarUrl(msg.sender, msg.avatar);
+
+                groupEl.innerHTML = `
+                    <img class="group-avatar" src="${escapeHTML(avatarUrl)}" alt="${escapeHTML(msg.sender)}" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(msg.sender)}'">
+                    <div class="group-body">
+                        <div class="group-header">
+                            <span class="sender-name">${escapeHTML(msg.sender)}</span>
+                            <span class="header-time">${timeStr}</span>
+                        </div>
+                        <div class="message-text-list"></div>
+                    </div>
+                `;
+
+                const textContainer = groupEl.querySelector('.message-text-list');
+                addMessageToGroup(textContainer, msg, false);
+                messagesList.appendChild(groupEl);
             }
 
-            const rawMessages = Object.entries(data).map(([key, value]) => ({ key, ...value }));
-            
-            let lastSender = null;
-            let lastTimestamp = 0;
-            let currentGroupEl = null;
-            let currentTextContainer = null;
+            messagesList.scrollTop = messagesList.scrollHeight;
+        });
 
-            rawMessages.forEach((msg) => {
-                const isSameSender = lastSender === msg.sender;
-                const timeDiff = (msg.timestamp - lastTimestamp) / 1000;
-                const isWithin1Min = timeDiff < 60;
-
-                const dateObj = msg.timestamp ? new Date(msg.timestamp) : new Date();
-                const timeStr = dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-
-                // Mesaj ilk defa mı DOM'a giriyor kontrolü
-                const isBrandNewMessage = !isFirstRender && !renderedMessageKeys.has(msg.key);
-
-                if (isSameSender && isWithin1Min && currentGroupEl) {
-                    addMessageToGroup(currentTextContainer, msg, isBrandNewMessage);
+        onChildChanged(messagesRef, (snapshot) => {
+            const key = snapshot.key;
+            const updatedData = snapshot.val();
+            const btn = messagesList.querySelector(`[data-key="${key}"]`);
+            if (btn) {
+                const item = btn.closest('.message-item');
+                const span = item.querySelector('.msg-content');
+                if (span) {
+                    span.innerHTML = parseMarkdown(updatedData.text);
+                }
+                
+                // Etiket durumunu tekrar kontrol et
+                const isMentioned = currentUser && updatedData.text.toLowerCase().includes(`@${currentUser.toLowerCase()}`);
+                if (isMentioned) {
+                    item.classList.add('is-mentioned');
                 } else {
-                    currentGroupEl = document.createElement('div');
-                    currentGroupEl.className = 'message-group' + (isBrandNewMessage ? ' animate-entry' : '');
-
-                    const avatarUrl = getAvatarUrl(msg.sender, msg.avatar);
-
-                    currentGroupEl.innerHTML = `
-                        <img class="group-avatar" src="${escapeHTML(avatarUrl)}" alt="${escapeHTML(msg.sender)}" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(msg.sender)}'">
-                        <div class="group-body">
-                            <div class="group-header">
-                                <span class="sender-name">${escapeHTML(msg.sender)}</span>
-                                <span class="header-time">${timeStr}</span>
-                            </div>
-                            <div class="message-text-list"></div>
-                        </div>
-                    `;
-
-                    currentTextContainer = currentGroupEl.querySelector('.message-text-list');
-                    addMessageToGroup(currentTextContainer, msg, isBrandNewMessage && !currentGroupEl.classList.contains('animate-entry'));
-                    messagesList.appendChild(currentGroupEl);
+                    item.classList.remove('is-mentioned');
                 }
 
-                renderedMessageKeys.add(msg.key);
-                lastSender = msg.sender;
-                lastTimestamp = msg.timestamp || Date.now();
-            });
+                btn.setAttribute('data-text', escapeHTML(updatedData.text));
+            }
+        });
 
-            isFirstRender = false;
-            messagesList.scrollTop = messagesList.scrollHeight;
+        onChildRemoved(messagesRef, (snapshot) => {
+            const key = snapshot.key;
+            const btn = messagesList.querySelector(`[data-key="${key}"]`);
+            if (btn) {
+                const item = btn.closest('.message-item');
+                const group = item.closest('.message-group');
+                item.remove();
+                if (group && group.querySelectorAll('.message-item').length === 0) {
+                    group.remove();
+                }
+            }
         });
 
         function addMessageToGroup(container, msg, animateItem = false) {
@@ -395,6 +423,11 @@
             item.className = 'message-item' + (animateItem ? ' animate-entry' : '');
             
             const isMe = msg.sender.toLowerCase() === currentUser.toLowerCase();
+            const isMentioned = currentUser && msg.text.toLowerCase().includes(`@${currentUser.toLowerCase()}`);
+
+            if (isMentioned) {
+                item.classList.add('is-mentioned');
+            }
 
             let actionsHTML = '';
             if (isMe) {
@@ -411,7 +444,7 @@
             }
 
             item.innerHTML = `
-                <span>${parseMarkdown(msg.text)}</span>
+                <span class="msg-content">${parseMarkdown(msg.text)}</span>
                 ${actionsHTML}
             `;
 
@@ -488,6 +521,9 @@
         function parseMarkdown(str) {
             if (!str) return '';
             let html = escapeHTML(str);
+
+            // @kullanıcı_adı etiketleme dönüşümü
+            html = html.replace(/@([a-zA-Z0-9_ğüşıöçĞÜŞİÖÇ]+)/g, '<span class="mention-tag">@$1</span>');
 
             // **bold** -> <strong>bold</strong>
             html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
