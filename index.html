@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yaani bu bir grup sohbeti. Ne beklersin ki?</title>
+    <title>Grup chat sadece. Ne beklersin ki?</title>
     <style>
         :root {
             --bg-dark: #282828;
@@ -20,6 +20,8 @@
             --danger-red: #fb4934;
             --mention-bg: rgba(131, 165, 152, 0.15);
             --mention-border: #83a598;
+            --quote-bg: #32302f;
+            --quote-border: #fabd2f;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -97,8 +99,8 @@
         .sender-name { font-weight: bold; font-size: 14px; color: var(--accent-pink); }
         .header-time { font-size: 11px; color: var(--fg-sub); }
 
-        .message-text-list { display: flex; flex-direction: column; gap: 4px; }
-        .message-item { font-size: 14px; line-height: 1.5; color: var(--fg-text); word-break: break-word; white-space: pre-wrap; position: relative; display: flex; justify-content: space-between; align-items: center; padding: 2px 6px; border-radius: 4px; }
+        .message-text-list { display: flex; flex-direction: column; gap: 6px; }
+        .message-item { font-size: 14px; line-height: 1.5; color: var(--fg-text); word-break: break-word; white-space: pre-wrap; position: relative; display: flex; flex-direction: column; align-items: flex-start; padding: 4px 6px; border-radius: 4px; width: 100%; }
         .message-item code { background: var(--bg-panel); padding: 2px 5px; border-radius: 4px; font-family: monospace; font-size: 13px; color: var(--accent-yellow); border: 1px solid var(--border-color); }
         .message-item del { text-decoration: line-through; color: var(--fg-sub); }
         .message-item.animate-entry {
@@ -106,13 +108,33 @@
         }
         .message-item:hover .message-actions { display: flex; }
 
+        .message-content-wrapper { width: 100%; display: flex; justify-content: space-between; align-items: center; }
+
+        /* ALINTI (QUOTE) MESAJ STİLLERİ */
+        .quoted-box {
+            background-color: var(--quote-bg);
+            border-left: 3px solid var(--quote-border);
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            color: var(--fg-sub);
+            margin-bottom: 4px;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .quoted-sender { font-weight: bold; color: var(--accent-yellow); margin-right: 5px; }
+
         /* ETİKETLEME (MENTION) STİLLERİ */
         .mention-tag { color: var(--accent-blue); font-weight: bold; background: rgba(131, 165, 152, 0.2); padding: 0 4px; border-radius: 3px; }
         .message-item.is-mentioned { background-color: var(--mention-bg); border-left: 3px solid var(--mention-border); }
 
-        /* DÜZENLE/SİL HOVER BUTONLARI */
-        .message-actions { display: none; gap: 6px; background: var(--bg-panel); border: 1px solid var(--border-color); padding: 2px 6px; border-radius: 4px; position: absolute; right: 10px; top: -6px; z-index: 10; }
+        /* MESAJ İŞLEM BUTONLARI (YANITLA, DÜZENLE, SİL) */
+        .message-actions { display: none; gap: 4px; background: var(--bg-panel); border: 1px solid var(--border-color); padding: 2px 6px; border-radius: 4px; position: absolute; right: 10px; top: -6px; z-index: 10; }
         .action-btn { background: transparent; border: none; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; padding: 2px; }
+        .action-btn.reply { color: var(--accent-blue); }
+        .action-btn.reply:hover { color: var(--fg-text); }
         .action-btn.edit { color: var(--fg-sub); }
         .action-btn.edit:hover { color: var(--fg-text); }
         .action-btn.delete { color: var(--danger-red); }
@@ -120,6 +142,21 @@
 
         /* YAZIYOR İNDİKATÖRÜ */
         .typing-indicator { padding: 4px 20px; font-size: 12px; font-style: italic; color: var(--accent-yellow); height: 20px; display: flex; align-items: center; }
+
+        /* ALINTI PREVIEW BAR (INPUT ÜSTÜ) */
+        .reply-preview-bar {
+            background: var(--bg-panel);
+            border-top: 1px solid var(--border-color);
+            padding: 6px 20px;
+            display: none;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: var(--fg-sub);
+        }
+        .reply-preview-content { display: flex; align-items: center; gap: 6px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+        .reply-preview-user { font-weight: bold; color: var(--accent-yellow); }
+        .btn-cancel-reply { background: transparent; border: none; color: var(--danger-red); font-size: 14px; cursor: pointer; font-weight: bold; margin-left: 10px; }
 
         /* MESAJ INPUT */
         .input-area { padding: 15px 20px; background: var(--bg-panel); border-top: 1px solid var(--border-color); display: flex; gap: 10px; }
@@ -158,7 +195,7 @@
         <div class="top-bar">
             <div class="chat-info">
                 <span class="status-dot"></span>
-                <span>Linux Adamları (vak vak)</span>
+                <span>Linux Adamlar (vak vak)</span>
                 <div class="online-users-list" id="onlineUsersList"></div>
             </div>
             <div class="user-profile">
@@ -174,6 +211,16 @@
             </div>
 
             <div class="typing-indicator" id="typingIndicator"></div>
+
+            <!-- ALINTI ÖNİZLEME BAR -->
+            <div class="reply-preview-bar" id="replyPreviewBar">
+                <div class="reply-preview-content">
+                    <span>Yanıtlanıyor:</span>
+                    <span class="reply-preview-user" id="replyPreviewUser">@kullanıcı</span>
+                    <span id="replyPreviewText">"Mesaj içeriği..."</span>
+                </div>
+                <button class="btn-cancel-reply" id="cancelReplyBtn" title="İptal Et">✕</button>
+            </div>
 
             <form class="input-area" id="chatForm">
                 <textarea id="messageInput" placeholder="Bir mesaj yazın..." required></textarea>
@@ -206,6 +253,7 @@
         let currentUser = localStorage.getItem('gh_chat_username') || "";
         let currentAvatar = localStorage.getItem('gh_chat_avatar') || "";
         let activeEditKey = null;
+        let activeReplyTarget = null; // { sender, text }
         let typingTimeout = null;
         let myUserRef = null;
         let myTypingRef = null;
@@ -220,6 +268,9 @@
         const messageInput = document.getElementById('messageInput');
         const onlineUsersList = document.getElementById('onlineUsersList');
         const typingIndicator = document.getElementById('typingIndicator');
+        const replyPreviewBar = document.getElementById('replyPreviewBar');
+        const replyPreviewUser = document.getElementById('replyPreviewUser');
+        const replyPreviewText = document.getElementById('replyPreviewText');
 
         function getAvatarUrl(username, customUrl) {
             if (customUrl && customUrl.trim() !== "") return customUrl;
@@ -297,7 +348,6 @@
                     this.src = `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(username)}`;
                 };
                 
-                // Profil resmine tıklayınca input'a @kullanıcı yaz
                 img.addEventListener('click', () => {
                     messageInput.value += `@${username} `;
                     messageInput.focus();
@@ -393,7 +443,6 @@
                     span.innerHTML = parseMarkdown(updatedData.text);
                 }
                 
-                // Etiket durumunu tekrar kontrol et
                 const isMentioned = currentUser && updatedData.text.toLowerCase().includes(`@${currentUser.toLowerCase()}`);
                 if (isMentioned) {
                     item.classList.add('is-mentioned');
@@ -401,7 +450,11 @@
                     item.classList.remove('is-mentioned');
                 }
 
-                btn.setAttribute('data-text', escapeHTML(updatedData.text));
+                // Action butonlarının dataset'lerini güncelle
+                const editBtn = item.querySelector('.action-btn.edit');
+                const replyBtn = item.querySelector('.action-btn.reply');
+                if (editBtn) editBtn.setAttribute('data-text', escapeHTML(updatedData.text));
+                if (replyBtn) replyBtn.setAttribute('data-text', escapeHTML(updatedData.text));
             }
         });
 
@@ -429,23 +482,49 @@
                 item.classList.add('is-mentioned');
             }
 
-            let actionsHTML = '';
-            if (isMe) {
-                actionsHTML = `
-                    <div class="message-actions">
-                        <button class="action-btn edit" data-key="${msg.key}" data-text="${escapeHTML(msg.text)}" title="Düzenle">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                        </button>
-                        <button class="action-btn delete" data-key="${msg.key}" title="Sil">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                        </button>
+            // Alıntı Bloğu HTML (Eğer yanıt mesajı ise)
+            let quoteHTML = '';
+            if (msg.replyTo) {
+                quoteHTML = `
+                    <div class="quoted-box">
+                        <span class="quoted-sender">@${escapeHTML(msg.replyTo.sender)}</span>
+                        <span>${escapeHTML(msg.replyTo.text)}</span>
                     </div>
                 `;
             }
 
+            let editBtnHTML = '';
+            let deleteBtnHTML = '';
+
+            if (isMe) {
+                editBtnHTML = `
+                    <button class="action-btn edit" data-key="${msg.key}" data-text="${escapeHTML(msg.text)}" title="Düzenle">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                    </button>
+                `;
+                deleteBtnHTML = `
+                    <button class="action-btn delete" data-key="${msg.key}" title="Sil">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                    </button>
+                `;
+            }
+
+            const actionsHTML = `
+                <div class="message-actions">
+                    <button class="action-btn reply" data-key="${msg.key}" data-sender="${escapeHTML(msg.sender)}" data-text="${escapeHTML(msg.text)}" title="Yanıtla">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 17 4 12 9 7"></polyline><path d="M20 18v-2a4 4 0 0 0-4-4H4"></path></svg>
+                    </button>
+                    ${editBtnHTML}
+                    ${deleteBtnHTML}
+                </div>
+            `;
+
             item.innerHTML = `
-                <span class="msg-content">${parseMarkdown(msg.text)}</span>
-                ${actionsHTML}
+                ${quoteHTML}
+                <div class="message-content-wrapper">
+                    <span class="msg-content">${parseMarkdown(msg.text)}</span>
+                    ${actionsHTML}
+                </div>
             `;
 
             container.appendChild(item);
@@ -454,6 +533,7 @@
         messagesList.addEventListener('click', (e) => {
             const deleteBtn = e.target.closest('.action-btn.delete');
             const editBtn = e.target.closest('.action-btn.edit');
+            const replyBtn = e.target.closest('.action-btn.reply');
 
             if (deleteBtn) {
                 const key = deleteBtn.getAttribute('data-key');
@@ -468,6 +548,24 @@
                 editMessageInput.value = oldText;
                 editModal.style.display = 'flex';
             }
+
+            if (replyBtn) {
+                const sender = replyBtn.getAttribute('data-sender');
+                const text = replyBtn.getAttribute('data-text');
+
+                activeReplyTarget = { sender, text };
+
+                replyPreviewUser.innerText = `@${sender}`;
+                replyPreviewText.innerText = `"${text}"`;
+                replyPreviewBar.style.display = 'flex';
+
+                messageInput.focus();
+            }
+        });
+
+        document.getElementById('cancelReplyBtn').addEventListener('click', () => {
+            activeReplyTarget = null;
+            replyPreviewBar.style.display = 'none';
         });
 
         document.getElementById('cancelEditBtn').addEventListener('click', () => {
@@ -491,17 +589,26 @@
             const text = messageInput.value.trim();
             if (!text || !currentUser) return;
 
-            push(messagesRef, {
+            const payload = {
                 sender: currentUser,
                 avatar: currentAvatar,
                 text: text,
                 timestamp: serverTimestamp()
-            });
+            };
+
+            if (activeReplyTarget) {
+                payload.replyTo = activeReplyTarget;
+            }
+
+            push(messagesRef, payload);
 
             remove(ref(database, `typing/${currentUser}`));
             clearTimeout(typingTimeout);
 
+            // Input ve Alıntı alanını temizle
             messageInput.value = "";
+            activeReplyTarget = null;
+            replyPreviewBar.style.display = 'none';
         });
 
         messageInput.addEventListener('keydown', (e) => {
@@ -522,20 +629,11 @@
             if (!str) return '';
             let html = escapeHTML(str);
 
-            // @kullanıcı_adı etiketleme dönüşümü
             html = html.replace(/@([a-zA-Z0-9_ğüşıöçĞÜŞİÖÇ]+)/g, '<span class="mention-tag">@$1</span>');
-
-            // **bold** -> <strong>bold</strong>
             html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-
-            // *italic* veya _italic_ -> <em>italic</em>
             html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
             html = html.replace(/_(.*?)_/g, '<em>$1</em>');
-
-            // ~~strikethrough~~ -> <del>strikethrough</del>
             html = html.replace(/~~(.*?)~~/g, '<del>$1</del>');
-
-            // `code` -> <code>code</code>
             html = html.replace(/`(.*?)`/g, '<code>$1</code>');
 
             return html;
