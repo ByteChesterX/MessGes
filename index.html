@@ -3,9 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Instant Gruvbox Chat</title>
-    <!-- Marked.js for Markdown Parsing -->
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <title>Yaani bu bir grup sohbeti. Ne beklersin ki?</title>
     <style>
         :root {
             --bg-dark: #282828;
@@ -25,8 +23,8 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-dark); color: var(--fg-text); height: 100vh; display: flex; overflow: hidden; }
 
-        /* MODAL (VARSAYILAN OLARAK GİZLİ) */
-        #userModal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; z-index: 99; }
+        /* MODAL (KULLANICI ADI & AVATAR GİRİŞİ) */
+        #userModal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; z-index: 99; }
         .modal-card { background: var(--bg-panel); border: 1px solid var(--border-color); padding: 30px; border-radius: 8px; width: 90%; max-width: 400px; text-align: center; }
         .modal-card h3 { color: var(--accent-yellow); margin-bottom: 15px; }
         .modal-card input { width: 100%; padding: 12px; background: var(--bg-dark); border: 1px solid var(--border-color); color: var(--fg-text); border-radius: 6px; font-size: 14px; margin-bottom: 12px; outline: none; }
@@ -51,6 +49,7 @@
         .chat-info { display: flex; align-items: center; gap: 12px; font-weight: bold; font-size: 15px; }
         .status-dot { height: 8px; width: 8px; background-color: var(--accent-green); border-radius: 50%; display: inline-block; }
         
+        /* AKTİF KULLANICILAR LİSTESİ */
         .online-users-list { display: flex; align-items: center; gap: -6px; margin-left: 10px; }
         .online-user-img { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--bg-panel); object-fit: cover; margin-left: -8px; transition: transform 0.2s; cursor: pointer; }
         .online-user-img:hover { transform: translateY(-2px) scale(1.1); z-index: 5; }
@@ -68,34 +67,42 @@
 
         /* MESAJ ANİMASYONU */
         @keyframes msgSlideIn {
-            0% { opacity: 0; transform: translateY(10px); }
-            100% { opacity: 1; transform: translateY(0); }
+            0% {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
-        .message-group { display: flex; padding: 4px 20px; position: relative; width: 100%; }
-        .message-group.animate-entry { animation: msgSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .message-group { 
+            display: flex; 
+            padding: 4px 20px; 
+            position: relative; 
+            width: 100%; 
+        }
+        .message-group.animate-entry {
+            animation: msgSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
         .message-group:hover { background-color: var(--hover-bg); }
 
         .group-avatar { width: 36px; height: 36px; border-radius: 4px; margin-right: 12px; flex-shrink: 0; object-fit: cover; }
+        
         .group-body { flex: 1; min-width: 0; }
         .group-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
         .sender-name { font-weight: bold; font-size: 14px; color: var(--accent-pink); }
         .header-time { font-size: 11px; color: var(--fg-sub); }
 
         .message-text-list { display: flex; flex-direction: column; gap: 4px; }
-        .message-item { font-size: 14px; line-height: 1.5; color: var(--fg-text); word-break: break-word; position: relative; display: flex; justify-content: space-between; align-items: flex-start; }
-        .message-item.animate-entry { animation: msgSlideIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .message-item { font-size: 14px; line-height: 1.5; color: var(--fg-text); word-break: break-word; white-space: pre-wrap; position: relative; display: flex; justify-content: space-between; align-items: center; }
+        .message-item code { background: var(--bg-panel); padding: 2px 5px; border-radius: 4px; font-family: monospace; font-size: 13px; color: var(--accent-yellow); border: 1px solid var(--border-color); }
+        .message-item del { text-decoration: line-through; color: var(--fg-sub); }
+        .message-item.animate-entry {
+            animation: msgSlideIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
         .message-item:hover .message-actions { display: flex; }
-
-        /* MARKDOWN FORMATLAMA STİLLERİ */
-        .markdown-content { width: 100%; }
-        .markdown-content p { margin: 0; display: inline-block; }
-        .markdown-content p + p { margin-top: 4px; }
-        .markdown-content code { background: var(--bg-panel); color: var(--accent-yellow); padding: 2px 5px; border-radius: 4px; font-family: monospace; font-size: 13px; }
-        .markdown-content pre { background: var(--bg-panel); padding: 8px; border-radius: 4px; overflow-x: auto; margin: 4px 0; border: 1px solid var(--border-color); }
-        .markdown-content pre code { background: transparent; padding: 0; color: var(--fg-text); }
-        .markdown-content a { color: var(--accent-blue); text-decoration: underline; }
-        .markdown-content blockquote { border-left: 3px solid var(--accent-yellow); padding-left: 8px; color: var(--fg-sub); font-style: italic; margin: 4px 0; }
 
         /* DÜZENLE/SİL HOVER BUTONLARI */
         .message-actions { display: none; gap: 6px; background: var(--bg-panel); border: 1px solid var(--border-color); padding: 2px 6px; border-radius: 4px; position: absolute; right: 10px; top: -6px; z-index: 10; }
@@ -108,13 +115,8 @@
         /* YAZIYOR İNDİKATÖRÜ */
         .typing-indicator { padding: 4px 20px; font-size: 12px; font-style: italic; color: var(--accent-yellow); height: 20px; display: flex; align-items: center; }
 
-        /* MESAJ INPUT VE TOOLBAR */
-        .input-wrapper { background: var(--bg-panel); border-top: 1px solid var(--border-color); display: flex; flex-direction: column; }
-        .toolbar { padding: 6px 20px 0 20px; display: flex; gap: 6px; }
-        .tool-btn { background: var(--bg-dark); border: 1px solid var(--border-color); color: var(--fg-sub); padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; cursor: pointer; transition: background 0.2s, color 0.2s; }
-        .tool-btn:hover { color: var(--fg-text); border-color: var(--accent-yellow); }
-
-        .input-area { padding: 10px 20px 15px 20px; display: flex; gap: 10px; }
+        /* MESAJ INPUT */
+        .input-area { padding: 15px 20px; background: var(--bg-panel); border-top: 1px solid var(--border-color); display: flex; gap: 10px; }
         .input-area textarea { flex: 1; background: var(--bg-dark); border: 1px solid var(--border-color); color: var(--fg-text); border-radius: 6px; padding: 12px; resize: none; height: 46px; font-family: inherit; font-size: 14px; outline: none; }
         .input-area textarea:focus { border-color: var(--accent-yellow); }
         .input-area button { background: var(--accent-yellow); border: none; padding: 0 20px; border-radius: 6px; font-weight: bold; color: var(--bg-dark); cursor: pointer; }
@@ -122,6 +124,7 @@
 </head>
 <body>
 
+    <!-- KULLANICI ADI & AVATAR MODALI -->
     <div id="userModal">
         <div class="modal-card">
             <h3>Instant Chat</h3>
@@ -132,6 +135,7 @@
         </div>
     </div>
 
+    <!-- MESAJ DÜZENLEME MODALI -->
     <div id="editModal">
         <div class="edit-card">
             <h4>Mesajı Düzenle</h4>
@@ -143,11 +147,12 @@
         </div>
     </div>
 
+    <!-- ANA ARAYÜZ -->
     <div class="app-container">
         <div class="top-bar">
             <div class="chat-info">
                 <span class="status-dot"></span>
-                <span># global-chat</span>
+                <span>Linux babaları (vak vak)</span>
                 <div class="online-users-list" id="onlineUsersList"></div>
             </div>
             <div class="user-profile">
@@ -164,27 +169,17 @@
 
             <div class="typing-indicator" id="typingIndicator"></div>
 
-            <div class="input-wrapper">
-                <div class="toolbar">
-                    <button class="tool-btn" data-prefix="**" data-suffix="**"><b>B</b></button>
-                    <button class="tool-btn" data-prefix="*" data-suffix="*"><i>I</i></button>
-                    <button class="tool-btn" data-prefix="`" data-suffix="`">&lt;/&gt;</button>
-                    <button class="tool-btn" data-prefix="~~" data-suffix="~~"><s>S</s></button>
-                    <button class="tool-btn" data-prefix="[" data-suffix="](url)">Link</button>
-                </div>
-                <form class="input-area" id="chatForm">
-                    <textarea id="messageInput" placeholder="Bir mesaj yazın... (Markdown desteklenir)" required></textarea>
-                    <button type="submit">Gönder</button>
-                </form>
-            </div>
+            <form class="input-area" id="chatForm">
+                <textarea id="messageInput" placeholder="Bir mesaj yazın..." required></textarea>
+                <button type="submit">Gönder</button>
+            </form>
         </div>
     </div>
 
+    <!-- FIREBASE MODULE SCRIPT -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, push, onValue, serverTimestamp, remove, update, onDisconnect, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-
-        marked.setOptions({ gfm: true, breaks: true });
 
         const firebaseConfig = {
             apiKey: "AIzaSyDRiCdkBRsKMeUpCmznQ3Sn8R6SvBk0C9U",
@@ -209,6 +204,7 @@
         let myUserRef = null;
         let myTypingRef = null;
         
+        // Takip için render edilmiş mesaj anahtarlarını saklama kümesi
         const renderedMessageKeys = new Set();
         let isFirstRender = true;
 
@@ -228,109 +224,8 @@
             return `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(username)}`;
         }
 
-        function startChatListeners() {
-            // AKTİF KULLANICILAR DİNLEME
-            onValue(onlineRef, (snapshot) => {
-                const data = snapshot.val();
-                onlineUsersList.innerHTML = "";
-                if (!data) return;
-
-                const uniqueUsers = {};
-                Object.values(data).forEach(u => { uniqueUsers[u.username] = u.avatar; });
-
-                Object.entries(uniqueUsers).forEach(([username, avatar]) => {
-                    const img = document.createElement('img');
-                    img.className = 'online-user-img';
-                    img.src = avatar;
-                    img.title = username;
-                    img.alt = username;
-                    img.onerror = function() {
-                        this.src = `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(username)}`;
-                    };
-                    onlineUsersList.appendChild(img);
-                });
-            });
-
-            // YAZIYOR DURUMUNU DİNLEME
-            onValue(typingRef, (snapshot) => {
-                const data = snapshot.val();
-                if (!data) {
-                    typingIndicator.innerText = "";
-                    return;
-                }
-                const typers = Object.keys(data).filter(user => user.toLowerCase() !== currentUser.toLowerCase());
-                if (typers.length === 1) typingIndicator.innerText = `${typers[0]} yazıyor...`;
-                else if (typers.length > 1) typingIndicator.innerText = `${typers.join(', ')} yazıyor...`;
-                else typingIndicator.innerText = "";
-            });
-
-            // MESAJLARI DİNLEME
-            onValue(messagesRef, (snapshot) => {
-                const data = snapshot.val();
-                messagesList.innerHTML = "";
-
-                if (!data) {
-                    messagesList.innerHTML = '<div style="color:var(--fg-sub); text-align:center; padding-top: 20px;">Henüz mesaj yok. İlk mesajı sen at!</div>';
-                    isFirstRender = false;
-                    renderedMessageKeys.clear();
-                    return;
-                }
-
-                const rawMessages = Object.entries(data).map(([key, value]) => ({ key, ...value }));
-                
-                let lastSender = null;
-                let lastTimestamp = 0;
-                let currentGroupEl = null;
-                let currentTextContainer = null;
-
-                rawMessages.forEach((msg) => {
-                    const isSameSender = lastSender === msg.sender;
-                    const timeDiff = (msg.timestamp - lastTimestamp) / 1000;
-                    const isWithin1Min = timeDiff < 60;
-
-                    const dateObj = msg.timestamp ? new Date(msg.timestamp) : new Date();
-                    const timeStr = dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-                    const isBrandNewMessage = !isFirstRender && !renderedMessageKeys.has(msg.key);
-
-                    if (isSameSender && isWithin1Min && currentGroupEl) {
-                        addMessageToGroup(currentTextContainer, msg, isBrandNewMessage);
-                    } else {
-                        currentGroupEl = document.createElement('div');
-                        currentGroupEl.className = 'message-group' + (isBrandNewMessage ? ' animate-entry' : '');
-
-                        const avatarUrl = getAvatarUrl(msg.sender, msg.avatar);
-
-                        currentGroupEl.innerHTML = `
-                            <img class="group-avatar" src="${escapeHTML(avatarUrl)}" alt="${escapeHTML(msg.sender)}" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(msg.sender)}'">
-                            <div class="group-body">
-                                <div class="group-header">
-                                    <span class="sender-name">${escapeHTML(msg.sender)}</span>
-                                    <span class="header-time">${timeStr}</span>
-                                </div>
-                                <div class="message-text-list"></div>
-                            </div>
-                        `;
-
-                        currentTextContainer = currentGroupEl.querySelector('.message-text-list');
-                        addMessageToGroup(currentTextContainer, msg, isBrandNewMessage && !currentGroupEl.classList.contains('animate-entry'));
-                        messagesList.appendChild(currentGroupEl);
-                    }
-
-                    renderedMessageKeys.add(msg.key);
-                    lastSender = msg.sender;
-                    lastTimestamp = msg.timestamp || Date.now();
-                });
-
-                isFirstRender = false;
-                messagesList.scrollTop = messagesList.scrollHeight;
-            });
-        }
-
         function initUserSession() {
-            if (!currentUser) {
-                userModal.style.display = 'flex';
-                return;
-            }
+            if (!currentUser) return;
 
             userModal.style.display = 'none';
             displayUsername.innerText = currentUser;
@@ -351,12 +246,11 @@
                     });
                 }
             });
-
-            startChatListeners();
         }
 
-        // OTURUMU BAŞLAT
-        initUserSession();
+        if (currentUser) {
+            initUserSession();
+        }
 
         document.getElementById('joinBtn').addEventListener('click', () => {
             const username = document.getElementById('usernameInput').value.trim();
@@ -381,21 +275,26 @@
             location.reload();
         });
 
-        document.querySelectorAll('.tool-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const prefix = btn.getAttribute('data-prefix');
-                const suffix = btn.getAttribute('data-suffix');
-                
-                const start = messageInput.selectionStart;
-                const end = messageInput.selectionEnd;
-                const text = messageInput.value;
-                const selectedText = text.substring(start, end);
+        onValue(onlineRef, (snapshot) => {
+            const data = snapshot.val();
+            onlineUsersList.innerHTML = "";
+            if (!data) return;
 
-                const replacement = prefix + selectedText + suffix;
-                messageInput.value = text.substring(0, start) + replacement + text.substring(end);
-                
-                messageInput.focus();
-                messageInput.setSelectionRange(start + prefix.length, end + prefix.length);
+            const uniqueUsers = {};
+            Object.values(data).forEach(u => {
+                uniqueUsers[u.username] = u.avatar;
+            });
+
+            Object.entries(uniqueUsers).forEach(([username, avatar]) => {
+                const img = document.createElement('img');
+                img.className = 'online-user-img';
+                img.src = avatar;
+                img.title = username;
+                img.alt = username;
+                img.onerror = function() {
+                    this.src = `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(username)}`;
+                };
+                onlineUsersList.appendChild(img);
             });
         });
 
@@ -408,6 +307,87 @@
             typingTimeout = setTimeout(() => {
                 remove(ref(database, `typing/${currentUser}`));
             }, 2000);
+        });
+
+        onValue(typingRef, (snapshot) => {
+            const data = snapshot.val();
+            if (!data) {
+                typingIndicator.innerText = "";
+                return;
+            }
+
+            const typers = Object.keys(data).filter(user => user.toLowerCase() !== currentUser.toLowerCase());
+
+            if (typers.length === 1) {
+                typingIndicator.innerText = `${typers[0]} yazıyor...`;
+            } else if (typers.length > 1) {
+                typingIndicator.innerText = `${typers.join(', ')} yazıyor...`;
+            } else {
+                typingIndicator.innerText = "";
+            }
+        });
+
+        // MESAJ DİNLEME VE BENZERSİZ KONTROL (ANIMATION FIX)
+        onValue(messagesRef, (snapshot) => {
+            const data = snapshot.val();
+            messagesList.innerHTML = "";
+
+            if (!data) {
+                messagesList.innerHTML = '<div style="color:var(--fg-sub); text-align:center; padding-top: 20px;">Henüz mesaj yok. İlk mesajı sen at!</div>';
+                isFirstRender = false;
+                renderedMessageKeys.clear();
+                return;
+            }
+
+            const rawMessages = Object.entries(data).map(([key, value]) => ({ key, ...value }));
+            
+            let lastSender = null;
+            let lastTimestamp = 0;
+            let currentGroupEl = null;
+            let currentTextContainer = null;
+
+            rawMessages.forEach((msg) => {
+                const isSameSender = lastSender === msg.sender;
+                const timeDiff = (msg.timestamp - lastTimestamp) / 1000;
+                const isWithin1Min = timeDiff < 60;
+
+                const dateObj = msg.timestamp ? new Date(msg.timestamp) : new Date();
+                const timeStr = dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+
+                // Mesaj ilk defa mı DOM'a giriyor kontrolü
+                const isBrandNewMessage = !isFirstRender && !renderedMessageKeys.has(msg.key);
+
+                if (isSameSender && isWithin1Min && currentGroupEl) {
+                    addMessageToGroup(currentTextContainer, msg, isBrandNewMessage);
+                } else {
+                    currentGroupEl = document.createElement('div');
+                    currentGroupEl.className = 'message-group' + (isBrandNewMessage ? ' animate-entry' : '');
+
+                    const avatarUrl = getAvatarUrl(msg.sender, msg.avatar);
+
+                    currentGroupEl.innerHTML = `
+                        <img class="group-avatar" src="${escapeHTML(avatarUrl)}" alt="${escapeHTML(msg.sender)}" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(msg.sender)}'">
+                        <div class="group-body">
+                            <div class="group-header">
+                                <span class="sender-name">${escapeHTML(msg.sender)}</span>
+                                <span class="header-time">${timeStr}</span>
+                            </div>
+                            <div class="message-text-list"></div>
+                        </div>
+                    `;
+
+                    currentTextContainer = currentGroupEl.querySelector('.message-text-list');
+                    addMessageToGroup(currentTextContainer, msg, isBrandNewMessage && !currentGroupEl.classList.contains('animate-entry'));
+                    messagesList.appendChild(currentGroupEl);
+                }
+
+                renderedMessageKeys.add(msg.key);
+                lastSender = msg.sender;
+                lastTimestamp = msg.timestamp || Date.now();
+            });
+
+            isFirstRender = false;
+            messagesList.scrollTop = messagesList.scrollHeight;
         });
 
         function addMessageToGroup(container, msg, animateItem = false) {
@@ -430,10 +410,8 @@
                 `;
             }
 
-            const formattedText = marked.parse(escapeHTML(msg.text));
-
             item.innerHTML = `
-                <div class="markdown-content">${formattedText}</div>
+                <span>${parseMarkdown(msg.text)}</span>
                 ${actionsHTML}
             `;
 
@@ -505,6 +483,26 @@
             return str.replace(/[&<>'"]/g, 
                 tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
             );
+        }
+
+        function parseMarkdown(str) {
+            if (!str) return '';
+            let html = escapeHTML(str);
+
+            // **bold** -> <strong>bold</strong>
+            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+            // *italic* veya _italic_ -> <em>italic</em>
+            html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            html = html.replace(/_(.*?)_/g, '<em>$1</em>');
+
+            // ~~strikethrough~~ -> <del>strikethrough</del>
+            html = html.replace(/~~(.*?)~~/g, '<del>$1</del>');
+
+            // `code` -> <code>code</code>
+            html = html.replace(/`(.*?)`/g, '<code>$1</code>');
+
+            return html;
         }
     </script>
 </body>
