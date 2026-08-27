@@ -69,11 +69,11 @@
         @keyframes msgSlideIn {
             0% {
                 opacity: 0;
-                transform: translateY(12px) scale(0.98);
+                transform: translateY(10px);
             }
             100% {
                 opacity: 1;
-                transform: translateY(0) scale(1);
+                transform: translateY(0);
             }
         }
 
@@ -83,8 +83,8 @@
             position: relative; 
             width: 100%; 
         }
-        .message-group.new-msg {
-            animation: msgSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        .message-group.animate-entry {
+            animation: msgSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
         .message-group:hover { background-color: var(--hover-bg); }
 
@@ -97,8 +97,8 @@
 
         .message-text-list { display: flex; flex-direction: column; gap: 4px; }
         .message-item { font-size: 14px; line-height: 1.5; color: var(--fg-text); word-break: break-word; white-space: pre-wrap; position: relative; display: flex; justify-content: space-between; align-items: center; }
-        .message-item.new-item {
-            animation: msgSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        .message-item.animate-entry {
+            animation: msgSlideIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
         .message-item:hover .message-actions { display: flex; }
 
@@ -151,7 +151,6 @@
             <div class="chat-info">
                 <span class="status-dot"></span>
                 <span># global-chat</span>
-                <!-- AKTİF KULLANICILAR BURAYA EKLENECEK -->
                 <div class="online-users-list" id="onlineUsersList"></div>
             </div>
             <div class="user-profile">
@@ -166,7 +165,6 @@
                 <div style="color:var(--fg-sub); text-align:center; padding-top: 20px;">Bağlanıyor...</div>
             </div>
 
-            <!-- YAZIYOR... METNİ -->
             <div class="typing-indicator" id="typingIndicator"></div>
 
             <form class="input-area" id="chatForm">
@@ -203,7 +201,10 @@
         let typingTimeout = null;
         let myUserRef = null;
         let myTypingRef = null;
-        let isInitialLoad = true;
+        
+        // Takip için render edilmiş mesaj anahtarlarını saklama kümesi
+        const renderedMessageKeys = new Set();
+        let isFirstRender = true;
 
         const userModal = document.getElementById('userModal');
         const editModal = document.getElementById('editModal');
@@ -228,18 +229,15 @@
             displayUsername.innerText = currentUser;
             myAvatar.src = getAvatarUrl(currentUser, currentAvatar);
 
-            // Çevrimiçi durum yönetimi (Presence System)
             const connectedRef = ref(database, '.info/connected');
             onValue(connectedRef, (snap) => {
                 if (snap.val() === true) {
                     myUserRef = push(onlineRef);
                     myTypingRef = ref(database, `typing/${currentUser}`);
 
-                    // Sekme kapanınca sil
                     onDisconnect(myUserRef).remove();
                     onDisconnect(myTypingRef).remove();
 
-                    // Online listesine ekle
                     set(myUserRef, {
                         username: currentUser,
                         avatar: getAvatarUrl(currentUser, currentAvatar)
@@ -275,13 +273,11 @@
             location.reload();
         });
 
-        // AKTİF KULLANICILARI DİNLEME
         onValue(onlineRef, (snapshot) => {
             const data = snapshot.val();
             onlineUsersList.innerHTML = "";
             if (!data) return;
 
-            // Mükerrer kullanıcı adlarını süzerek benzersiz gösterim
             const uniqueUsers = {};
             Object.values(data).forEach(u => {
                 uniqueUsers[u.username] = u.avatar;
@@ -291,7 +287,7 @@
                 const img = document.createElement('img');
                 img.className = 'online-user-img';
                 img.src = avatar;
-                img.title = username; // Mouse ile üzerine gelindiğinde görünen isim (Native Tooltip)
+                img.title = username;
                 img.alt = username;
                 img.onerror = function() {
                     this.src = `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(username)}`;
@@ -300,7 +296,6 @@
             });
         });
 
-        // YAZIYOR DURUMUNU YÖNETME (INPUT EVENT)
         messageInput.addEventListener('input', () => {
             if (!currentUser) return;
 
@@ -312,7 +307,6 @@
             }, 2000);
         });
 
-        // DİĞER KULLANICILARIN YAZMA DURUMUNU DİNLEME
         onValue(typingRef, (snapshot) => {
             const data = snapshot.val();
             if (!data) {
@@ -331,14 +325,15 @@
             }
         });
 
-        // MESAJ DİNLEME VE BİRLEŞTİRME
+        // MESAJ DİNLEME VE BENZERSİZ KONTROL (ANIMATION FIX)
         onValue(messagesRef, (snapshot) => {
             const data = snapshot.val();
             messagesList.innerHTML = "";
 
             if (!data) {
                 messagesList.innerHTML = '<div style="color:var(--fg-sub); text-align:center; padding-top: 20px;">Henüz mesaj yok. İlk mesajı sen at!</div>';
-                isInitialLoad = false;
+                isFirstRender = false;
+                renderedMessageKeys.clear();
                 return;
             }
 
@@ -349,9 +344,7 @@
             let currentGroupEl = null;
             let currentTextContainer = null;
 
-            const totalCount = rawMessages.length;
-
-            rawMessages.forEach((msg, index) => {
+            rawMessages.forEach((msg) => {
                 const isSameSender = lastSender === msg.sender;
                 const timeDiff = (msg.timestamp - lastTimestamp) / 1000;
                 const isWithin1Min = timeDiff < 60;
@@ -359,14 +352,14 @@
                 const dateObj = msg.timestamp ? new Date(msg.timestamp) : new Date();
                 const timeStr = dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
 
-                // Sadece yeni gelen mesajlara animasyon sınıfı ver
-                const shouldAnimateGroup = !isInitialLoad && index === totalCount - 1;
+                // Mesaj ilk defa mı DOM'a giriyor kontrolü
+                const isBrandNewMessage = !isFirstRender && !renderedMessageKeys.has(msg.key);
 
                 if (isSameSender && isWithin1Min && currentGroupEl) {
-                    addMessageToGroup(currentTextContainer, msg, shouldAnimateGroup);
+                    addMessageToGroup(currentTextContainer, msg, isBrandNewMessage);
                 } else {
                     currentGroupEl = document.createElement('div');
-                    currentGroupEl.className = 'message-group' + (shouldAnimateGroup ? ' new-msg' : '');
+                    currentGroupEl.className = 'message-group' + (isBrandNewMessage ? ' animate-entry' : '');
 
                     const avatarUrl = getAvatarUrl(msg.sender, msg.avatar);
 
@@ -382,21 +375,22 @@
                     `;
 
                     currentTextContainer = currentGroupEl.querySelector('.message-text-list');
-                    addMessageToGroup(currentTextContainer, msg, false);
+                    addMessageToGroup(currentTextContainer, msg, isBrandNewMessage && !currentGroupEl.classList.contains('animate-entry'));
                     messagesList.appendChild(currentGroupEl);
                 }
 
+                renderedMessageKeys.add(msg.key);
                 lastSender = msg.sender;
                 lastTimestamp = msg.timestamp || Date.now();
             });
 
-            isInitialLoad = false;
+            isFirstRender = false;
             messagesList.scrollTop = messagesList.scrollHeight;
         });
 
         function addMessageToGroup(container, msg, animateItem = false) {
             const item = document.createElement('div');
-            item.className = 'message-item' + (animateItem ? ' new-item' : '');
+            item.className = 'message-item' + (animateItem ? ' animate-entry' : '');
             
             const isMe = msg.sender.toLowerCase() === currentUser.toLowerCase();
 
@@ -422,7 +416,6 @@
             container.appendChild(item);
         }
 
-        // MESAJ SİLME VE DÜZENLEME OLAYLARI
         messagesList.addEventListener('click', (e) => {
             const deleteBtn = e.target.closest('.action-btn.delete');
             const editBtn = e.target.closest('.action-btn.edit');
@@ -442,7 +435,6 @@
             }
         });
 
-        // DÜZENLEME MODAL İŞLEMLERİ
         document.getElementById('cancelEditBtn').addEventListener('click', () => {
             editModal.style.display = 'none';
             activeEditKey = null;
@@ -459,7 +451,6 @@
             }
         });
 
-        // MESAJ GÖNDERME
         chatForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const text = messageInput.value.trim();
@@ -472,7 +463,6 @@
                 timestamp: serverTimestamp()
             });
 
-            // Yazıyor durumunu hemen temizle
             remove(ref(database, `typing/${currentUser}`));
             clearTimeout(typingTimeout);
 
