@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bazı mağara adamlarının sohbeti.</title>
+    <title>Instant Gruvbox Chat</title>
     <style>
         :root {
             --bg-dark: #282828;
@@ -172,7 +172,7 @@
         <div class="top-bar">
             <div class="chat-info">
                 <span class="status-dot"></span>
-                <span>Linux Penguenleri. (vak vak)</span>
+                <span># global-chat</span>
                 <div class="online-users-list" id="onlineUsersList"></div>
             </div>
             <div class="user-profile">
@@ -539,18 +539,17 @@
             if (!str) return '';
             let html = escapeHTML(str);
 
-            // Adım 1: Code bloklarını (```) korumaya al
+            // Adım 1: Code bloklarını (``` veya `) korumaya al
             const codeBlocks = [];
             html = html.replace(/`(.*?)`/g, (match, p1) => {
                 codeBlocks.push(`<code>${p1}</code>`);
-                return `__CODE_BLOCK_${codeBlocks.length - 1}__`;
+                return `___CODE_BLOCK_${codeBlocks.length - 1}___`;
             });
 
             // Adım 2: URL'leri tespit et ve Link/Medya önizlemesine çevir
             const urlBlocks = [];
             const urlRegex = /(https?:\/\/[^\s]+)/g;
             html = html.replace(urlRegex, (url) => {
-                // Görsel veya Video uzantısı kontrolü
                 const isImg = /\.(jpeg|jpg|gif|png|webp)(\?.*)?$/i.test(url);
                 const isVid = /\.(mp4|webm|ogg)(\?.*)?$/i.test(url);
                 
@@ -561,23 +560,26 @@
                     previewHTML = `<video src="${url}" class="media-preview" controls preload="metadata"></video>`;
                 }
                 
-                // Mavi tıklanabilir link + Varsa altında medya
                 const linkHTML = `<a href="${url}" target="_blank" rel="noopener noreferrer" class="chat-link">${url}</a>${previewHTML}`;
                 
                 urlBlocks.push(linkHTML);
-                return `__URL_BLOCK_${urlBlocks.length - 1}__`;
+                return `___URL_BLOCK_${urlBlocks.length - 1}___`;
             });
 
-            // Adım 3: Diğer Markdown kurallarını uygula (Artık URL'leri bozma riski yok)
+            // Adım 3: Diğer Markdown kurallarını uygula
             html = html.replace(/@([a-zA-Z0-9_ğüşıöçĞÜŞİÖÇ]+)/g, '<span class="mention-tag">@$1</span>');
             html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
             html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
             html = html.replace(/_(.*?)_/g, '<em>$1</em>');
             html = html.replace(/~~(.*?)~~/g, '<del>$1</del>');
 
-            // Adım 4: Korumaya alınan URL'leri ve Code bloklarını geri yerleştir
-            urlBlocks.forEach((block, i) => { html = html.replace(`__URL_BLOCK_${i}__`, block); });
-            codeBlocks.forEach((block, i) => { html = html.replace(`__CODE_BLOCK_${i}__`, block); });
+            // Adım 4: Korumaya alınan URL ve Code bloklarını geri yerleştir
+            urlBlocks.forEach((block, i) => { 
+                html = html.replace(new RegExp(`___URL_BLOCK_${i}___`, 'g'), block); 
+            });
+            codeBlocks.forEach((block, i) => { 
+                html = html.replace(new RegExp(`___CODE_BLOCK_${i}___`, 'g'), block); 
+            });
 
             return html;
         }
