@@ -46,20 +46,26 @@
 
         /* BİLGİ VE KULLANICI BAR (ÜST) */
         .top-bar { padding: 12px 20px; background: var(--bg-panel); border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
-        .chat-info { display: flex; align-items: center; gap: 8px; font-weight: bold; font-size: 15px; }
+        .chat-info { display: flex; align-items: center; gap: 12px; font-weight: bold; font-size: 15px; }
         .status-dot { height: 8px; width: 8px; background-color: var(--accent-green); border-radius: 50%; display: inline-block; }
+        
+        /* AKTİF KULLANICILAR LİSTESİ */
+        .online-users-list { display: flex; align-items: center; gap: -6px; margin-left: 10px; }
+        .online-user-img { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--bg-panel); object-fit: cover; margin-left: -8px; transition: transform 0.2s; cursor: pointer; }
+        .online-user-img:hover { transform: translateY(-2px) scale(1.1); z-index: 5; }
+
         .user-profile { display: flex; align-items: center; gap: 10px; }
         .user-profile img { width: 28px; height: 28px; border-radius: 4px; object-fit: cover; }
         .user-profile span { font-size: 13px; color: var(--accent-blue); font-weight: bold; }
         .btn-change-user { background: transparent; border: 1px solid var(--fg-sub); color: var(--fg-sub); padding: 2px 8px; font-size: 11px; border-radius: 4px; cursor: pointer; }
 
         /* SOHBET ALANI */
-        .chat-area { flex: 1; display: flex; flex-direction: column; background: var(--bg-chat); overflow: hidden; }
+        .chat-area { flex: 1; display: flex; flex-direction: column; background: var(--bg-chat); overflow: hidden; position: relative; }
 
         /* MESAJ LİSTESİ */
         .messages-container { flex: 1; padding: 20px 0; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
 
-        /* MESAJ GRUBU (GÖRSELDEKİ FORMAT) */
+        /* MESAJ GRUBU */
         .message-group { display: flex; padding: 4px 20px; position: relative; width: 100%; }
         .message-group:hover { background-color: var(--hover-bg); }
 
@@ -81,6 +87,9 @@
         .action-btn.edit:hover { color: var(--fg-text); }
         .action-btn.delete { color: var(--danger-red); }
         .action-btn.delete:hover { opacity: 0.8; }
+
+        /* YAZIYOR İNDİKATÖRÜ */
+        .typing-indicator { padding: 4px 20px; font-size: 12px; font-style: italic; color: var(--accent-yellow); height: 20px; display: flex; align-items: center; }
 
         /* MESAJ INPUT */
         .input-area { padding: 15px 20px; background: var(--bg-panel); border-top: 1px solid var(--border-color); display: flex; gap: 10px; }
@@ -120,6 +129,8 @@
             <div class="chat-info">
                 <span class="status-dot"></span>
                 <span># global-chat</span>
+                <!-- AKTİF KULLANICILAR BURAYA EKLENECEK -->
+                <div class="online-users-list" id="onlineUsersList"></div>
             </div>
             <div class="user-profile">
                 <img id="myAvatar" src="" alt="Profil">
@@ -133,6 +144,9 @@
                 <div style="color:var(--fg-sub); text-align:center; padding-top: 20px;">Bağlanıyor...</div>
             </div>
 
+            <!-- YAZIYOR... METNİ -->
+            <div class="typing-indicator" id="typingIndicator"></div>
+
             <form class="input-area" id="chatForm">
                 <textarea id="messageInput" placeholder="Bir mesaj yazın..." required></textarea>
                 <button type="submit">Gönder</button>
@@ -143,7 +157,7 @@
     <!-- FIREBASE MODULE SCRIPT -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, push, onValue, serverTimestamp, remove, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, push, onValue, serverTimestamp, remove, update, onDisconnect, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDRiCdkBRsKMeUpCmznQ3Sn8R6SvBk0C9U",
@@ -158,10 +172,15 @@
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
         const messagesRef = ref(database, 'messages');
+        const onlineRef = ref(database, 'online_users');
+        const typingRef = ref(database, 'typing');
 
         let currentUser = localStorage.getItem('gh_chat_username') || "";
         let currentAvatar = localStorage.getItem('gh_chat_avatar') || "";
         let activeEditKey = null;
+        let typingTimeout = null;
+        let myUserRef = null;
+        let myTypingRef = null;
 
         const userModal = document.getElementById('userModal');
         const editModal = document.getElementById('editModal');
@@ -171,16 +190,43 @@
         const messagesList = document.getElementById('messagesList');
         const chatForm = document.getElementById('chatForm');
         const messageInput = document.getElementById('messageInput');
+        const onlineUsersList = document.getElementById('onlineUsersList');
+        const typingIndicator = document.getElementById('typingIndicator');
 
         function getAvatarUrl(username, customUrl) {
             if (customUrl && customUrl.trim() !== "") return customUrl;
             return `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(username)}`;
         }
 
-        if (currentUser) {
+        function initUserSession() {
+            if (!currentUser) return;
+
             userModal.style.display = 'none';
             displayUsername.innerText = currentUser;
             myAvatar.src = getAvatarUrl(currentUser, currentAvatar);
+
+            // Çevrimiçi durum yönetimi (Presence System)
+            const connectedRef = ref(database, '.info/connected');
+            onValue(connectedRef, (snap) => {
+                if (snap.val() === true) {
+                    myUserRef = push(onlineRef);
+                    myTypingRef = ref(database, `typing/${currentUser}`);
+
+                    // Sekme kapanınca sil
+                    onDisconnect(myUserRef).remove();
+                    onDisconnect(myTypingRef).remove();
+
+                    // Online listesine ekle
+                    set(myUserRef, {
+                        username: currentUser,
+                        avatar: getAvatarUrl(currentUser, currentAvatar)
+                    });
+                }
+            });
+        }
+
+        if (currentUser) {
+            initUserSession();
         }
 
         document.getElementById('joinBtn').addEventListener('click', () => {
@@ -194,16 +240,72 @@
                 localStorage.setItem('gh_chat_username', currentUser);
                 localStorage.setItem('gh_chat_avatar', currentAvatar);
 
-                userModal.style.display = 'none';
-                displayUsername.innerText = currentUser;
-                myAvatar.src = getAvatarUrl(currentUser, currentAvatar);
+                initUserSession();
             }
         });
 
         document.getElementById('resetUserBtn').addEventListener('click', () => {
+            if (myUserRef) remove(myUserRef);
+            if (myTypingRef) remove(myTypingRef);
             localStorage.removeItem('gh_chat_username');
             localStorage.removeItem('gh_chat_avatar');
             location.reload();
+        });
+
+        // AKTİF KULLANICILARI DİNLEME
+        onValue(onlineRef, (snapshot) => {
+            const data = snapshot.val();
+            onlineUsersList.innerHTML = "";
+            if (!data) return;
+
+            // Mükerrer kullanıcı adlarını süzerek benzersiz gösterim
+            const uniqueUsers = {};
+            Object.values(data).forEach(u => {
+                uniqueUsers[u.username] = u.avatar;
+            });
+
+            Object.entries(uniqueUsers).forEach(([username, avatar]) => {
+                const img = document.createElement('img');
+                img.className = 'online-user-img';
+                img.src = avatar;
+                img.title = username; // Mouse ile üzerine gelindiğinde görünen isim (Native Tooltip)
+                img.alt = username;
+                img.onerror = function() {
+                    this.src = `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(username)}`;
+                };
+                onlineUsersList.appendChild(img);
+            });
+        });
+
+        // YAZIYOR DURUMUNU YÖNETME (INPUT EVENT)
+        messageInput.addEventListener('input', () => {
+            if (!currentUser) return;
+
+            set(ref(database, `typing/${currentUser}`), true);
+
+            clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(() => {
+                remove(ref(database, `typing/${currentUser}`));
+            }, 2000);
+        });
+
+        // DİĞER KULLANICILARIN YAZMA DURUMUNU DİNLEME
+        onValue(typingRef, (snapshot) => {
+            const data = snapshot.val();
+            if (!data) {
+                typingIndicator.innerText = "";
+                return;
+            }
+
+            const typers = Object.keys(data).filter(user => user.toLowerCase() !== currentUser.toLowerCase());
+
+            if (typers.length === 1) {
+                typingIndicator.innerText = `${typers[0]} yazıyor...`;
+            } else if (typers.length > 1) {
+                typingIndicator.innerText = `${typers.join(', ')} yazıyor...`;
+            } else {
+                typingIndicator.innerText = "";
+            }
         });
 
         // MESAJ DİNLEME VE BİRLEŞTİRME
@@ -225,17 +327,15 @@
 
             rawMessages.forEach(msg => {
                 const isSameSender = lastSender === msg.sender;
-                const timeDiff = (msg.timestamp - lastTimestamp) / 1000; // Saniye cinsinden
-                const isWithin1Min = timeDiff < 60; // 1 dakika (60 sn) sınırı
+                const timeDiff = (msg.timestamp - lastTimestamp) / 1000;
+                const isWithin1Min = timeDiff < 60;
 
                 const dateObj = msg.timestamp ? new Date(msg.timestamp) : new Date();
                 const timeStr = dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
 
-                // Aynı kişi yazdıysa VE 1 dakika geçmediyse mesajları birleştir
                 if (isSameSender && isWithin1Min && currentGroupEl) {
                     addMessageToGroup(currentTextContainer, msg);
                 } else {
-                    // Yeni Mesaj Grubu Oluştur
                     currentGroupEl = document.createElement('div');
                     currentGroupEl.className = 'message-group';
 
@@ -292,7 +392,7 @@
             container.appendChild(item);
         }
 
-        // MESAJ SİLME VE DÜZENLEME OLAYLARI (DELEGATION)
+        // MESAJ SİLME VE DÜZENLEME OLAYLARI
         messagesList.addEventListener('click', (e) => {
             const deleteBtn = e.target.closest('.action-btn.delete');
             const editBtn = e.target.closest('.action-btn.edit');
@@ -341,6 +441,10 @@
                 text: text,
                 timestamp: serverTimestamp()
             });
+
+            // Yazıyor durumunu hemen temizle
+            remove(ref(database, `typing/${currentUser}`));
+            clearTimeout(typingTimeout);
 
             messageInput.value = "";
         });
