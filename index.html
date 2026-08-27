@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GitHub Chat UI</title>
+    <title>Instant Gruvbox Chat</title>
     <style>
         :root {
             --bg-dark: #282828;
@@ -27,26 +27,28 @@
         #userModal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; z-index: 99; }
         .modal-card { background: var(--bg-panel); border: 2px solid var(--accent-yellow); padding: 30px; border-radius: 12px; width: 90%; max-width: 400px; text-align: center; }
         .modal-card h3 { color: var(--accent-yellow); margin-bottom: 15px; }
-        .modal-card input { width: 100%; padding: 12px; background: var(--bg-dark); border: 1px solid var(--border-color); color: var(--fg-text); border-radius: 6px; font-size: 16px; margin-bottom: 15px; }
+        .modal-card input { width: 100%; padding: 12px; background: var(--bg-dark); border: 1px solid var(--border-color); color: var(--fg-text); border-radius: 6px; font-size: 16px; margin-bottom: 15px; outline: none; }
+        .modal-card input:focus { border-color: var(--accent-yellow); }
         .modal-card button { width: 100%; padding: 12px; background: var(--accent-yellow); border: none; font-weight: bold; color: var(--bg-dark); border-radius: 6px; cursor: pointer; font-size: 16px; }
 
-        /* ANA EKRAN DÜZENİ (CINNY/MATRIX STYLE) */
+        /* ANA EKRAN DÜZENİ */
         .app-container { display: flex; width: 100%; height: 100%; }
 
-        /* SOL PANEL (SIDEBAR) */
+        /* SIDEBAR */
         .sidebar { width: 280px; background: var(--bg-sidebar); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; }
-        .sidebar-header { padding: 20px; border-bottom: 1px solid var(--border-color); font-weight: bold; color: var(--accent-yellow); font-size: 18px; display: flex; align-items: center; justify-content: space-between; }
+        .sidebar-header { padding: 20px; border-bottom: 1px solid var(--border-color); font-weight: bold; color: var(--accent-yellow); font-size: 18px; }
         .room-list { flex: 1; padding: 15px 10px; }
-        .room-item { background: var(--bg-panel); padding: 12px; border-radius: 8px; border-left: 4px solid var(--accent-green); cursor: pointer; color: var(--fg-text); }
+        .room-item { background: var(--bg-panel); padding: 12px; border-radius: 8px; border-left: 4px solid var(--accent-green); color: var(--fg-text); }
         .user-profile { padding: 15px; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: var(--bg-panel); }
         .user-profile span { font-size: 14px; color: var(--accent-blue); font-weight: bold; }
         .btn-change-user { background: transparent; border: 1px solid var(--fg-sub); color: var(--fg-sub); padding: 4px 8px; font-size: 12px; border-radius: 4px; cursor: pointer; }
 
-        /* SAĞ PANEL (SOHBET ALANI) */
+        /* SOHBET ALANI */
         .chat-area { flex: 1; display: flex; flex-direction: column; background: var(--bg-chat); }
         .chat-header { padding: 18px 25px; background: var(--bg-panel); border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
         .chat-header h2 { font-size: 16px; color: var(--fg-text); }
-        
+        .status-dot { height: 8px; width: 8px; background-color: var(--accent-green); border-radius: 50%; display: inline-block; margin-right: 6px; }
+
         /* MESAJ LİSTESİ */
         .messages-container { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
         .message-row { display: flex; flex-direction: column; max-width: 70%; }
@@ -59,204 +61,159 @@
         .message-row.other .bubble { background: var(--bubble-other); color: var(--fg-text); border-bottom-left-radius: 2px; }
         .timestamp { font-size: 10px; color: rgba(255,255,255,0.6); margin-top: 5px; text-align: right; }
 
-        /* MESAJ GÖNDERME ALANI */
+        /* MESAJ INPUT */
         .input-area { padding: 15px 25px; background: var(--bg-panel); border-top: 1px solid var(--border-color); display: flex; gap: 10px; }
         .input-area textarea { flex: 1; background: var(--bg-dark); border: 1px solid var(--border-color); color: var(--fg-text); border-radius: 8px; padding: 12px; resize: none; height: 48px; font-family: inherit; font-size: 14px; outline: none; }
         .input-area textarea:focus { border-color: var(--accent-yellow); }
-        .input-area button { background: var(--accent-yellow); border: none; padding: 0 24px; border-radius: 8px; font-weight: bold; color: var(--bg-dark); cursor: pointer; transition: opacity 0.2s; }
-        .input-area button:hover { opacity: 0.9; }
+        .input-area button { background: var(--accent-yellow); border: none; padding: 0 24px; border-radius: 8px; font-weight: bold; color: var(--bg-dark); cursor: pointer; }
 
         @media (max-width: 768px) { .sidebar { display: none; } }
     </style>
 </head>
 <body>
 
+    <!-- KULLANICI ADI MODALI -->
     <div id="userModal">
         <div class="modal-card">
-            <h3>GH Issues Chat</h3>
-            <p style="color: var(--fg-sub); font-size: 13px; margin-bottom: 15px;">Kullanıcı adınızı girerek sohbet alanına erişin.</p>
+            <h3>Instant Chat</h3>
+            <p style="color: var(--fg-sub); font-size: 13px; margin-bottom: 15px;">Kullanıcı adınızı girin ve anlık sohbete başlayın.</p>
             <input type="text" id="usernameInput" placeholder="Kullanıcı Adınız..." />
-            <button onclick="saveUsername()">Sohbete Katıl</button>
+            <button id="joinBtn">Sohbete Katıl</button>
         </div>
     </div>
 
+    <!-- ANA ARAYÜZ -->
     <div class="app-container">
-        
         <div class="sidebar">
-            <div class="sidebar-header">
-                <span>GH Messenger</span>
-            </div>
+            <div class="sidebar-header">Instant Messenger</div>
             <div class="room-list">
                 <div class="room-item">
-                    <strong># general-issues</strong>
-                    <p style="font-size: 12px; color: var(--fg-sub); margin-top: 4px;">Açık Mesaj Kanalı</p>
+                    <strong># global-chat</strong>
+                    <p style="font-size: 12px; color: var(--fg-sub); margin-top: 4px;">Anlık Mesajlaşma</p>
                 </div>
             </div>
             <div class="user-profile">
                 <span id="displayUsername">...</span>
-                <button class="btn-change-user" onclick="resetUsername()">Değiştir</button>
+                <button class="btn-change-user" id="resetUserBtn">Değiştir</button>
             </div>
         </div>
 
         <div class="chat-area">
             <div class="chat-header">
-                <h2># general-issues</h2>
-                <button class="btn-change-user" onclick="fetchIssues()">Yenile</button>
+                <h2><span class="status-dot"></span># global-chat</h2>
             </div>
 
             <div class="messages-container" id="messagesList">
-                </div>
+                <div style="color:var(--fg-sub); text-align:center;">Bağlanıyor...</div>
+            </div>
 
             <form class="input-area" id="chatForm">
                 <textarea id="messageInput" placeholder="Bir mesaj yazın..." required></textarea>
-                <button type="submit" id="sendBtn">Gönder</button>
+                <button type="submit">Gönder</button>
             </form>
         </div>
-
     </div>
 
-    <script>
-        // --- DEPO VE TOKEN BİLGİLERİ ---
-        const REPO_OWNER = "ByteChesterX";
-        const REPO_NAME = "MessGes";
+    <!-- FIREBASE MODULE SCRIPT -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, push, onValue, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        const part1 = "Z2l0aHViX3BhdF8xMUJNWlFDQ0kwV3FyU3h3aUJBVVpnXw==";
-        const part2 = "TlJXMEZjZm1ET25xcUpIcVJmRFNpcWtLdjdNZUU2Y01EemYwV1oxemg2NA==";
-        const part3 = "VlFZWlA2V1BOR1RRaVJNUw==";
-
-        function getToken() {
-            return atob(part1) + atob(part2) + atob(part3);
-        }
-
-        const API_URL = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/issues`;
-        let currentUser = localStorage.getItem('gh_chat_username') || "";
-
-        // SAYFA YÜKLENDİĞİNDE GİRİŞ KONTROLÜ
-        window.onload = () => {
-            if (currentUser) {
-                document.getElementById('userModal').style.display = 'none';
-                document.getElementById('displayUsername').innerText = currentUser;
-                fetchIssues();
-            }
+        // MessGes projesinin güncel konfigürasyon bilgileri
+        const firebaseConfig = {
+            apiKey: "AIzaSyDRiCdkBRsKMeUpCmznQ3Sn8R6SvBk0C9U",
+            authDomain: "messges-87869.firebaseapp.com",
+            databaseURL: "https://messges-87869-default-rtdb.firebaseio.com",
+            projectId: "messges-87869",
+            storageBucket: "messges-87869.firebasestorage.app",
+            messagingSenderId: "102076170891",
+            appId: "1:102076170891:web:8786547acdbcdfb1468a8e"
         };
 
-        function saveUsername() {
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const messagesRef = ref(database, 'messages');
+
+        let currentUser = localStorage.getItem('gh_chat_username') || "";
+
+        const userModal = document.getElementById('userModal');
+        const displayUsername = document.getElementById('displayUsername');
+        const messagesList = document.getElementById('messagesList');
+        const chatForm = document.getElementById('chatForm');
+        const messageInput = document.getElementById('messageInput');
+
+        // Kullanıcı Kontrolü
+        if (currentUser) {
+            userModal.style.display = 'none';
+            displayUsername.innerText = currentUser;
+        }
+
+        document.getElementById('joinBtn').addEventListener('click', () => {
             const input = document.getElementById('usernameInput').value.trim();
             if (input) {
                 currentUser = input;
                 localStorage.setItem('gh_chat_username', input);
-                document.getElementById('userModal').style.display = 'none';
-                document.getElementById('displayUsername').innerText = currentUser;
-                fetchIssues();
-            }
-        }
-
-        function resetUsername() {
-            localStorage.removeItem('gh_chat_username');
-            location.reload();
-        }
-
-        // MESAJLARI ÇEKME VE GRUVBOX/CINNY FORMATINDA GÖSTERME
-        async function fetchIssues() {
-            const container = document.getElementById('messagesList');
-            container.innerHTML = '<div style="color:var(--fg-sub); text-align:center;">Mesajlar yükleniyor...</div>';
-
-            try {
-                const response = await fetch(`${API_URL}?state=open&sort=created&direction=asc`, {
-                    headers: {
-                        "Authorization": `Bearer ${getToken()}`,
-                        "Accept": "application/vnd.github.v3+json"
-                    }
-                });
-
-                const issues = await response.json();
-                container.innerHTML = "";
-
-                if (!Array.isArray(issues) || issues.length === 0) {
-                    container.innerHTML = '<div style="color:var(--fg-sub); text-align:center;">Henüz mesaj yok. İlk mesajı sen at!</div>';
-                    return;
-                }
-
-                issues.forEach(issue => {
-                    if (issue.pull_request) return;
-
-                    // "Mesaj: [KullanıcıAdı]" formatını ayrıştır
-                    let sender = "Anonim";
-                    let content = issue.body;
-
-                    if (issue.title.startsWith("Mesaj: ")) {
-                        sender = issue.title.replace("Mesaj: ", "");
-                    }
-
-                    const isMe = sender.toLowerCase() === currentUser.toLowerCase();
-                    const row = document.createElement('div');
-                    row.className = `message-row ${isMe ? 'me' : 'other'}`;
-
-                    const dateStr = new Date(issue.created_at).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
-
-                    row.innerHTML = `
-                        <div class="sender-name">${escapeHTML(sender)}</div>
-                        <div class="bubble">
-                            ${escapeHTML(content)}
-                            <div class="timestamp">#${issue.number} • ${dateStr}</div>
-                        </div>
-                    `;
-                    container.appendChild(row);
-                });
-
-                // Otomatik olarak en alt mesaja kaydır
-                container.scrollTop = container.scrollHeight;
-
-            } catch (err) {
-                container.innerHTML = '<div style="color:#fb4934; text-align:center;">Mesajlar alınırken bir hata oluştu.</div>';
-            }
-        }
-
-        // YENİ MESAJ GÖNDERME (ISSUE OLUŞTURMA)
-        document.getElementById('chatForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const input = document.getElementById('messageInput');
-            const btn = document.getElementById('sendBtn');
-            const text = input.value.trim();
-
-            if (!text) return;
-
-            btn.disabled = true;
-            btn.innerText = "...";
-
-            try {
-                const response = await fetch(API_URL, {
-                    method: "POST",
-                    headers: {
-                        "Authorization": `Bearer ${getToken()}`,
-                        "Accept": "application/vnd.github.v3+json",
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        title: `Mesaj: ${currentUser}`,
-                        body: text
-                    })
-                });
-
-                if (response.ok) {
-                    input.value = "";
-                    await fetchIssues();
-                } else {
-                    alert("Mesaj gönderilemedi.");
-                }
-            } catch (err) {
-                alert("Bağlantı hatası!");
-            } finally {
-                btn.disabled = false;
-                btn.innerText = "Gönder";
+                userModal.style.display = 'none';
+                displayUsername.innerText = currentUser;
             }
         });
 
-        // Enter tuşu ile gönderme (Shift+Enter alt satıra geçer)
-        document.getElementById('messageInput').addEventListener('keydown', (e) => {
+        document.getElementById('resetUserBtn').addEventListener('click', () => {
+            localStorage.removeItem('gh_chat_username');
+            location.reload();
+        });
+
+        // 1. ANLIK MESAJ DİNLEME (Realtime WebSocket)
+        onValue(messagesRef, (snapshot) => {
+            const data = snapshot.val();
+            messagesList.innerHTML = "";
+
+            if (!data) {
+                messagesList.innerHTML = '<div style="color:var(--fg-sub); text-align:center;">Henüz mesaj yok. İlk mesajı sen at!</div>';
+                return;
+            }
+
+            Object.values(data).forEach(msg => {
+                const isMe = msg.sender.toLowerCase() === currentUser.toLowerCase();
+                const row = document.createElement('div');
+                row.className = `message-row ${isMe ? 'me' : 'other'}`;
+
+                const dateStr = msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) : '';
+
+                row.innerHTML = `
+                    <div class="sender-name">${escapeHTML(msg.sender)}</div>
+                    <div class="bubble">
+                        ${escapeHTML(msg.text)}
+                        <div class="timestamp">${dateStr}</div>
+                    </div>
+                `;
+                messagesList.appendChild(row);
+            });
+
+            // Otomatik en aşağı kaydır
+            messagesList.scrollTop = messagesList.scrollHeight;
+        });
+
+        // 2. MESAJ GÖNDERME
+        chatForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const text = messageInput.value.trim();
+            if (!text || !currentUser) return;
+
+            push(messagesRef, {
+                sender: currentUser,
+                text: text,
+                timestamp: serverTimestamp()
+            });
+
+            messageInput.value = "";
+        });
+
+        // Enter ile Gönderme (Shift+Enter alt satıra geçer)
+        messageInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
-                document.getElementById('chatForm').dispatchEvent(new Event('submit'));
+                chatForm.dispatchEvent(new Event('submit'));
             }
         });
 
