@@ -3,94 +3,226 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GitHub Issues Mesaj Tahtası</title>
+    <title>GitHub Chat UI</title>
     <style>
-        body { font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; padding: 0 10px; }
-        form { display: flex; flex-direction: column; gap: 10px; margin-bottom: 30px; }
-        input, textarea, button { padding: 10px; font-size: 14px; }
-        textarea { height: 80px; }
-        .issue-card { border: 1px solid #ccc; border-radius: 6px; padding: 12px; margin-bottom: 10px; background: #f9f9f9; }
-        .issue-title { font-weight: bold; margin-bottom: 5px; color: #0366d6; }
-        .issue-meta { font-size: 12px; color: #666; margin-top: 8px; }
+        :root {
+            --bg-dark: #282828;
+            --bg-panel: #1d2021;
+            --bg-sidebar: #3c3836;
+            --bg-chat: #32302f;
+            --fg-text: #ebdbb2;
+            --fg-sub: #a89984;
+            --accent-green: #b8bb26;
+            --accent-yellow: #fabd2f;
+            --accent-blue: #83a598;
+            --bubble-me: #458588;
+            --bubble-other: #504945;
+            --border-color: #504945;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-dark); color: var(--fg-text); height: 100vh; display: flex; overflow: hidden; }
+
+        /* MODAL (KULLANICI ADI GİRİŞİ) */
+        #userModal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; z-index: 99; }
+        .modal-card { background: var(--bg-panel); border: 2px solid var(--accent-yellow); padding: 30px; border-radius: 12px; width: 90%; max-width: 400px; text-align: center; }
+        .modal-card h3 { color: var(--accent-yellow); margin-bottom: 15px; }
+        .modal-card input { width: 100%; padding: 12px; background: var(--bg-dark); border: 1px solid var(--border-color); color: var(--fg-text); border-radius: 6px; font-size: 16px; margin-bottom: 15px; }
+        .modal-card button { width: 100%; padding: 12px; background: var(--accent-yellow); border: none; font-weight: bold; color: var(--bg-dark); border-radius: 6px; cursor: pointer; font-size: 16px; }
+
+        /* ANA EKRAN DÜZENİ (CINNY/MATRIX STYLE) */
+        .app-container { display: flex; width: 100%; height: 100%; }
+
+        /* SOL PANEL (SIDEBAR) */
+        .sidebar { width: 280px; background: var(--bg-sidebar); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; }
+        .sidebar-header { padding: 20px; border-bottom: 1px solid var(--border-color); font-weight: bold; color: var(--accent-yellow); font-size: 18px; display: flex; align-items: center; justify-content: space-between; }
+        .room-list { flex: 1; padding: 15px 10px; }
+        .room-item { background: var(--bg-panel); padding: 12px; border-radius: 8px; border-left: 4px solid var(--accent-green); cursor: pointer; color: var(--fg-text); }
+        .user-profile { padding: 15px; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: var(--bg-panel); }
+        .user-profile span { font-size: 14px; color: var(--accent-blue); font-weight: bold; }
+        .btn-change-user { background: transparent; border: 1px solid var(--fg-sub); color: var(--fg-sub); padding: 4px 8px; font-size: 12px; border-radius: 4px; cursor: pointer; }
+
+        /* SAĞ PANEL (SOHBET ALANI) */
+        .chat-area { flex: 1; display: flex; flex-direction: column; background: var(--bg-chat); }
+        .chat-header { padding: 18px 25px; background: var(--bg-panel); border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+        .chat-header h2 { font-size: 16px; color: var(--fg-text); }
+        
+        /* MESAJ LİSTESİ */
+        .messages-container { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
+        .message-row { display: flex; flex-direction: column; max-width: 70%; }
+        .message-row.me { align-self: flex-end; align-items: flex-end; }
+        .message-row.other { align-self: flex-start; align-items: flex-start; }
+
+        .sender-name { font-size: 11px; color: var(--fg-sub); margin-bottom: 4px; }
+        .bubble { padding: 12px 16px; border-radius: 12px; font-size: 14px; line-height: 1.4; word-break: break-word; }
+        .message-row.me .bubble { background: var(--bubble-me); color: #fff; border-bottom-right-radius: 2px; }
+        .message-row.other .bubble { background: var(--bubble-other); color: var(--fg-text); border-bottom-left-radius: 2px; }
+        .timestamp { font-size: 10px; color: rgba(255,255,255,0.6); margin-top: 5px; text-align: right; }
+
+        /* MESAJ GÖNDERME ALANI */
+        .input-area { padding: 15px 25px; background: var(--bg-panel); border-top: 1px solid var(--border-color); display: flex; gap: 10px; }
+        .input-area textarea { flex: 1; background: var(--bg-dark); border: 1px solid var(--border-color); color: var(--fg-text); border-radius: 8px; padding: 12px; resize: none; height: 48px; font-family: inherit; font-size: 14px; outline: none; }
+        .input-area textarea:focus { border-color: var(--accent-yellow); }
+        .input-area button { background: var(--accent-yellow); border: none; padding: 0 24px; border-radius: 8px; font-weight: bold; color: var(--bg-dark); cursor: pointer; transition: opacity 0.2s; }
+        .input-area button:hover { opacity: 0.9; }
+
+        @media (max-width: 768px) { .sidebar { display: none; } }
     </style>
 </head>
 <body>
 
-    <h2>Mesaj Gönder</h2>
-    <form id="messageForm">
-        <input type="text" id="username" placeholder="Adınız / Kullanıcı Adınız" required>
-        <textarea id="message" placeholder="Mesajınız..." required></textarea>
-        <button type="submit" id="submitBtn">Gönder</button>
-    </form>
+    <div id="userModal">
+        <div class="modal-card">
+            <h3>GH Issues Chat</h3>
+            <p style="color: var(--fg-sub); font-size: 13px; margin-bottom: 15px;">Kullanıcı adınızı girerek sohbet alanına erişin.</p>
+            <input type="text" id="usernameInput" placeholder="Kullanıcı Adınız..." />
+            <button onclick="saveUsername()">Sohbete Katıl</button>
+        </div>
+    </div>
 
-    <hr>
+    <div class="app-container">
+        
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <span>GH Messenger</span>
+            </div>
+            <div class="room-list">
+                <div class="room-item">
+                    <strong># general-issues</strong>
+                    <p style="font-size: 12px; color: var(--fg-sub); margin-top: 4px;">Açık Mesaj Kanalı</p>
+                </div>
+            </div>
+            <div class="user-profile">
+                <span id="displayUsername">...</span>
+                <button class="btn-change-user" onclick="resetUsername()">Değiştir</button>
+            </div>
+        </div>
 
-    <h2>Gelen Mesajlar</h2>
-    <div id="issuesList">Yükleniyor...</div>
+        <div class="chat-area">
+            <div class="chat-header">
+                <h2># general-issues</h2>
+                <button class="btn-change-user" onclick="fetchIssues()">Yenile</button>
+            </div>
+
+            <div class="messages-container" id="messagesList">
+                </div>
+
+            <form class="input-area" id="chatForm">
+                <textarea id="messageInput" placeholder="Bir mesaj yazın..." required></textarea>
+                <button type="submit" id="sendBtn">Gönder</button>
+            </form>
+        </div>
+
+    </div>
 
     <script>
-        // --- BU İKİ BİLGİYİ KENDİ DEPO BİLGİLERİNLE DEĞİŞTİR ---
+        // --- DEPO VE TOKEN BİLGİLERİ ---
         const REPO_OWNER = "ByteChesterX";
         const REPO_NAME = "MessGes";
-        // --------------------------------------------------------
 
-        // Token Base64 formatında 3 parçaya bölünmüş halde:
         const part1 = "Z2l0aHViX3BhdF8xMUJNWlFDQ0kwV3FyU3h3aUJBVVpnXw==";
         const part2 = "TlJXMEZjZm1ET25xcUpIcVJmRFNpcWtLdjdNZUU2Y01EemYwV1oxemg2NA==";
         const part3 = "VlFZWlA2V1BOR1RRaVJNUw==";
 
-        // Çalışma anında birleştirilen token
         function getToken() {
             return atob(part1) + atob(part2) + atob(part3);
         }
 
         const API_URL = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/issues`;
+        let currentUser = localStorage.getItem('gh_chat_username') || "";
 
-        // 1. ISSUES (MESAJLARI) LİSTELEME
+        // SAYFA YÜKLENDİĞİNDE GİRİŞ KONTROLÜ
+        window.onload = () => {
+            if (currentUser) {
+                document.getElementById('userModal').style.display = 'none';
+                document.getElementById('displayUsername').innerText = currentUser;
+                fetchIssues();
+            }
+        };
+
+        function saveUsername() {
+            const input = document.getElementById('usernameInput').value.trim();
+            if (input) {
+                currentUser = input;
+                localStorage.setItem('gh_chat_username', input);
+                document.getElementById('userModal').style.display = 'none';
+                document.getElementById('displayUsername').innerText = currentUser;
+                fetchIssues();
+            }
+        }
+
+        function resetUsername() {
+            localStorage.removeItem('gh_chat_username');
+            location.reload();
+        }
+
+        // MESAJLARI ÇEKME VE GRUVBOX/CINNY FORMATINDA GÖSTERME
         async function fetchIssues() {
-            const listDiv = document.getElementById('issuesList');
+            const container = document.getElementById('messagesList');
+            container.innerHTML = '<div style="color:var(--fg-sub); text-align:center;">Mesajlar yükleniyor...</div>';
+
             try {
-                const response = await fetch(API_URL, {
+                const response = await fetch(`${API_URL}?state=open&sort=created&direction=asc`, {
                     headers: {
                         "Authorization": `Bearer ${getToken()}`,
                         "Accept": "application/vnd.github.v3+json"
                     }
                 });
-                
+
                 const issues = await response.json();
-                listDiv.innerHTML = "";
+                container.innerHTML = "";
 
                 if (!Array.isArray(issues) || issues.length === 0) {
-                    listDiv.innerHTML = "<p>Henüz hiç mesaj yok.</p>";
+                    container.innerHTML = '<div style="color:var(--fg-sub); text-align:center;">Henüz mesaj yok. İlk mesajı sen at!</div>';
                     return;
                 }
 
                 issues.forEach(issue => {
                     if (issue.pull_request) return;
 
-                    const card = document.createElement('div');
-                    card.className = 'issue-card';
-                    card.innerHTML = `
-                        <div class="issue-title">${escapeHTML(issue.title)}</div>
-                        <div>${escapeHTML(issue.body)}</div>
-                        <div class="issue-meta">Tarih: ${new Date(issue.created_at).toLocaleString('tr-TR')}</div>
+                    // "Mesaj: [KullanıcıAdı]" formatını ayrıştır
+                    let sender = "Anonim";
+                    let content = issue.body;
+
+                    if (issue.title.startsWith("Mesaj: ")) {
+                        sender = issue.title.replace("Mesaj: ", "");
+                    }
+
+                    const isMe = sender.toLowerCase() === currentUser.toLowerCase();
+                    const row = document.createElement('div');
+                    row.className = `message-row ${isMe ? 'me' : 'other'}`;
+
+                    const dateStr = new Date(issue.created_at).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+
+                    row.innerHTML = `
+                        <div class="sender-name">${escapeHTML(sender)}</div>
+                        <div class="bubble">
+                            ${escapeHTML(content)}
+                            <div class="timestamp">#${issue.number} • ${dateStr}</div>
+                        </div>
                     `;
-                    listDiv.appendChild(card);
+                    container.appendChild(row);
                 });
+
+                // Otomatik olarak en alt mesaja kaydır
+                container.scrollTop = container.scrollHeight;
+
             } catch (err) {
-                listDiv.innerHTML = "<p>Mesajlar yüklenirken hata oluştu.</p>";
+                container.innerHTML = '<div style="color:#fb4934; text-align:center;">Mesajlar alınırken bir hata oluştu.</div>';
             }
         }
 
-        // 2. YENİ ISSUE (MESAJ) GÖNDERME
-        document.getElementById('messageForm').addEventListener('submit', async (e) => {
+        // YENİ MESAJ GÖNDERME (ISSUE OLUŞTURMA)
+        document.getElementById('chatForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const btn = document.getElementById('submitBtn');
-            btn.disabled = true;
-            btn.innerText = "Gönderiliyor...";
+            const input = document.getElementById('messageInput');
+            const btn = document.getElementById('sendBtn');
+            const text = input.value.trim();
 
-            const name = document.getElementById('username').value;
-            const text = document.getElementById('message').value;
+            if (!text) return;
+
+            btn.disabled = true;
+            btn.innerText = "...";
 
             try {
                 const response = await fetch(API_URL, {
@@ -101,22 +233,30 @@
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
-                        title: `Mesaj: ${name}`,
+                        title: `Mesaj: ${currentUser}`,
                         body: text
                     })
                 });
 
                 if (response.ok) {
-                    document.getElementById('messageForm').reset();
-                    fetchIssues();
+                    input.value = "";
+                    await fetchIssues();
                 } else {
-                    alert("Mesaj gönderilemedi. Depo adını ve yetkilerini kontrol edin.");
+                    alert("Mesaj gönderilemedi.");
                 }
             } catch (err) {
-                alert("Bağlantı hatası oluştu!");
+                alert("Bağlantı hatası!");
             } finally {
                 btn.disabled = false;
                 btn.innerText = "Gönder";
+            }
+        });
+
+        // Enter tuşu ile gönderme (Shift+Enter alt satıra geçer)
+        document.getElementById('messageInput').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                document.getElementById('chatForm').dispatchEvent(new Event('submit'));
             }
         });
 
@@ -125,8 +265,6 @@
                 tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
             );
         }
-
-        fetchIssues();
     </script>
 </body>
 </html>
