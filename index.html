@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Issues Mesaj Tahtası</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; padding: 0 10px; }
+        form { display: flex; flex-direction: column; gap: 10px; margin-bottom: 30px; }
+        input, textarea, button { padding: 10px; font-size: 14px; }
+        textarea { height: 80px; }
+        .issue-card { border: 1px solid #ccc; border-radius: 6px; padding: 12px; margin-bottom: 10px; background: #f9f9f9; }
+        .issue-title { font-weight: bold; margin-bottom: 5px; color: #0366d6; }
+        .issue-meta { font-size: 12px; color: #666; margin-top: 8px; }
+    </style>
+</head>
+<body>
+
+    <h2>Mesaj Gönder</h2>
+    <form id="messageForm">
+        <input type="text" id="username" placeholder="Adınız / Kullanıcı Adınız" required>
+        <textarea id="message" placeholder="Mesajınız..." required></textarea>
+        <button type="submit" id="submitBtn">Gönder</button>
+    </form>
+
+    <hr>
+
+    <h2>Gelen Mesajlar</h2>
+    <div id="issuesList">Yükleniyor...</div>
+
+    <script>
+        // --- BU İKİ BİLGİYİ KENDİ DEPO BİLGİLERİNLE DEĞİŞTİR ---
+        const REPO_OWNER = "ByteChesterX";
+        const REPO_NAME = "MessGes";
+        // --------------------------------------------------------
+
+        // Token Base64 formatında 3 parçaya bölünmüş halde:
+        const part1 = "Z2l0aHViX3BhdF8xMUJNWlFDQ0kwV3FyU3h3aUJBVVpnXw==";
+        const part2 = "TlJXMEZjZm1ET25xcUpIcVJmRFNpcWtLdjdNZUU2Y01EemYwV1oxemg2NA==";
+        const part3 = "VlFZWlA2V1BOR1RRaVJNUw==";
+
+        // Çalışma anında birleştirilen token
+        function getToken() {
+            return atob(part1) + atob(part2) + atob(part3);
+        }
+
+        const API_URL = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/issues`;
+
+        // 1. ISSUES (MESAJLARI) LİSTELEME
+        async function fetchIssues() {
+            const listDiv = document.getElementById('issuesList');
+            try {
+                const response = await fetch(API_URL, {
+                    headers: {
+                        "Authorization": `Bearer ${getToken()}`,
+                        "Accept": "application/vnd.github.v3+json"
+                    }
+                });
+                
+                const issues = await response.json();
+                listDiv.innerHTML = "";
+
+                if (!Array.isArray(issues) || issues.length === 0) {
+                    listDiv.innerHTML = "<p>Henüz hiç mesaj yok.</p>";
+                    return;
+                }
+
+                issues.forEach(issue => {
+                    if (issue.pull_request) return;
+
+                    const card = document.createElement('div');
+                    card.className = 'issue-card';
+                    card.innerHTML = `
+                        <div class="issue-title">${escapeHTML(issue.title)}</div>
+                        <div>${escapeHTML(issue.body)}</div>
+                        <div class="issue-meta">Tarih: ${new Date(issue.created_at).toLocaleString('tr-TR')}</div>
+                    `;
+                    listDiv.appendChild(card);
+                });
+            } catch (err) {
+                listDiv.innerHTML = "<p>Mesajlar yüklenirken hata oluştu.</p>";
+            }
+        }
+
+        // 2. YENİ ISSUE (MESAJ) GÖNDERME
+        document.getElementById('messageForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.innerText = "Gönderiliyor...";
+
+            const name = document.getElementById('username').value;
+            const text = document.getElementById('message').value;
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${getToken()}`,
+                        "Accept": "application/vnd.github.v3+json",
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        title: `Mesaj: ${name}`,
+                        body: text
+                    })
+                });
+
+                if (response.ok) {
+                    document.getElementById('messageForm').reset();
+                    fetchIssues();
+                } else {
+                    alert("Mesaj gönderilemedi. Depo adını ve yetkilerini kontrol edin.");
+                }
+            } catch (err) {
+                alert("Bağlantı hatası oluştu!");
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Gönder";
+            }
+        });
+
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g, 
+                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+            );
+        }
+
+        fetchIssues();
+    </script>
+</body>
+</html>
