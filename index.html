@@ -364,7 +364,7 @@
 
             .messages-container {
                 padding: 12px 0;
-                gap: 10px;
+                gap: 6px;
             }
             .message-group {
                 padding: 4px 10px;
@@ -426,7 +426,7 @@
 
             .input-area {
                 padding: 10px 10px;
-                gap: 6px;
+                gap: 4px;
             }
             .input-area textarea {
                 font-size: 16px; /* iOS'ta otomatik yakınlaştırmayı önler */
@@ -471,9 +471,6 @@
             }
         }
 
-        /* Hover'ı desteklemeyen dokunmatik cihazlarda genişlik sınırından
-           bağımsız olarak mesaj aksiyonlarını her zaman göster */
-        @media (hover: none) and (pointer: coarse) {
             .message-actions {
                 display: flex;
                 position: static;
@@ -495,7 +492,7 @@
 
     <div id="userModal">
         <div class="modal-card">
-            <h3>Instant Chat</h3>
+            <h3>Çılgın Mağara Sohbeti</h3>
             <p style="color: var(--fg-sub); font-size: 13px; margin-bottom: 15px;">Bilgilerinizi girin ve anlık sohbete başlayın.</p>
             <div class="modal-error" id="modalError">Bu kullanıcı adı zaten alınmış!</div>
             <input type="text" id="usernameInput" placeholder="Kullanıcı Adınız..." required />
