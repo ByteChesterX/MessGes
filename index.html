@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>abi ayak sevmeyen kaldı mı ya</title>
-    <!-- Emoji Picker Element CDN -->
     <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@1/index.js"></script>
     <style>
         :root {
@@ -27,22 +26,36 @@
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-dark); color: var(--fg-text); height: 100vh; display: flex; overflow: hidden; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-dark); color: var(--fg-text); height: 100vh; display: flex; overflow: hidden;
+        }
 
         /* MODAL */
-        #userModal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; z-index: 99; }
-        .modal-card { background: var(--bg-panel); border: 1px solid var(--border-color); padding: 30px; border-radius: 8px; width: 90%; max-width: 400px; text-align: center; }
+        #userModal { position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; z-index: 99;
+        }
+        .modal-card { background: var(--bg-panel); border: 1px solid var(--border-color); padding: 30px; border-radius: 8px;
+            width: 90%; max-width: 400px; text-align: center; }
         .modal-card h3 { color: var(--accent-yellow); margin-bottom: 15px; }
-        .modal-card input { width: 100%; padding: 12px; background: var(--bg-dark); border: 1px solid var(--border-color); color: var(--fg-text); border-radius: 6px; font-size: 14px; margin-bottom: 12px; outline: none; }
+        .modal-card input { width: 100%; padding: 12px; background: var(--bg-dark);
+            border: 1px solid var(--border-color); color: var(--fg-text); border-radius: 6px; font-size: 14px; margin-bottom: 12px; outline: none;
+        }
         .modal-card input:focus { border-color: var(--accent-yellow); }
-        .modal-card button { width: 100%; padding: 12px; background: var(--accent-yellow); border: none; font-weight: bold; color: var(--bg-dark); border-radius: 6px; cursor: pointer; font-size: 16px; margin-top: 5px; }
+        .modal-card button { width: 100%; padding: 12px; background: var(--accent-yellow); border: none;
+            font-weight: bold; color: var(--bg-dark); border-radius: 6px; cursor: pointer; font-size: 16px; margin-top: 5px;
+        }
         .modal-error { color: var(--danger-red); font-size: 13px; margin-bottom: 10px; display: none; }
 
         /* DÜZENLEME MODALI */
-        #editModal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 100; }
-        .edit-card { background: var(--bg-panel); border: 1px solid var(--border-color); padding: 20px; border-radius: 8px; width: 90%; max-width: 500px; }
+        #editModal { position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 100;
+        }
+        .edit-card { background: var(--bg-panel); border: 1px solid var(--border-color); padding: 20px; border-radius: 8px;
+            width: 90%; max-width: 500px; }
         .edit-card h4 { color: var(--accent-yellow); margin-bottom: 10px; }
-        .edit-card textarea { width: 100%; height: 80px; background: var(--bg-dark); border: 1px solid var(--border-color); color: var(--fg-text); border-radius: 6px; padding: 10px; resize: none; outline: none; font-family: inherit; margin-bottom: 10px; }
+        .edit-card textarea { width: 100%; height: 80px; background: var(--bg-dark);
+            border: 1px solid var(--border-color); color: var(--fg-text); border-radius: 6px; padding: 10px; resize: none; outline: none; font-family: inherit; margin-bottom: 10px;
+        }
         .edit-actions { display: flex; justify-content: flex-end; gap: 10px; }
         .edit-actions button { padding: 8px 16px; border-radius: 4px; border: none; cursor: pointer; font-weight: bold; }
         .btn-cancel { background: var(--border-color); color: var(--fg-text); }
@@ -50,21 +63,28 @@
 
         /* DÜZEN */
         .app-container { display: flex; width: 100%; height: 100%; flex-direction: column; }
-        .top-bar { padding: 12px 20px; background: var(--bg-panel); border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+        .top-bar { padding: 12px 20px;
+            background: var(--bg-panel); border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;
+        }
         .chat-info { display: flex; align-items: center; gap: 12px; font-weight: bold; font-size: 15px; }
         .status-dot { height: 8px; width: 8px; background-color: var(--accent-green); border-radius: 50%; display: inline-block; }
-        
+
         .online-users-list { display: flex; align-items: center; margin-left: 10px; }
-        .online-user-img { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--bg-panel); object-fit: cover; margin-left: -8px; transition: transform 0.2s; cursor: pointer; }
+        .online-user-img { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--bg-panel);
+            object-fit: cover; margin-left: -8px; transition: transform 0.2s; cursor: pointer; }
         .online-user-img:hover { transform: translateY(-2px) scale(1.1); z-index: 5; }
 
         .user-profile { display: flex; align-items: center; gap: 10px; }
         .user-profile img { width: 28px; height: 28px; border-radius: 4px; object-fit: cover; }
         .user-profile span { font-size: 13px; color: var(--accent-blue); font-weight: bold; }
-        .btn-change-user { background: transparent; border: 1px solid var(--fg-sub); color: var(--fg-sub); padding: 2px 8px; font-size: 11px; border-radius: 4px; cursor: pointer; }
+        .btn-change-user { background: transparent; border: 1px solid var(--fg-sub); color: var(--fg-sub);
+            padding: 2px 8px; font-size: 11px; border-radius: 4px; cursor: pointer; }
 
-        .chat-area { flex: 1; display: flex; flex-direction: column; background: var(--bg-chat); overflow: hidden; position: relative; }
-        .messages-container { flex: 1; padding: 20px 0; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
+        .chat-area { flex: 1;
+            display: flex; flex-direction: column; background: var(--bg-chat); overflow: hidden; position: relative;
+        }
+        .messages-container { flex: 1; padding: 20px 0; overflow-y: auto; display: flex;
+            flex-direction: column; gap: 16px; }
 
         @keyframes msgSlideIn {
             0% { opacity: 0; transform: translateY(6px); }
@@ -82,8 +102,11 @@
         .header-time { font-size: 11px; color: var(--fg-sub); }
 
         .message-text-list { display: flex; flex-direction: column; gap: 6px; }
-        .message-item { font-size: 14px; line-height: 1.5; color: var(--fg-text); word-break: break-word; white-space: pre-wrap; position: relative; display: flex; flex-direction: column; align-items: flex-start; padding: 4px 6px; border-radius: 4px; width: 100%; }
-        .message-item code { background: var(--bg-panel); padding: 2px 5px; border-radius: 4px; font-family: monospace; font-size: 13px; color: var(--accent-yellow); border: 1px solid var(--border-color); }
+        .message-item { font-size: 14px; line-height: 1.5; color: var(--fg-text); word-break: break-word; white-space: pre-wrap;
+            position: relative; display: flex; flex-direction: column; align-items: flex-start; padding: 4px 6px; border-radius: 4px; width: 100%;
+        }
+        .message-item code { background: var(--bg-panel); padding: 2px 5px; border-radius: 4px; font-family: monospace;
+            font-size: 13px; color: var(--accent-yellow); border: 1px solid var(--border-color); }
         .message-item del { text-decoration: line-through; color: var(--fg-sub); }
         .message-item.animate-entry { animation: msgSlideIn 0.15s ease-out forwards; }
         .message-item:hover .message-actions { display: flex; }
@@ -93,20 +116,24 @@
 
         /* REAKSİYONLAR (EMOJI REACTIONS) STİLİ */
         .reactions-container { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
-        .reaction-badge { background: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 12px; padding: 2px 7px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px; user-select: none; transition: background 0.15s; }
+        .reaction-badge { background: var(--bg-panel);
+            border: 1px solid var(--border-color); border-radius: 12px; padding: 2px 7px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px;
+            user-select: none; transition: background 0.15s; }
         .reaction-badge:hover { background: var(--hover-bg); }
         .reaction-badge.user-reacted { border-color: var(--accent-yellow); background: rgba(250, 189, 47, 0.1); }
         .reaction-count { font-weight: bold; color: var(--fg-sub); font-size: 11px; }
 
         /* KOD KOPYALAMA */
         .code-container { position: relative; display: inline-block; max-width: 100%; }
-        .code-copy-btn { position: absolute; right: 4px; top: 2px; background: var(--border-color); color: var(--fg-text); border: none; font-size: 10px; padding: 2px 6px; border-radius: 3px; cursor: pointer; opacity: 0.7; transition: opacity 0.2s; }
+        .code-copy-btn { position: absolute; right: 4px; top: 2px;
+            background: var(--border-color); color: var(--fg-text); border: none; font-size: 10px; padding: 2px 6px; border-radius: 3px; cursor: pointer; opacity: 0.7; transition: opacity 0.2s;
+        }
         .code-container:hover .code-copy-btn { opacity: 1; }
 
         /* MEDYA ÖNİZLEME STİLLERİ */
         .chat-link { color: var(--accent-blue); text-decoration: none; word-break: break-all; }
         .chat-link:hover { text-decoration: underline; }
-        
+
         .media-container { margin-top: 8px; width: 100%; max-width: 420px; }
         .media-preview {
             max-width: 100%;
@@ -118,13 +145,17 @@
             object-fit: contain;
         }
 
-        .quoted-box { background-color: var(--quote-bg); border-left: 3px solid var(--quote-border); padding: 3px 8px; border-radius: 3px; font-size: 12px; color: var(--fg-sub); margin-bottom: 4px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .quoted-box { background-color: var(--quote-bg); border-left: 3px solid var(--quote-border); padding: 3px 8px;
+            border-radius: 3px; font-size: 12px; color: var(--fg-sub); margin-bottom: 4px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
         .quoted-sender { font-weight: bold; color: var(--accent-yellow); margin-right: 5px; }
 
         .mention-tag { color: var(--accent-blue); font-weight: bold; background: rgba(131, 165, 152, 0.2); padding: 0 4px; border-radius: 3px; }
         .message-item.is-mentioned { background-color: var(--mention-bg); border-left: 3px solid var(--mention-border); }
 
-        .message-actions { display: none; flex-shrink: 0; gap: 4px; background: var(--bg-panel); border: 1px solid var(--border-color); padding: 2px 6px; border-radius: 4px; position: absolute; right: 10px; top: -6px; z-index: 10; align-items: center; }
+        .message-actions { display: none; flex-shrink: 0; gap: 4px;
+            background: var(--bg-panel); border: 1px solid var(--border-color); padding: 2px 6px; border-radius: 4px; position: absolute; right: 10px; top: -6px; z-index: 10;
+            align-items: center; }
         .action-btn { background: transparent; border: none; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; padding: 2px; }
         .action-btn.reply { color: var(--accent-blue); }
         .action-btn.reply:hover { color: var(--fg-text); }
@@ -136,21 +167,117 @@
 
         .typing-indicator { padding: 4px 20px; font-size: 12px; font-style: italic; color: var(--accent-yellow); height: 20px; display: flex; align-items: center; }
 
-        .reply-preview-bar { background: var(--bg-panel); border-top: 1px solid var(--border-color); padding: 6px 20px; display: none; justify-content: space-between; align-items: center; font-size: 12px; color: var(--fg-sub); }
+        .reply-preview-bar { background: var(--bg-panel);
+            border-top: 1px solid var(--border-color); padding: 6px 20px; display: none; justify-content: space-between; align-items: center; font-size: 12px; color: var(--fg-sub);
+        }
         .reply-preview-content { display: flex; align-items: center; gap: 6px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
         .reply-preview-user { font-weight: bold; color: var(--accent-yellow); }
         .btn-cancel-reply { background: transparent; border: none; color: var(--danger-red); font-size: 14px; cursor: pointer; font-weight: bold; margin-left: 10px; }
 
         .input-area { padding: 15px 20px; background: var(--bg-panel); border-top: 1px solid var(--border-color); display: flex; gap: 10px; position: relative; }
-        .input-area textarea { flex: 1; background: var(--bg-dark); border: 1px solid var(--border-color); color: var(--fg-text); border-radius: 6px; padding: 12px; resize: none; height: 46px; font-family: inherit; font-size: 14px; outline: none; }
+        .input-area textarea { flex: 1; background: var(--bg-dark); border: 1px solid var(--border-color);
+            color: var(--fg-text); border-radius: 6px; padding: 12px; resize: none; height: 46px; font-family: inherit; font-size: 14px; outline: none;
+        }
         .input-area textarea:focus { border-color: var(--accent-yellow); }
         .input-area button[type="submit"] { background: var(--accent-yellow); border: none; padding: 0 20px; border-radius: 6px; font-weight: bold; color: var(--bg-dark); cursor: pointer; }
-        
-        /* EMOJI PICKER CONTAINER */
-        .btn-emoji-toggle { background: transparent; border: 1px solid var(--border-color); color: var(--accent-yellow); padding: 0 12px; border-radius: 6px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; }
+
+        .btn-emoji-toggle { background: transparent;
+            border: 1px solid var(--border-color); color: var(--accent-yellow); padding: 0 12px; border-radius: 6px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; }
         .btn-emoji-toggle:hover { background: var(--hover-bg); }
-        emoji-picker { position: absolute; bottom: 70px; right: 20px; z-index: 100; display: none; --num-columns: 8; --category-emoji-size: 1.1rem; }
-        emoji-picker.show { display: flex; }
+
+        /* EMOJI VE GIF PICKER PANELI */
+        .picker-container {
+            position: absolute;
+            bottom: 70px;
+            right: 20px;
+            z-index: 100;
+            display: none;
+            flex-direction: column;
+            width: 320px;
+            height: 400px;
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
+        .picker-container.show {
+            display: flex;
+        }
+
+        .picker-tabs {
+            display: flex;
+            background: var(--bg-dark);
+            border-bottom: 1px solid var(--border-color);
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 8px;
+            background: transparent;
+            border: none;
+            color: var(--fg-sub);
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .tab-btn.active {
+            color: var(--accent-yellow);
+            border-bottom: 2px solid var(--accent-yellow);
+        }
+
+        .tab-content {
+            flex: 1;
+            display: none;
+            overflow: hidden;
+            position: relative;
+        }
+        .tab-content.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        emoji-picker {
+            width: 100%;
+            height: 100%;
+            border: none;
+            --num-columns: 8;
+            --category-emoji-size: 1.1rem;
+        }
+
+        .gif-search-box {
+            padding: 8px;
+            background: var(--bg-panel);
+            border-bottom: 1px solid var(--border-color);
+        }
+        .gif-search-box input {
+            width: 100%;
+            padding: 6px 10px;
+            background: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            color: var(--fg-text);
+            border-radius: 4px;
+            outline: none;
+            font-size: 12px;
+        }
+        .gif-grid {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 6px;
+            padding: 8px;
+            overflow-y: auto;
+        }
+        .gif-item {
+            width: 100%;
+            height: 90px;
+            object-fit: cover;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+        .gif-item:hover {
+            border-color: var(--accent-yellow);
+        }
     </style>
 </head>
 <body>
@@ -208,8 +335,26 @@
             </div>
 
             <form class="input-area" id="chatForm">
-                <button type="button" class="btn-emoji-toggle" id="emojiToggleBtn" title="Emoji Ekle">😀</button>
-                <emoji-picker id="emojiPicker" class="dark"></emoji-picker>
+                <button type="button" class="btn-emoji-toggle" id="emojiToggleBtn" title="Emoji & GIF Ekle">😀</button>
+
+                <div class="picker-container" id="pickerContainer">
+                    <div class="picker-tabs">
+                        <button type="button" class="tab-btn active" id="tabEmojiBtn">Emoji</button>
+                        <button type="button" class="tab-btn" id="tabGifBtn">GIF</button>
+                    </div>
+                    
+                    <div class="tab-content active" id="emojiTabContent">
+                        <emoji-picker id="emojiPicker" class="dark"></emoji-picker>
+                    </div>
+                    
+                    <div class="tab-content" id="gifTabContent">
+                        <div class="gif-search-box">
+                            <input type="text" id="gifSearchInput" placeholder="GIF Ara (Klipy)...">
+                        </div>
+                        <div class="gif-grid" id="gifGrid"></div>
+                    </div>
+                </div>
+
                 <textarea id="messageInput" placeholder="Bir mesaj yazın..." required></textarea>
                 <button type="submit">Gönder</button>
             </form>
@@ -232,7 +377,7 @@
 
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
-        
+
         const messagesRef = query(ref(database, 'messages'), limitToLast(100));
         const rawMessagesRef = ref(database, 'messages');
         const onlineRef = ref(database, 'online_users');
@@ -241,11 +386,13 @@
         let currentUser = localStorage.getItem('gh_chat_username') || "";
         let currentAvatar = localStorage.getItem('gh_chat_avatar') || "";
         let activeEditKey = null;
-        let activeReplyTarget = null; 
-        let activeReactionMsgKey = null; // Reaksiyon verilmek istenen mesaj
+        let activeReplyTarget = null;
+        let activeReactionMsgKey = null;
         let typingTimeout = null;
         let myUserRef = null;
         let myTypingRef = null;
+
+        const KLIPY_API_KEY = "JorLIwnYyHhkMdcej1Ok9ZSUU04JWlgwYqkb6YKXadVH0fncyC1PhDlK9G5zFFQU";
 
         const userModal = document.getElementById('userModal');
         const modalError = document.getElementById('modalError');
@@ -262,6 +409,13 @@
         const replyPreviewUser = document.getElementById('replyPreviewUser');
         const replyPreviewText = document.getElementById('replyPreviewText');
         const emojiToggleBtn = document.getElementById('emojiToggleBtn');
+        const pickerContainer = document.getElementById('pickerContainer');
+        const tabEmojiBtn = document.getElementById('tabEmojiBtn');
+        const tabGifBtn = document.getElementById('tabGifBtn');
+        const emojiTabContent = document.getElementById('emojiTabContent');
+        const gifTabContent = document.getElementById('gifTabContent');
+        const gifSearchInput = document.getElementById('gifSearchInput');
+        const gifGrid = document.getElementById('gifGrid');
         const emojiPicker = document.getElementById('emojiPicker');
 
         if ("Notification" in window && Notification.permission === "default") {
@@ -311,6 +465,22 @@
             initUserSession();
         }
 
+        /* SEKME DEĞİŞTİRME MANTIĞI */
+        tabEmojiBtn.addEventListener('click', () => {
+            tabEmojiBtn.classList.add('active');
+            tabGifBtn.classList.remove('active');
+            emojiTabContent.classList.add('active');
+            gifTabContent.classList.remove('active');
+        });
+
+        tabGifBtn.addEventListener('click', () => {
+            tabGifBtn.classList.add('active');
+            tabEmojiBtn.classList.remove('active');
+            gifTabContent.classList.add('active');
+            emojiTabContent.classList.remove('active');
+            if (gifGrid.children.length === 0) fetchGifs('');
+        });
+
         // KULLANICI ADI BENZERSİZLİK KONTROLÜ
         document.getElementById('joinBtn').addEventListener('click', async () => {
             const username = document.getElementById('usernameInput').value.trim();
@@ -319,7 +489,6 @@
 
             if (!username) return;
 
-            // Online kullanıcıları kontrol et
             const onlineSnap = await get(onlineRef);
             if (onlineSnap.exists()) {
                 const onlineData = onlineSnap.val();
@@ -332,6 +501,7 @@
 
             currentUser = username;
             currentAvatar = avatarUrl;
+            
             localStorage.setItem('gh_chat_username', currentUser);
             localStorage.setItem('gh_chat_avatar', currentAvatar);
             initUserSession();
@@ -345,33 +515,76 @@
             location.reload();
         });
 
-        /* EMOJI PICKER HANDLERS */
+        /* EMOJI & GIF TOGGLE */
         emojiToggleBtn.addEventListener('click', (e) => {
             e.stopPropagation();
-            activeReactionMsgKey = null; // Genel sohbet emojisi
-            emojiPicker.classList.toggle('show');
+            activeReactionMsgKey = null;
+            pickerContainer.classList.toggle('show');
         });
 
         emojiPicker.addEventListener('emoji-click', event => {
             const chosenEmoji = event.detail.unicode;
-            
-            // Eğer bir mesaja reaksiyon olarak emoji seçildiyse
+
             if (activeReactionMsgKey) {
                 toggleReaction(activeReactionMsgKey, chosenEmoji);
                 activeReactionMsgKey = null;
-                emojiPicker.classList.remove('show');
+                pickerContainer.classList.remove('show');
             } else {
-                // Normal mesaja emoji ekleme
                 messageInput.value += chosenEmoji;
                 messageInput.focus();
             }
         });
 
         document.addEventListener('click', (e) => {
-            if (!emojiPicker.contains(e.target) && e.target !== emojiToggleBtn && !e.target.closest('.action-btn.react')) {
-                emojiPicker.classList.remove('show');
+            if (!pickerContainer.contains(e.target) && e.target !== emojiToggleBtn && !e.target.closest('.action-btn.react')) {
+                pickerContainer.classList.remove('show');
                 activeReactionMsgKey = null;
             }
+        });
+
+        /* KLIPY GIF İŞLEMLERİ */
+        async function fetchGifs(query = '') {
+            gifGrid.innerHTML = '<div style="color:var(--fg-sub); font-size:12px; grid-column:span 2; text-align:center;">Yükleniyor...</div>';
+            
+            const endpoint = query ? 'search' : 'trending';
+            const url = `https://api.klipy.co/v1/gifs/${endpoint}?api_key=${KLIPY_API_KEY}&q=${encodeURIComponent(query)}&limit=20`;
+
+            try {
+                const res = await fetch(url);
+                const json = await res.json();
+                gifGrid.innerHTML = '';
+
+                const gifs = json.data || json.results || [];
+                if (gifs.length === 0) {
+                    gifGrid.innerHTML = '<div style="color:var(--fg-sub); font-size:12px; grid-column:span 2; text-align:center;">Sonuç bulunamadı.</div>';
+                    return;
+                }
+
+                gifs.forEach(gif => {
+                    const imgUrl = gif.images?.downsized?.url || gif.url || gif.gif_url;
+                    if (!imgUrl) return;
+
+                    const img = document.createElement('img');
+                    img.className = 'gif-item';
+                    img.src = imgUrl;
+                    img.addEventListener('click', () => {
+                        messageInput.value += (messageInput.value ? ' ' : '') + imgUrl;
+                        chatForm.dispatchEvent(new Event('submit'));
+                        pickerContainer.classList.remove('show');
+                    });
+                    gifGrid.appendChild(img);
+                });
+            } catch (err) {
+                gifGrid.innerHTML = '<div style="color:var(--danger-red); font-size:12px; grid-column:span 2; text-align:center;">GIF yüklenemedi.</div>';
+            }
+        }
+
+        let gifDebounceTimer;
+        gifSearchInput.addEventListener('input', (e) => {
+            clearTimeout(gifDebounceTimer);
+            gifDebounceTimer = setTimeout(() => {
+                fetchGifs(e.target.value.trim());
+            }, 400);
         });
 
         onValue(onlineRef, (snapshot) => {
@@ -393,6 +606,7 @@
                     messageInput.value += `@${username} `;
                     messageInput.focus();
                 });
+                
                 onlineUsersList.appendChild(img);
             });
         });
@@ -408,7 +622,7 @@
             const data = snapshot.val();
             if (!data) { typingIndicator.innerText = ""; return; }
             const typers = Object.keys(data).filter(user => user.toLowerCase() !== currentUser.toLowerCase());
-            
+
             if (typers.length === 1) typingIndicator.innerText = `${typers[0]} yazıyor...`;
             else if (typers.length > 1) typingIndicator.innerText = `${typers.join(', ')} yazıyor...`;
             else typingIndicator.innerText = "";
@@ -456,7 +670,6 @@
                 groupEl.dataset.timestamp = msg.timestamp || Date.now();
 
                 const avatarUrl = getAvatarUrl(msg.sender, msg.avatar);
-
                 groupEl.innerHTML = `
                     <img class="group-avatar" src="${escapeHTML(avatarUrl)}" alt="${escapeHTML(msg.sender)}" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(msg.sender)}'">
                     <div class="group-body">
@@ -482,14 +695,14 @@
             if (item) {
                 item.dataset.rawText = updatedData.text;
                 const span = item.querySelector('.msg-content');
+
                 if (span) {
                     span.innerHTML = parseMarkdown(updatedData.text);
                     renderMediaPreviews(span);
                 }
 
-                // Reaksiyonları güncelle
                 renderReactions(item, updatedData.reactions || {});
-                
+
                 const isMentioned = currentUser && updatedData.text.toLowerCase().includes(`@${currentUser.toLowerCase()}`);
                 if (isMentioned) item.classList.add('is-mentioned');
                 else item.classList.remove('is-mentioned');
@@ -530,13 +743,11 @@
 
             let editBtnHTML = '';
             let deleteBtnHTML = '';
-
             if (isMe) {
                 editBtnHTML = `<button class="action-btn edit" title="Düzenle"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>`;
                 deleteBtnHTML = `<button class="action-btn delete" title="Sil"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>`;
             }
 
-            // Hover Menüsündeki Emoji ve Hızlı Reaksiyon Butonları
             const actionsHTML = `
                 <div class="message-actions">
                     <button class="action-btn react quick-react" data-emoji="👍" title="Beğen">👍</button>
@@ -560,17 +771,14 @@
                 </div>
                 <div class="reactions-container"></div>
             `;
-
             container.appendChild(item);
-            
+
             const contentSpan = item.querySelector('.msg-content');
             renderMediaPreviews(contentSpan);
 
-            // Reaksiyonları Oluştur
             renderReactions(item, msg.reactions || {});
         }
 
-        /* REAKSİYON İŞLEMLERİ (FIREBASE UPDATE) */
         function toggleReaction(msgKey, emoji) {
             if (!currentUser) return;
             const reactRef = ref(database, `messages/${msgKey}/reactions/${emoji}/${currentUser}`);
@@ -594,11 +802,12 @@
                 if (users.length === 0) return;
 
                 const hasReacted = currentUser && users.includes(currentUser);
+
                 const badge = document.createElement('div');
                 badge.className = `reaction-badge${hasReacted ? ' user-reacted' : ''}`;
                 badge.title = `${users.join(', ')}`;
                 badge.innerHTML = `<span>${emoji}</span><span class="reaction-count">${users.length}</span>`;
-                
+
                 badge.addEventListener('click', () => {
                     const key = itemEl.dataset.msgKey;
                     toggleReaction(key, emoji);
@@ -633,17 +842,16 @@
             const sender = item.dataset.sender;
             const rawText = item.dataset.rawText;
 
-            // Hızlı Emoji Ekleme
             if (quickReactBtn) {
                 const emoji = quickReactBtn.dataset.emoji;
                 toggleReaction(key, emoji);
                 return;
             }
 
-            // Menüden Emoji Seçerek Ekleme
             if (openPickerReactBtn) {
                 activeReactionMsgKey = key;
-                emojiPicker.classList.add('show');
+                pickerContainer.classList.add('show');
+                tabEmojiBtn.click();
                 return;
             }
 
@@ -701,7 +909,7 @@
             messageInput.value = "";
             activeReplyTarget = null;
             replyPreviewBar.style.display = 'none';
-            emojiPicker.classList.remove('show');
+            pickerContainer.classList.remove('show');
         });
 
         messageInput.addEventListener('keydown', (e) => {
@@ -718,7 +926,6 @@
 
         function parseMarkdown(str) {
             if (!str) return '';
-            
             const tokens = [];
             let html = escapeHTML(str);
 
@@ -760,9 +967,9 @@
                     mediaBox.className = 'media-container';
                     mediaBox.dataset.mediaUrl = url;
                     mediaBox.innerHTML = `
-                        <iframe src="https://www.youtube.com/embed/${ytMatch[1]}" 
-                                style="width:100%; height:220px; border-radius:6px; border:1px solid var(--border-color);" 
-                                allowfullscreen loading="lazy"></iframe>`;
+                        <iframe src="https://www.youtube.com/embed/${ytMatch[1]}"
+                            style="width:100%; height:220px; border-radius:6px; border:1px solid var(--border-color);"
+                            allowfullscreen loading="lazy"></iframe>`;
                     container.appendChild(mediaBox);
                     messagesList.scrollTop = messagesList.scrollHeight;
                     return;
