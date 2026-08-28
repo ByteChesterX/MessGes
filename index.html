@@ -34,8 +34,14 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
-                Roboto, Helvetica, Arial, sans-serif;
+            font-family:
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                Roboto,
+                Helvetica,
+                Arial,
+                sans-serif;
             background-color: var(--bg-dark);
             color: var(--fg-text);
             height: 100vh;
@@ -43,15 +49,14 @@
             overflow: hidden;
         }
 
-        /* MODAL */
+        /* =========================
+           MODAL
+        ========================= */
 
         #userModal {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.85);
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -109,15 +114,14 @@
             display: none;
         }
 
-        /* DÜZENLEME MODALI */
+        /* =========================
+           EDIT MODAL
+        ========================= */
 
         #editModal {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.7);
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
             display: none;
             align-items: center;
             justify-content: center;
@@ -176,7 +180,9 @@
             color: var(--bg-dark);
         }
 
-        /* DÜZEN */
+        /* =========================
+           APP
+        ========================= */
 
         .app-container {
             display: flex;
@@ -200,6 +206,7 @@
             gap: 12px;
             font-weight: bold;
             font-size: 15px;
+            min-width: 0;
         }
 
         .status-dot {
@@ -208,6 +215,7 @@
             background-color: var(--accent-green);
             border-radius: 50%;
             display: inline-block;
+            flex-shrink: 0;
         }
 
         .online-users-list {
@@ -236,6 +244,7 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            flex-shrink: 0;
         }
 
         .user-profile img {
@@ -260,6 +269,10 @@
             border-radius: 4px;
             cursor: pointer;
         }
+
+        /* =========================
+           CHAT
+        ========================= */
 
         .chat-area {
             flex: 1;
@@ -325,6 +338,7 @@
             justify-content: space-between;
             align-items: baseline;
             margin-bottom: 4px;
+            gap: 10px;
         }
 
         .sender-name {
@@ -336,14 +350,23 @@
         .header-time {
             font-size: 11px;
             color: var(--fg-sub);
+            flex-shrink: 0;
         }
 
         .message-text-list {
             display: flex;
             flex-direction: column;
             gap: 6px;
+            width: 100%;
         }
 
+        /*
+         * ANA HİZALAMA DÜZELTMESİ
+         *
+         * Eski kodda burada display:flex + space-between vardı.
+         * Bu, mesaj metnini ve action butonlarını yatayda
+         * birbirinden itiyordu.
+         */
         .message-item {
             font-size: 14px;
             line-height: 1.5;
@@ -351,12 +374,29 @@
             word-break: break-word;
             white-space: pre-wrap;
             position: relative;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
             padding: 4px 6px;
             border-radius: 4px;
             width: 100%;
+            display: block;
+        }
+
+        .message-item.animate-entry {
+            animation: msgSlideIn 0.15s ease-out forwards;
+        }
+
+        .message-item:hover .message-actions {
+            display: flex;
+        }
+
+        .message-content-wrapper {
+            width: 100%;
+            display: block;
+        }
+
+        .msg-content {
+            display: block;
+            width: 100%;
+            min-width: 0;
         }
 
         .message-item code {
@@ -374,27 +414,9 @@
             color: var(--fg-sub);
         }
 
-        .message-item.animate-entry {
-            animation: msgSlideIn 0.15s ease-out forwards;
-        }
-
-        .message-item:hover .message-actions {
-            display: flex;
-        }
-
-        .message-content-wrapper {
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 15px;
-        }
-
-        .msg-content {
-            flex: 1;
-        }
-
-        /* REAKSİYONLAR */
+        /* =========================
+           REACTIONS
+        ========================= */
 
         .reactions-container {
             display: flex;
@@ -432,7 +454,9 @@
             font-size: 11px;
         }
 
-        /* KOD KOPYALAMA */
+        /* =========================
+           CODE
+        ========================= */
 
         .code-container {
             position: relative;
@@ -459,7 +483,9 @@
             opacity: 1;
         }
 
-        /* MEDYA */
+        /* =========================
+           LINKS / MEDIA
+        ========================= */
 
         .chat-link {
             color: var(--accent-blue);
@@ -486,6 +512,20 @@
             background: var(--bg-panel);
             object-fit: contain;
         }
+
+        .gif-message {
+            max-width: 420px;
+            width: auto;
+            max-height: 280px;
+            border-radius: 6px;
+            display: block;
+            border: 1px solid var(--border-color);
+            background: var(--bg-panel);
+        }
+
+        /* =========================
+           QUOTE / MENTION
+        ========================= */
 
         .quoted-box {
             background-color: var(--quote-bg);
@@ -519,6 +559,10 @@
             background-color: var(--mention-bg);
             border-left: 3px solid var(--mention-border);
         }
+
+        /* =========================
+           MESSAGE ACTIONS
+        ========================= */
 
         .message-actions {
             display: none;
@@ -575,6 +619,10 @@
             font-size: 13px;
         }
 
+        /* =========================
+           TYPING / REPLY
+        ========================= */
+
         .typing-indicator {
             padding: 4px 20px;
             font-size: 12px;
@@ -619,6 +667,10 @@
             font-weight: bold;
             margin-left: 10px;
         }
+
+        /* =========================
+           INPUT
+        ========================= */
 
         .input-area {
             padding: 15px 20px;
@@ -674,7 +726,9 @@
             background: var(--hover-bg);
         }
 
-        /* EMOJI / GIF PICKER */
+        /* =========================
+           PICKER
+        ========================= */
 
         .picker-container {
             position: absolute;
@@ -689,7 +743,7 @@
             border: 1px solid var(--border-color);
             border-radius: 8px;
             overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
         }
 
         .picker-container.show {
@@ -738,6 +792,10 @@
             --category-emoji-size: 1.1rem;
         }
 
+        /* =========================
+           GIF PICKER
+        ========================= */
+
         .gif-search-box {
             padding: 8px;
             background: var(--bg-panel);
@@ -778,31 +836,49 @@
             border-color: var(--accent-yellow);
         }
 
-        .gif-loading {
-            color: var(--fg-sub);
-            font-size: 12px;
-            grid-column: span 2;
-            text-align: center;
-            padding: 15px;
-        }
+        /* =========================
+           MOBILE
+        ========================= */
 
-        .gif-error {
-            color: var(--danger-red);
-            font-size: 12px;
-            grid-column: span 2;
-            text-align: center;
-            padding: 15px;
+        @media (max-width: 600px) {
+            .top-bar {
+                padding: 10px;
+            }
+
+            .message-group {
+                padding-left: 10px;
+                padding-right: 10px;
+            }
+
+            .input-area {
+                padding: 10px;
+            }
+
+            .picker-container {
+                right: 10px;
+                width: min(320px, calc(100vw - 20px));
+            }
+
+            .user-profile span {
+                max-width: 90px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
         }
     </style>
 </head>
 
 <body>
 
+    <!-- =========================
+         USER MODAL
+    ========================= -->
+
     <div id="userModal">
         <div class="modal-card">
             <h3>Instant Chat</h3>
 
-            <p style="color:var(--fg-sub);font-size:13px;margin-bottom:15px;">
+            <p style="color:var(--fg-sub); font-size:13px; margin-bottom:15px;">
                 Bilgilerinizi girin ve anlık sohbete başlayın.
             </p>
 
@@ -814,6 +890,7 @@
                 type="text"
                 id="usernameInput"
                 placeholder="Kullanıcı Adınız..."
+                maxlength="32"
                 required
             />
 
@@ -823,9 +900,15 @@
                 placeholder="Profil Resmi URL (İsteğe bağlı)"
             />
 
-            <button id="joinBtn">Sohbete Katıl</button>
+            <button id="joinBtn">
+                Sohbete Katıl
+            </button>
         </div>
     </div>
+
+    <!-- =========================
+         EDIT MODAL
+    ========================= -->
 
     <div id="editModal">
         <div class="edit-card">
@@ -834,11 +917,20 @@
             <textarea id="editMessageInput"></textarea>
 
             <div class="edit-actions">
-                <button class="btn-cancel" id="cancelEditBtn">İptal</button>
-                <button class="btn-save" id="saveEditBtn">Kaydet</button>
+                <button class="btn-cancel" id="cancelEditBtn">
+                    İptal
+                </button>
+
+                <button class="btn-save" id="saveEditBtn">
+                    Kaydet
+                </button>
             </div>
         </div>
     </div>
+
+    <!-- =========================
+         APP
+    ========================= -->
 
     <div class="app-container">
 
@@ -846,6 +938,7 @@
 
             <div class="chat-info">
                 <span class="status-dot"></span>
+
                 <span>But Why Pinguin..?t</span>
 
                 <div
@@ -855,9 +948,16 @@
             </div>
 
             <div class="user-profile">
-                <img id="myAvatar" src="" alt="Profil">
 
-                <span id="displayUsername">...</span>
+                <img
+                    id="myAvatar"
+                    src=""
+                    alt="Profil"
+                />
+
+                <span id="displayUsername">
+                    ...
+                </span>
 
                 <button
                     class="btn-change-user"
@@ -865,6 +965,7 @@
                 >
                     Değiştir
                 </button>
+
             </div>
 
         </div>
@@ -876,7 +977,7 @@
                 id="messagesList"
             >
                 <div
-                    style="color:var(--fg-sub);text-align:center;padding-top:20px;"
+                    style="color:var(--fg-sub); text-align:center; padding-top:20px;"
                     id="loadingText"
                 >
                     Bağlanıyor...
@@ -893,7 +994,10 @@
                 id="replyPreviewBar"
             >
                 <div class="reply-preview-content">
-                    <span>Yanıtlanıyor:</span>
+
+                    <span>
+                        Yanıtlanıyor:
+                    </span>
 
                     <span
                         class="reply-preview-user"
@@ -905,6 +1009,7 @@
                     <span id="replyPreviewText">
                         "Mesaj içeriği..."
                     </span>
+
                 </div>
 
                 <button
@@ -929,6 +1034,10 @@
                 >
                     😀
                 </button>
+
+                <!-- =========================
+                     PICKER
+                ========================= -->
 
                 <div
                     class="picker-container"
@@ -975,7 +1084,7 @@
                             <input
                                 type="text"
                                 id="gifSearchInput"
-                                placeholder="GIF Ara (KLIPY)..."
+                                placeholder="GIF Ara (Klipy)..."
                             />
 
                         </div>
@@ -992,6 +1101,7 @@
                 <textarea
                     id="messageInput"
                     placeholder="Bir mesaj yazın..."
+                    maxlength="5000"
                     required
                 ></textarea>
 
@@ -1004,6 +1114,10 @@
         </div>
 
     </div>
+
+    <!-- =========================
+         JAVASCRIPT
+    ========================= -->
 
     <script type="module">
 
@@ -1030,9 +1144,9 @@
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
 
-        /* =========================================================
+        /* =========================
            FIREBASE
-        ========================================================= */
+        ========================= */
 
         const firebaseConfig = {
             apiKey: "AIzaSyDRiCdkBRsKMeUpCmznQ3Sn8R6SvBk0C9U",
@@ -1052,42 +1166,33 @@
             limitToLast(100)
         );
 
-        const rawMessagesRef = ref(database, "messages");
-        const onlineRef = ref(database, "online_users");
-        const typingRef = ref(database, "typing");
+        const rawMessagesRef = ref(
+            database,
+            "messages"
+        );
+
+        const onlineRef = ref(
+            database,
+            "online_users"
+        );
+
+        const typingRef = ref(
+            database,
+            "typing"
+        );
 
 
-        /* =========================================================
+        /* =========================
            KLIPY
-           
-           Güncel API:
-           Search  -> /v2/search
-           Featured -> /v2/featured
-
-           Response:
-           {
-               results: [
-                   {
-                       media_formats: {
-                           gif: {
-                               url: "..."
-                           }
-                       }
-                   }
-               ]
-           }
-        ========================================================= */
+        ========================= */
 
         const KLIPY_API_KEY =
             "JorLIwnYyHhkMdcej1Ok9ZSUU04JWlgwYqkb6YKXadVH0fncyC1PhDlK9G5zFFQU";
 
-        const KLIPY_BASE_URL =
-            "https://api.klipy.com/v2";
 
-
-        /* =========================================================
+        /* =========================
            STATE
-        ========================================================= */
+        ========================= */
 
         let currentUser =
             localStorage.getItem("gh_chat_username") || "";
@@ -1103,10 +1208,12 @@
         let myUserRef = null;
         let myTypingRef = null;
 
+        let gifDebounceTimer = null;
 
-        /* =========================================================
+
+        /* =========================
            DOM
-        ========================================================= */
+        ========================= */
 
         const userModal =
             document.getElementById("userModal");
@@ -1178,9 +1285,9 @@
             document.getElementById("emojiPicker");
 
 
-        /* =========================================================
+        /* =========================
            NOTIFICATIONS
-        ========================================================= */
+        ========================= */
 
         if (
             "Notification" in window &&
@@ -1190,9 +1297,9 @@
         }
 
 
-        /* =========================================================
+        /* =========================
            SOUND
-        ========================================================= */
+        ========================= */
 
         function playBeep(freq = 587.33) {
 
@@ -1231,9 +1338,9 @@
         }
 
 
-        /* =========================================================
+        /* =========================
            AVATAR
-        ========================================================= */
+        ========================= */
 
         function getAvatarUrl(
             username,
@@ -1254,9 +1361,9 @@
         }
 
 
-        /* =========================================================
+        /* =========================
            USER SESSION
-        ========================================================= */
+        ========================= */
 
         function initUserSession() {
 
@@ -1282,38 +1389,47 @@
                 connectedRef,
                 (snap) => {
 
-                    if (snap.val() === true) {
-
-                        myUserRef =
-                            push(onlineRef);
-
-                        myTypingRef =
-                            ref(
-                                database,
-                                `typing/${currentUser}`
-                            );
-
-
-                        onDisconnect(
-                            myUserRef
-                        ).remove();
-
-                        onDisconnect(
-                            myTypingRef
-                        ).remove();
-
-
-                        set(
-                            myUserRef,
-                            {
-                                username: currentUser,
-                                avatar: getAvatarUrl(
-                                    currentUser,
-                                    currentAvatar
-                                )
-                            }
-                        );
+                    if (snap.val() !== true) {
+                        return;
                     }
+
+                    /*
+                     * Önceki bağlantının ref'i varsa
+                     * tekrar oluşturma.
+                     */
+                    if (myUserRef) {
+                        return;
+                    }
+
+                    myUserRef =
+                        push(onlineRef);
+
+                    myTypingRef =
+                        ref(
+                            database,
+                            `typing/${currentUser}`
+                        );
+
+
+                    onDisconnect(
+                        myUserRef
+                    ).remove();
+
+                    onDisconnect(
+                        myTypingRef
+                    ).remove();
+
+
+                    set(
+                        myUserRef,
+                        {
+                            username: currentUser,
+                            avatar: getAvatarUrl(
+                                currentUser,
+                                currentAvatar
+                            )
+                        }
+                    );
                 }
             );
         }
@@ -1324,9 +1440,9 @@
         }
 
 
-        /* =========================================================
-           TABS
-        ========================================================= */
+        /* =========================
+           TAB
+        ========================= */
 
         tabEmojiBtn.addEventListener(
             "click",
@@ -1352,7 +1468,7 @@
                 emojiTabContent.classList.remove("active");
 
                 if (
-                    gifGrid.dataset.loaded !== "true"
+                    gifGrid.children.length === 0
                 ) {
                     fetchGifs("");
                 }
@@ -1360,9 +1476,9 @@
         );
 
 
-        /* =========================================================
-           USERNAME
-        ========================================================= */
+        /* =========================
+           JOIN
+        ========================= */
 
         document
             .getElementById("joinBtn")
@@ -1372,105 +1488,108 @@
 
                     const username =
                         document
-                            .getElementById(
-                                "usernameInput"
-                            )
+                            .getElementById("usernameInput")
                             .value
                             .trim();
 
                     const avatarUrl =
                         document
-                            .getElementById(
-                                "avatarInput"
-                            )
+                            .getElementById("avatarInput")
                             .value
                             .trim();
 
                     modalError.style.display =
                         "none";
 
+                    if (!username) {
+                        return;
+                    }
 
-                    if (!username) return;
-
-
-                    try {
-
-                        const onlineSnap =
-                            await get(onlineRef);
-
-
-                        if (onlineSnap.exists()) {
-
-                            const onlineData =
-                                onlineSnap.val();
-
-                            const isTaken =
-                                Object.values(
-                                    onlineData
-                                ).some(
-                                    u =>
-                                        u.username &&
-                                        u.username
-                                            .toLowerCase() ===
-                                        username.toLowerCase()
-                                );
-
-
-                            if (isTaken) {
-
-                                modalError.style.display =
-                                    "block";
-
-                                return;
-                            }
-                        }
-
-
-                        currentUser = username;
-                        currentAvatar = avatarUrl;
-
-
-                        localStorage.setItem(
-                            "gh_chat_username",
-                            currentUser
-                        );
-
-                        localStorage.setItem(
-                            "gh_chat_avatar",
-                            currentAvatar
-                        );
-
-
-                        initUserSession();
-
-                    } catch (error) {
-
-                        console.error(
-                            "Kullanıcı kontrolü başarısız:",
-                            error
-                        );
-
+                    if (username.length > 32) {
                         modalError.innerText =
-                            "Bağlantı hatası oluştu.";
+                            "Kullanıcı adı en fazla 32 karakter olabilir.";
 
                         modalError.style.display =
                             "block";
+
+                        return;
                     }
+
+
+                    const onlineSnap =
+                        await get(onlineRef);
+
+
+                    if (onlineSnap.exists()) {
+
+                        const onlineData =
+                            onlineSnap.val();
+
+                        const isTaken =
+                            Object.values(
+                                onlineData
+                            ).some(
+                                u =>
+                                    u.username &&
+                                    u.username
+                                        .toLowerCase() ===
+                                    username.toLowerCase()
+                            );
+
+
+                        if (isTaken) {
+
+                            modalError.innerText =
+                                "Bu kullanıcı adı zaten alınmış!";
+
+                            modalError.style.display =
+                                "block";
+
+                            return;
+                        }
+                    }
+
+
+                    currentUser =
+                        username;
+
+                    currentAvatar =
+                        avatarUrl;
+
+
+                    localStorage.setItem(
+                        "gh_chat_username",
+                        currentUser
+                    );
+
+                    localStorage.setItem(
+                        "gh_chat_avatar",
+                        currentAvatar
+                    );
+
+
+                    initUserSession();
                 }
             );
 
+
+        /* =========================
+           RESET USER
+        ========================= */
 
         document
             .getElementById("resetUserBtn")
             .addEventListener(
                 "click",
-                () => {
+                async () => {
 
-                    if (myUserRef)
-                        remove(myUserRef);
+                    if (myUserRef) {
+                        await remove(myUserRef);
+                    }
 
-                    if (myTypingRef)
-                        remove(myTypingRef);
+                    if (myTypingRef) {
+                        await remove(myTypingRef);
+                    }
 
                     localStorage.removeItem(
                         "gh_chat_username"
@@ -1485,13 +1604,13 @@
             );
 
 
-        /* =========================================================
+        /* =========================
            EMOJI / PICKER
-        ========================================================= */
+        ========================= */
 
         emojiToggleBtn.addEventListener(
             "click",
-            (e) => {
+            e => {
 
                 e.stopPropagation();
 
@@ -1525,13 +1644,14 @@
                         "show"
                     );
 
-                } else {
-
-                    messageInput.value +=
-                        chosenEmoji;
-
-                    messageInput.focus();
+                    return;
                 }
+
+
+                messageInput.value +=
+                    chosenEmoji;
+
+                messageInput.focus();
             }
         );
 
@@ -1558,91 +1678,25 @@
         );
 
 
-        /* =========================================================
-           KLIPY GIF API
-        ========================================================= */
+        /* =========================
+           KLIPY GIF
+           GÜNCEL API
+        ========================= */
 
-        function getKlipyGifUrl(gif) {
+        async function fetchGifs(
+            search = ""
+        ) {
 
-            if (!gif || typeof gif !== "object") {
-                return null;
-            }
-
-
-            /*
-             * Güncel KLIPY response:
-             *
-             * gif.media_formats.gif.url
-             */
-
-            const formats =
-                gif.media_formats || {};
-
-
-            return (
-                formats.gif?.url ||
-                formats.mediumgif?.url ||
-                formats.tinygif?.url ||
-                formats.gif?.preview ||
-                null
-            );
-        }
-
-
-        function renderGifError(message) {
-
-            gifGrid.innerHTML = "";
-
-            const error =
-                document.createElement("div");
-
-            error.className = "gif-error";
-
-            error.textContent = message;
-
-            gifGrid.appendChild(error);
-        }
-
-
-        function renderGifLoading() {
-
-            gifGrid.innerHTML = "";
-
-            const loading =
-                document.createElement("div");
-
-            loading.className = "gif-loading";
-
-            loading.textContent =
-                "GIF'ler yükleniyor...";
-
-            gifGrid.appendChild(loading);
-        }
-
-
-        async function fetchGifs(searchQuery = "") {
-
-            renderGifLoading();
-
-
-            const queryText =
-                searchQuery.trim();
-
-
-            /*
-             * KLIPY v2:
-             *
-             * Arama:
-             * /v2/search?key=...&q=...
-             *
-             * İlk liste:
-             * /v2/featured?key=...
-             */
-
-            const endpoint =
-                queryText
-                    ? `${KLIPY_BASE_URL}/search`
-                    : `${KLIPY_BASE_URL}/featured`;
+            gifGrid.innerHTML = `
+                <div style="
+                    color:var(--fg-sub);
+                    font-size:12px;
+                    grid-column:span 2;
+                    text-align:center;
+                ">
+                    Yükleniyor...
+                </div>
+            `;
 
 
             const params =
@@ -1653,15 +1707,25 @@
                 KLIPY_API_KEY
             );
 
+            params.set(
+                "country",
+                "TR"
+            );
 
-            if (queryText) {
+            params.set(
+                "locale",
+                "tr_TR"
+            );
 
-                params.set(
-                    "q",
-                    queryText
-                );
-            }
+            params.set(
+                "contentfilter",
+                "high"
+            );
 
+            params.set(
+                "media_filter",
+                "tinygif,mediumgif,gif"
+            );
 
             params.set(
                 "limit",
@@ -1669,56 +1733,38 @@
             );
 
 
-            params.set(
-                "locale",
-                "tr_TR"
-            );
+            if (search.trim()) {
 
+                params.set(
+                    "q",
+                    search.trim()
+                );
 
-            params.set(
-                "country",
-                "TR"
-            );
+            } else {
 
-
-            /*
-             * Güvenli içerik filtresi.
-             */
-
-            params.set(
-                "contentfilter",
-                "high"
-            );
-
-
-            /*
-             * Sadece GIF formatını
-             * istemek response'u küçültür.
-             */
-
-            params.set(
-                "media_filter",
-                "gif"
-            );
+                /*
+                 * Güncel KLIPY API'de boş arama yerine
+                 * trending endpoint'i kullanıyoruz.
+                 */
+            }
 
 
             const url =
-                `${endpoint}?${params.toString()}`;
+                search.trim()
+                    ? `https://api.klipy.com/v2/search?${params.toString()}`
+                    : `https://api.klipy.com/v2/search?${params.toString()}&q=trending`;
 
 
             try {
 
                 const response =
-                    await fetch(
-                        url,
-                        {
-                            method: "GET",
-                            headers: {
-                                "Accept":
-                                    "application/json"
-                            }
+                    await fetch(url, {
+                        method: "GET",
+                        headers: {
+                            "Content-Type":
+                                "application/json"
                         }
-                    );
+                    });
 
 
                 if (!response.ok) {
@@ -1734,10 +1780,18 @@
 
 
                 /*
-                 * Güncel KLIPY response:
+                 * Güncel KLIPY:
                  *
                  * {
-                 *   results: [...]
+                 *   results: [
+                 *      {
+                 *         media_formats: {
+                 *            gif: { url: ... },
+                 *            mediumgif: { url: ... },
+                 *            tinygif: { url: ... }
+                 *         }
+                 *      }
+                 *   ]
                  * }
                  */
 
@@ -1750,38 +1804,44 @@
                 gifGrid.innerHTML = "";
 
 
-                if (!gifs.length) {
+                if (gifs.length === 0) {
 
-                    gifGrid.dataset.loaded =
-                        "true";
-
-                    const empty =
-                        document.createElement(
-                            "div"
-                        );
-
-                    empty.className =
-                        "gif-loading";
-
-                    empty.textContent =
-                        "GIF bulunamadı.";
-
-                    gifGrid.appendChild(
-                        empty
-                    );
+                    gifGrid.innerHTML = `
+                        <div style="
+                            color:var(--fg-sub);
+                            font-size:12px;
+                            grid-column:span 2;
+                            text-align:center;
+                        ">
+                            Sonuç bulunamadı.
+                        </div>
+                    `;
 
                     return;
                 }
 
 
-                let renderedCount = 0;
-
-
                 gifs.forEach(
                     gif => {
 
+                        const formats =
+                            gif.media_formats || {};
+
+
+                        /*
+                         * Öncelik:
+                         *
+                         * tinygif
+                         * mediumgif
+                         * gif
+                         */
+
                         const imgUrl =
-                            getKlipyGifUrl(gif);
+                            formats.tinygif?.url ||
+                            formats.mediumgif?.url ||
+                            formats.gif?.url ||
+                            formats.preview?.url ||
+                            null;
 
 
                         if (!imgUrl) {
@@ -1789,13 +1849,8 @@
                         }
 
 
-                        renderedCount++;
-
-
                         const img =
-                            document.createElement(
-                                "img"
-                            );
+                            document.createElement("img");
 
 
                         img.className =
@@ -1815,152 +1870,145 @@
                             "lazy";
 
 
-                        img.title =
-                            gif.title ||
-                            "GIF";
-
-
-                        /*
-                         * GIF yüklenemezse
-                         * picker'dan kaldır.
-                         */
-
-                        img.addEventListener(
-                            "error",
+                        img.onerror =
                             () => {
-
                                 img.remove();
-
-                                if (
-                                    gifGrid.children.length === 0
-                                ) {
-
-                                    renderGifError(
-                                        "GIF'ler yüklenemedi."
-                                    );
-                                }
-                            }
-                        );
+                            };
 
 
                         img.addEventListener(
                             "click",
                             () => {
 
-                                if (!currentUser)
+                                if (!currentUser) {
                                     return;
-
-
-                                /*
-                                 * GIF'in gerçek URL'sini
-                                 * Firebase mesajına koyuyoruz.
-                                 */
-
-                                const payload = {
-
-                                    sender:
-                                        currentUser,
-
-                                    avatar:
-                                        currentAvatar,
-
-                                    text:
-                                        imgUrl,
-
-                                    timestamp:
-                                        serverTimestamp(),
-
-                                    gif: true
-                                };
-
-
-                                if (
-                                    activeReplyTarget
-                                ) {
-
-                                    payload.replyTo =
-                                        activeReplyTarget;
                                 }
 
 
-                                push(
-                                    rawMessagesRef,
-                                    payload
-                                );
-
-
-                                remove(
-                                    ref(
-                                        database,
-                                        `typing/${currentUser}`
-                                    )
-                                );
-
-
-                                clearTimeout(
-                                    typingTimeout
-                                );
-
-
-                                activeReplyTarget =
-                                    null;
-
-
-                                replyPreviewBar.style.display =
-                                    "none";
-
-
-                                pickerContainer.classList.remove(
-                                    "show"
+                                sendGif(
+                                    imgUrl
                                 );
                             }
                         );
 
 
-                        gifGrid.appendChild(
-                            img
-                        );
+                        gifGrid.appendChild(img);
                     }
                 );
 
 
-                gifGrid.dataset.loaded =
-                    "true";
+                if (
+                    gifGrid.children.length === 0
+                ) {
 
-
-                if (renderedCount === 0) {
-
-                    renderGifError(
-                        "KLIPY sonuçlarında kullanılabilir GIF bulunamadı."
-                    );
+                    gifGrid.innerHTML = `
+                        <div style="
+                            color:var(--fg-sub);
+                            font-size:12px;
+                            grid-column:span 2;
+                            text-align:center;
+                        ">
+                            GIF bulunamadı.
+                        </div>
+                    `;
                 }
 
 
             } catch (error) {
 
                 console.error(
-                    "KLIPY GIF API hatası:",
+                    "KLIPY GIF Hatası:",
                     error
                 );
 
 
-                gifGrid.dataset.loaded =
-                    "false";
-
-
-                renderGifError(
-                    "GIF'ler yüklenemedi."
-                );
+                gifGrid.innerHTML = `
+                    <div style="
+                        color:var(--danger-red);
+                        font-size:12px;
+                        grid-column:span 2;
+                        text-align:center;
+                        padding:10px;
+                    ">
+                        GIF yüklenemedi.
+                        <br>
+                        <small>
+                            API bağlantısını kontrol edin.
+                        </small>
+                    </div>
+                `;
             }
         }
 
 
-        /* =========================================================
-           GIF SEARCH DEBOUNCE
-        ========================================================= */
+        /* =========================
+           SEND GIF
+        ========================= */
 
-        let gifDebounceTimer;
+        function sendGif(
+            gifUrl
+        ) {
 
+            const payload = {
+
+                sender:
+                    currentUser,
+
+                avatar:
+                    currentAvatar,
+
+                text:
+                    gifUrl,
+
+                type:
+                    "gif",
+
+                timestamp:
+                    serverTimestamp()
+            };
+
+
+            if (activeReplyTarget) {
+
+                payload.replyTo =
+                    activeReplyTarget;
+            }
+
+
+            push(
+                rawMessagesRef,
+                payload
+            );
+
+
+            remove(
+                ref(
+                    database,
+                    `typing/${currentUser}`
+                )
+            );
+
+
+            clearTimeout(
+                typingTimeout
+            );
+
+
+            activeReplyTarget =
+                null;
+
+            replyPreviewBar.style.display =
+                "none";
+
+            pickerContainer.classList.remove(
+                "show"
+            );
+        }
+
+
+        /* =========================
+           GIF SEARCH
+        ========================= */
 
         gifSearchInput.addEventListener(
             "input",
@@ -1986,9 +2034,9 @@
         );
 
 
-        /* =========================================================
+        /* =========================
            ONLINE USERS
-        ========================================================= */
+        ========================= */
 
         onValue(
             onlineRef,
@@ -2000,8 +2048,9 @@
                 onlineUsersList.innerHTML =
                     "";
 
-
-                if (!data) return;
+                if (!data) {
+                    return;
+                }
 
 
                 const uniqueUsers = {};
@@ -2010,13 +2059,16 @@
                 Object.values(data).forEach(
                     u => {
 
-                        if (!u || !u.username)
-                            return;
-
-                        uniqueUsers[
+                        if (
+                            u &&
                             u.username
-                        ] =
-                            u.avatar;
+                        ) {
+
+                            uniqueUsers[
+                                u.username
+                            ] =
+                                u.avatar;
+                        }
                     }
                 );
 
@@ -2031,10 +2083,8 @@
                                 "img"
                             );
 
-
                         img.className =
                             "online-user-img";
-
 
                         img.src =
                             avatar ||
@@ -2042,7 +2092,6 @@
                                 username,
                                 ""
                             );
-
 
                         img.title =
                             username;
@@ -2083,15 +2132,17 @@
         );
 
 
-        /* =========================================================
+        /* =========================
            TYPING
-        ========================================================= */
+        ========================= */
 
         messageInput.addEventListener(
             "input",
             () => {
 
-                if (!currentUser) return;
+                if (!currentUser) {
+                    return;
+                }
 
 
                 set(
@@ -2147,13 +2198,14 @@
                     Object.keys(data)
                         .filter(
                             user =>
-                                !currentUser ||
                                 user.toLowerCase() !==
                                 currentUser.toLowerCase()
                         );
 
 
-                if (typers.length === 1) {
+                if (
+                    typers.length === 1
+                ) {
 
                     typingIndicator.innerText =
                         `${typers[0]} yazıyor...`;
@@ -2174,9 +2226,9 @@
         );
 
 
-        /* =========================================================
-           MESSAGE ADDED
-        ========================================================= */
+        /* =========================
+           MESSAGE ADD
+        ========================= */
 
         onChildAdded(
             messagesRef,
@@ -2186,7 +2238,6 @@
                     document.getElementById(
                         "loadingText"
                     );
-
 
                 if (loadingEl) {
                     loadingEl.remove();
@@ -2199,10 +2250,14 @@
                 };
 
 
+                const timestamp =
+                    typeof msg.timestamp === "number"
+                        ? msg.timestamp
+                        : Date.now();
+
+
                 const dateObj =
-                    msg.timestamp
-                        ? new Date(msg.timestamp)
-                        : new Date();
+                    new Date(timestamp);
 
 
                 const timeStr =
@@ -2210,8 +2265,7 @@
                         "tr-TR",
                         {
                             hour: "2-digit",
-                            minute: "2-digit",
-                            hour12: false
+                            minute: "2-digit"
                         }
                     );
 
@@ -2221,42 +2275,41 @@
 
 
                 const lastSender =
-                    lastGroup
-                        ? lastGroup.dataset.sender
-                        : null;
+                    lastGroup?.dataset.sender ||
+                    null;
 
 
-                const lastTime =
-                    lastGroup
-                        ? parseInt(
-                            lastGroup.dataset.timestamp ||
-                            "0"
-                        )
-                        : 0;
+                const lastTimestamp =
+                    Number(
+                        lastGroup?.dataset.timestamp ||
+                        0
+                    );
 
 
                 const isSameSender =
-                    lastSender === msg.sender;
+                    lastSender ===
+                    msg.sender;
 
 
                 const isWithin1Min =
-                    msg.timestamp &&
-                    lastTime &&
-                    (msg.timestamp - lastTime) /
-                        1000 <
-                        60;
+                    lastTimestamp > 0 &&
+                    (
+                        timestamp -
+                        lastTimestamp
+                    ) <
+                    60 * 1000;
 
 
                 const isMe =
-                    currentUser &&
                     msg.sender &&
+                    currentUser &&
                     msg.sender.toLowerCase() ===
                     currentUser.toLowerCase();
 
 
                 const isMentioned =
                     currentUser &&
-                    msg.text &&
+                    typeof msg.text === "string" &&
                     msg.text
                         .toLowerCase()
                         .includes(
@@ -2264,11 +2317,15 @@
                         );
 
 
+                /*
+                 * Bildirim
+                 */
+
                 if (
                     !isMe &&
                     (
-                        !msg.timestamp ||
-                        Date.now() - msg.timestamp < 10000
+                        Date.now() - timestamp <
+                        10000
                     )
                 ) {
 
@@ -2280,7 +2337,7 @@
                         if (
                             "Notification" in window &&
                             Notification.permission ===
-                                "granted" &&
+                            "granted" &&
                             document.hidden
                         ) {
 
@@ -2288,7 +2345,7 @@
                                 `${msg.sender} senden bahsetti!`,
                                 {
                                     body:
-                                        msg.text,
+                                        msg.text || "",
                                     icon:
                                         getAvatarUrl(
                                             msg.sender,
@@ -2304,6 +2361,10 @@
                     }
                 }
 
+
+                /*
+                 * Aynı kullanıcı + 1 dakika
+                 */
 
                 if (
                     isSameSender &&
@@ -2323,6 +2384,14 @@
                         true
                     );
 
+
+                    /*
+                     * Grup timestamp'i güncelle.
+                     */
+                    lastGroup.dataset.timestamp =
+                        timestamp;
+
+
                 } else {
 
                     const groupEl =
@@ -2340,8 +2409,7 @@
 
 
                     groupEl.dataset.timestamp =
-                        msg.timestamp ||
-                        Date.now();
+                        timestamp;
 
 
                     const avatarUrl =
@@ -2356,10 +2424,7 @@
                             class="group-avatar"
                             src="${escapeHTML(avatarUrl)}"
                             alt="${escapeHTML(msg.sender)}"
-                            onerror="this.src='${getAvatarUrl(
-                                msg.sender,
-                                ""
-                            )}'"
+                            onerror="this.src='${getAvatarUrl(msg.sender, "")}'"
                         >
 
                         <div class="group-body">
@@ -2401,15 +2466,19 @@
                 }
 
 
-                messagesList.scrollTop =
-                    messagesList.scrollHeight;
+                /*
+                 * Sadece kullanıcı gerçekten
+                 * aşağıdaysa scroll.
+                 */
+
+                scrollMessagesToBottom();
             }
         );
 
 
-        /* =========================================================
+        /* =========================
            MESSAGE CHANGED
-        ========================================================= */
+        ========================= */
 
         onChildChanged(
             rawMessagesRef,
@@ -2424,15 +2493,21 @@
 
                 const item =
                     messagesList.querySelector(
-                        `[data-msg-key="${key}"]`
+                        `[data-msg-key="${CSS.escape(key)}"]`
                     );
 
 
-                if (!item) return;
+                if (!item) {
+                    return;
+                }
 
 
                 item.dataset.rawText =
-                    updatedData.text;
+                    updatedData.text || "";
+
+
+                item.dataset.type =
+                    updatedData.type || "text";
 
 
                 const span =
@@ -2445,11 +2520,13 @@
 
                     span.innerHTML =
                         parseMarkdown(
-                            updatedData.text
+                            updatedData.text || ""
                         );
 
+
                     renderMediaPreviews(
-                        span
+                        span,
+                        updatedData
                     );
                 }
 
@@ -2457,15 +2534,40 @@
                 renderReactions(
                     item,
                     updatedData.reactions ||
-                        {}
+                    {}
                 );
+
+
+                const isMentioned =
+                    currentUser &&
+                    typeof updatedData.text ===
+                    "string" &&
+                    updatedData.text
+                        .toLowerCase()
+                        .includes(
+                            `@${currentUser.toLowerCase()}`
+                        );
+
+
+                if (isMentioned) {
+
+                    item.classList.add(
+                        "is-mentioned"
+                    );
+
+                } else {
+
+                    item.classList.remove(
+                        "is-mentioned"
+                    );
+                }
             }
         );
 
 
-        /* =========================================================
+        /* =========================
            MESSAGE REMOVED
-        ========================================================= */
+        ========================= */
 
         onChildRemoved(
             rawMessagesRef,
@@ -2477,11 +2579,13 @@
 
                 const item =
                     messagesList.querySelector(
-                        `[data-msg-key="${key}"]`
+                        `[data-msg-key="${CSS.escape(key)}"]`
                     );
 
 
-                if (!item) return;
+                if (!item) {
+                    return;
+                }
 
 
                 const group =
@@ -2506,9 +2610,9 @@
         );
 
 
-        /* =========================================================
-           ADD MESSAGE
-        ========================================================= */
+        /* =========================
+           ADD MESSAGE TO GROUP
+        ========================= */
 
         function addMessageToGroup(
             container,
@@ -2540,10 +2644,15 @@
 
 
             item.dataset.rawText =
-                msg.text;
+                msg.text || "";
+
+
+            item.dataset.type =
+                msg.type || "text";
 
 
             const isMe =
+                msg.sender &&
                 currentUser &&
                 msg.sender.toLowerCase() ===
                 currentUser.toLowerCase();
@@ -2551,7 +2660,7 @@
 
             const isMentioned =
                 currentUser &&
-                msg.text &&
+                typeof msg.text === "string" &&
                 msg.text
                     .toLowerCase()
                     .includes(
@@ -2560,6 +2669,7 @@
 
 
             if (isMentioned) {
+
                 item.classList.add(
                     "is-mentioned"
                 );
@@ -2600,7 +2710,17 @@
                         class="action-btn edit"
                         title="Düzenle"
                     >
-                        ✎
+                        <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg>
                     </button>
                 `;
 
@@ -2610,7 +2730,17 @@
                         class="action-btn delete"
                         title="Sil"
                     >
-                        🗑
+                        <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
                     </button>
                 `;
             }
@@ -2662,7 +2792,17 @@
                         class="action-btn reply"
                         title="Yanıtla"
                     >
-                        ↩
+                        <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
+                            <polyline points="9 17 4 12 9 7"></polyline>
+                            <path d="M20 18v-2a4 4 0 0 0-4-4H4"></path>
+                        </svg>
                     </button>
 
                     ${editBtnHTML}
@@ -2678,7 +2818,7 @@
                 <div class="message-content-wrapper">
 
                     <span class="msg-content">
-                        ${parseMarkdown(msg.text)}
+                        ${parseMarkdown(msg.text || "")}
                     </span>
 
                     ${actionsHTML}
@@ -2689,7 +2829,9 @@
             `;
 
 
-            container.appendChild(item);
+            container.appendChild(
+                item
+            );
 
 
             const contentSpan =
@@ -2699,7 +2841,8 @@
 
 
             renderMediaPreviews(
-                contentSpan
+                contentSpan,
+                msg
             );
 
 
@@ -2710,16 +2853,18 @@
         }
 
 
-        /* =========================================================
-           REACTIONS
-        ========================================================= */
+        /* =========================
+           REACTION
+        ========================= */
 
         function toggleReaction(
             msgKey,
             emoji
         ) {
 
-            if (!currentUser) return;
+            if (!currentUser) {
+                return;
+            }
 
 
             const reactRef =
@@ -2729,24 +2874,31 @@
                 );
 
 
-            get(reactRef).then(
-                snap => {
+            get(reactRef)
+                .then(
+                    snap => {
 
-                    if (snap.exists()) {
+                        if (snap.exists()) {
 
-                        remove(reactRef);
+                            remove(
+                                reactRef
+                            );
 
-                    } else {
+                        } else {
 
-                        set(
-                            reactRef,
-                            true
-                        );
+                            set(
+                                reactRef,
+                                true
+                            );
+                        }
                     }
-                }
-            );
+                );
         }
 
+
+        /* =========================
+           RENDER REACTIONS
+        ========================= */
 
         function renderReactions(
             itemEl,
@@ -2759,18 +2911,23 @@
                 );
 
 
-            if (!container) return;
+            if (!container) {
+                return;
+            }
 
 
-            container.innerHTML = "";
+            container.innerHTML =
+                "";
 
 
             Object.entries(
-                reactionsData
+                reactionsData || {}
             ).forEach(
                 ([emoji, usersObj]) => {
 
-                    if (!usersObj) return;
+                    if (!usersObj) {
+                        return;
+                    }
 
 
                     const users =
@@ -2779,8 +2936,9 @@
                         );
 
 
-                    if (!users.length)
+                    if (users.length === 0) {
                         return;
+                    }
 
 
                     const hasReacted =
@@ -2810,7 +2968,7 @@
 
 
                     badge.innerHTML = `
-                        <span>${emoji}</span>
+                        <span>${escapeHTML(emoji)}</span>
                         <span class="reaction-count">
                             ${users.length}
                         </span>
@@ -2821,11 +2979,8 @@
                         "click",
                         () => {
 
-                            const key =
-                                itemEl.dataset.msgKey;
-
                             toggleReaction(
-                                key,
+                                itemEl.dataset.msgKey,
                                 emoji
                             );
                         }
@@ -2840,9 +2995,9 @@
         }
 
 
-        /* =========================================================
-           MESSAGE ACTIONS
-        ========================================================= */
+        /* =========================
+           MESSAGE CLICK
+        ========================= */
 
         messagesList.addEventListener(
             "click",
@@ -2887,38 +3042,43 @@
                 if (copyBtn) {
 
                     const codeText =
-                        copyBtn.dataset.code;
+                        copyBtn._codeText || "";
 
 
                     navigator.clipboard
-                        .writeText(codeText)
-                        .then(() => {
+                        .writeText(
+                            codeText
+                        )
+                        .then(
+                            () => {
 
-                            const originalText =
-                                copyBtn.innerText;
+                                const originalText =
+                                    copyBtn.innerText;
+
+                                copyBtn.innerText =
+                                    "Kopyalandı!";
 
 
-                            copyBtn.innerText =
-                                "Kopyalandı!";
+                                setTimeout(
+                                    () => {
 
+                                        copyBtn.innerText =
+                                            originalText;
 
-                            setTimeout(
-                                () => {
-
-                                    copyBtn.innerText =
-                                        originalText;
-
-                                },
-                                1500
-                            );
-                        });
+                                    },
+                                    1500
+                                );
+                            }
+                        );
 
 
                     return;
                 }
 
 
-                if (!item) return;
+                if (!item) {
+                    return;
+                }
 
 
                 const key =
@@ -2933,9 +3093,12 @@
 
                 if (quickReactBtn) {
 
+                    const emoji =
+                        quickReactBtn.dataset.emoji;
+
                     toggleReaction(
                         key,
-                        quickReactBtn.dataset.emoji
+                        emoji
                     );
 
                     return;
@@ -2995,8 +3158,10 @@
                 if (replyBtn) {
 
                     activeReplyTarget = {
-                        sender,
-                        text: rawText
+                        sender:
+                            sender,
+                        text:
+                            rawText
                     };
 
 
@@ -3018,14 +3183,12 @@
         );
 
 
-        /* =========================================================
-           REPLY
-        ========================================================= */
+        /* =========================
+           CANCEL REPLY
+        ========================= */
 
         document
-            .getElementById(
-                "cancelReplyBtn"
-            )
+            .getElementById("cancelReplyBtn")
             .addEventListener(
                 "click",
                 () => {
@@ -3039,14 +3202,12 @@
             );
 
 
-        /* =========================================================
-           EDIT
-        ========================================================= */
+        /* =========================
+           CANCEL EDIT
+        ========================= */
 
         document
-            .getElementById(
-                "cancelEditBtn"
-            )
+            .getElementById("cancelEditBtn")
             .addEventListener(
                 "click",
                 () => {
@@ -3060,10 +3221,12 @@
             );
 
 
+        /* =========================
+           SAVE EDIT
+        ========================= */
+
         document
-            .getElementById(
-                "saveEditBtn"
-            )
+            .getElementById("saveEditBtn")
             .addEventListener(
                 "click",
                 () => {
@@ -3084,14 +3247,14 @@
                                 `messages/${activeEditKey}`
                             ),
                             {
-                                text: newText
+                                text:
+                                    newText
                             }
                         );
 
 
                         editModal.style.display =
                             "none";
-
 
                         activeEditKey =
                             null;
@@ -3100,9 +3263,9 @@
             );
 
 
-        /* =========================================================
+        /* =========================
            SEND MESSAGE
-        ========================================================= */
+        ========================= */
 
         chatForm.addEventListener(
             "submit",
@@ -3112,7 +3275,8 @@
 
 
                 const text =
-                    messageInput.value.trim();
+                    messageInput.value
+                        .trim();
 
 
                 if (
@@ -3133,6 +3297,9 @@
 
                     text:
                         text,
+
+                    type:
+                        "text",
 
                     timestamp:
                         serverTimestamp()
@@ -3184,9 +3351,9 @@
         );
 
 
-        /* =========================================================
+        /* =========================
            ENTER
-        ========================================================= */
+        ========================= */
 
         messageInput.addEventListener(
             "keydown",
@@ -3207,83 +3374,81 @@
         );
 
 
-        /* =========================================================
+        /* =========================
            ESCAPE HTML
-        ========================================================= */
+        ========================= */
 
         function escapeHTML(str) {
 
-            if (!str) return "";
+            if (
+                str === null ||
+                str === undefined
+            ) {
+                return "";
+            }
 
 
             return String(str).replace(
                 /[&<>'"]/g,
-                tag =>
-                    ({
-                        "&": "&amp;",
-                        "<": "&lt;",
-                        ">": "&gt;",
-                        "'": "&#39;",
-                        '"': "&quot;"
-                    }[tag] || tag)
+                tag => ({
+                    "&": "&amp;",
+                    "<": "&lt;",
+                    ">": "&gt;",
+                    "'": "&#39;",
+                    '"': "&quot;"
+                })[tag]
             );
         }
 
 
-        /* =========================================================
+        /* =========================
            MARKDOWN
-        ========================================================= */
+        ========================= */
 
-        function parseMarkdown(str) {
+        function parseMarkdown(
+            str
+        ) {
 
-            if (!str) return "";
+            if (!str) {
+                return "";
+            }
 
 
             const tokens = [];
-
 
             let html =
                 escapeHTML(str);
 
 
+            /*
+             * Inline code
+             */
+
             html =
                 html.replace(
-                    /`(.*?)`/g,
-                    (m, p1) => {
+                    /`([^`]+)`/g,
+                    (match, code) => {
 
-                        const codeHTML = `
-                            <span class="code-container">
-
-                                <code>
-                                    ${p1}
-                                </code>
-
-                                <button
-                                    type="button"
-                                    class="code-copy-btn"
-                                    data-code="${p1.replace(
-                                        /"/g,
-                                        "&quot;"
-                                    )}"
-                                >
-                                    Kopyala
-                                </button>
-
-                            </span>
-                        `;
+                        const token =
+                            `%%CODE_${tokens.length}%%`;
 
 
-                        tokens.push(
-                            codeHTML
-                        );
+                        tokens.push({
+                            type:
+                                "code",
+                            value:
+                                code
+                        });
 
 
-                        return (
-                            `%%TOKEN_${tokens.length - 1}%%`
-                        );
+                        return token;
                     }
                 );
 
+
+            /*
+             * URL
+             */
 
             const urlRegex =
                 /(https?:\/\/[^\s<]+)/g;
@@ -3294,29 +3459,59 @@
                     urlRegex,
                     url => {
 
-                        const linkHTML = `
-                            <a
-                                href="${url}"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                class="chat-link"
-                            >
-                                ${url}
-                            </a>
-                        `;
+                        /*
+                         * Noktalama işaretlerini URL'den
+                         * ayır.
+                         */
+
+                        let cleanUrl =
+                            url;
+
+                        let trailing =
+                            "";
 
 
-                        tokens.push(
-                            linkHTML
-                        );
+                        while (
+                            /[.,!?;:)]+$/.test(
+                                cleanUrl
+                            )
+                        ) {
+
+                            trailing =
+                                cleanUrl.slice(-1) +
+                                trailing;
+
+                            cleanUrl =
+                                cleanUrl.slice(
+                                    0,
+                                    -1
+                                );
+                        }
+
+
+                        const token =
+                            `%%URL_${tokens.length}%%`;
+
+
+                        tokens.push({
+                            type:
+                                "url",
+                            value:
+                                cleanUrl
+                        });
 
 
                         return (
-                            `%%TOKEN_${tokens.length - 1}%%`
+                            token +
+                            trailing
                         );
                     }
                 );
 
+
+            /*
+             * Mention
+             */
 
             html =
                 html.replace(
@@ -3324,6 +3519,10 @@
                     '<span class="mention-tag">@$1</span>'
                 );
 
+
+            /*
+             * Markdown
+             */
 
             html =
                 html.replace(
@@ -3353,35 +3552,163 @@
                 );
 
 
-            for (
-                let i = 0;
-                i < tokens.length;
-                i++
-            ) {
+            /*
+             * Tokenları geri koy.
+             */
 
-                html =
-                    html.split(
-                        `%%TOKEN_${i}%%`
-                    ).join(
-                        tokens[i]
-                    );
-            }
+            tokens.forEach(
+                (token, index) => {
+
+                    const tokenName =
+                        token.type === "code"
+                            ? `%%CODE_${index}%%`
+                            : `%%URL_${index}%%`;
+
+
+                    let replacement = "";
+
+
+                    if (
+                        token.type === "code"
+                    ) {
+
+                        replacement =
+                            `<span class="code-container">
+                                <code>${escapeHTML(token.value)}</code>
+                                <button
+                                    type="button"
+                                    class="code-copy-btn"
+                                >
+                                    Kopyala
+                                </button>
+                            </span>`;
+
+                    } else {
+
+                        replacement =
+                            `<a
+                                href="${escapeHTML(token.value)}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="chat-link"
+                            >${escapeHTML(token.value)}</a>`;
+                    }
+
+
+                    html =
+                        html.split(
+                            tokenName
+                        ).join(
+                            replacement
+                        );
+                }
+            );
 
 
             return html;
         }
 
 
-        /* =========================================================
-           MEDIA PREVIEWS
-        ========================================================= */
+        /* =========================
+           MEDIA
+        ========================= */
 
         function renderMediaPreviews(
-            container
+            container,
+            msg = {}
         ) {
 
-            if (!container) return;
+            if (!container) {
+                return;
+            }
 
+
+            /*
+             * GIF mesajı
+             */
+
+            if (
+                msg.type === "gif" &&
+                msg.text
+            ) {
+
+                if (
+                    container.querySelector(
+                        `[data-media-url="${CSS.escape(msg.text)}"]`
+                    )
+                ) {
+                    return;
+                }
+
+
+                /*
+                 * GIF URL'sini metin olarak
+                 * göstermek istemiyoruz.
+                 */
+
+                container.innerHTML =
+                    "";
+
+
+                const mediaBox =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                mediaBox.className =
+                    "media-container";
+
+
+                mediaBox.dataset.mediaUrl =
+                    msg.text;
+
+
+                const img =
+                    document.createElement(
+                        "img"
+                    );
+
+
+                img.className =
+                    "gif-message";
+
+
+                img.src =
+                    msg.text;
+
+
+                img.alt =
+                    "GIF";
+
+
+                img.loading =
+                    "lazy";
+
+
+                img.onerror =
+                    () => {
+                        mediaBox.remove();
+                    };
+
+
+                mediaBox.appendChild(
+                    img
+                );
+
+
+                container.appendChild(
+                    mediaBox
+                );
+
+
+                return;
+            }
+
+
+            /*
+             * Normal mesajdaki linkler.
+             */
 
             const links =
                 container.querySelectorAll(
@@ -3443,7 +3770,6 @@
                         iframe.src =
                             `https://www.youtube.com/embed/${ytMatch[1]}`;
 
-
                         iframe.style.width =
                             "100%";
 
@@ -3473,20 +3799,12 @@
                         );
 
 
-                        messagesList.scrollTop =
-                            messagesList.scrollHeight;
-
-
                         return;
                     }
 
 
                     /*
-                     * GIF / IMAGE
-                     *
-                     * KLIPY GIF URL'leri de
-                     * burada normal image olarak
-                     * gösterilebilir.
+                     * Görsel
                      */
 
                     const img =
@@ -3501,14 +3819,8 @@
                         () => {
 
                             if (
-                                Array.from(
-                                    container.querySelectorAll(
-                                        ".media-container"
-                                    )
-                                ).some(
-                                    el =>
-                                        el.dataset.mediaUrl ===
-                                        url
+                                container.querySelector(
+                                    `[data-media-url="${CSS.escape(url)}"]`
                                 )
                             ) {
                                 return;
@@ -3542,7 +3854,7 @@
                                 "media-preview";
 
                             image.alt =
-                                "Görsel / GIF";
+                                "Görsel Önizleme";
 
                             image.loading =
                                 "lazy";
@@ -3558,14 +3870,12 @@
                             );
 
 
-                            messagesList.scrollTop =
-                                messagesList.scrollHeight;
+                            scrollMessagesToBottom();
                         };
 
 
                     /*
-                     * Görsel değilse video olarak
-                     * dene.
+                     * Video
                      */
 
                     img.onerror =
@@ -3581,18 +3891,16 @@
                                 url;
 
 
+                            video.preload =
+                                "metadata";
+
+
                             video.onloadedmetadata =
                                 () => {
 
                                     if (
-                                        Array.from(
-                                            container.querySelectorAll(
-                                                ".media-container"
-                                            )
-                                        ).some(
-                                            el =>
-                                                el.dataset.mediaUrl ===
-                                                url
+                                        container.querySelector(
+                                            `[data-media-url="${CSS.escape(url)}"]`
                                         )
                                     ) {
                                         return;
@@ -3613,19 +3921,27 @@
                                         url;
 
 
-                                    video.className =
+                                    const videoElement =
+                                        document.createElement(
+                                            "video"
+                                        );
+
+
+                                    videoElement.src =
+                                        url;
+
+                                    videoElement.className =
                                         "media-preview";
 
-
-                                    video.controls =
+                                    videoElement.controls =
                                         true;
 
-                                    video.preload =
+                                    videoElement.preload =
                                         "metadata";
 
 
                                     mediaBox.appendChild(
-                                        video
+                                        videoElement
                                     );
 
 
@@ -3634,15 +3950,43 @@
                                     );
 
 
-                                    messagesList.scrollTop =
-                                        messagesList.scrollHeight;
+                                    scrollMessagesToBottom();
                                 };
                         };
                 }
             );
         }
 
-    </script>
 
+        /* =========================
+           SCROLL
+        ========================= */
+
+        function scrollMessagesToBottom() {
+
+            const distance =
+                messagesList.scrollHeight -
+                messagesList.scrollTop -
+                messagesList.clientHeight;
+
+
+            /*
+             * Kullanıcı aşağıya yakınsa otomatik
+             * aşağı kaydır.
+             */
+
+            if (distance < 250) {
+
+                requestAnimationFrame(
+                    () => {
+
+                        messagesList.scrollTop =
+                            messagesList.scrollHeight;
+                    }
+                );
+            }
+        }
+
+    </script>
 </body>
 </html>
