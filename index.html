@@ -342,11 +342,11 @@
                         <button type="button" class="tab-btn active" id="tabEmojiBtn">Emoji</button>
                         <button type="button" class="tab-btn" id="tabGifBtn">GIF</button>
                     </div>
-                    
+
                     <div class="tab-content active" id="emojiTabContent">
                         <emoji-picker id="emojiPicker" class="dark"></emoji-picker>
                     </div>
-                    
+
                     <div class="tab-content" id="gifTabContent">
                         <div class="gif-search-box">
                             <input type="text" id="gifSearchInput" placeholder="GIF Ara (Klipy)...">
@@ -501,7 +501,7 @@
 
             currentUser = username;
             currentAvatar = avatarUrl;
-            
+
             localStorage.setItem('gh_chat_username', currentUser);
             localStorage.setItem('gh_chat_avatar', currentAvatar);
             initUserSession();
@@ -542,34 +542,62 @@
             }
         });
 
-        /* KLIPY GIF İŞLEMLERİ */
+        /* DÜZELTİLMİŞ KLIPY GIF İŞLEMLERİ */
         async function fetchGifs(query = '') {
             gifGrid.innerHTML = '<div style="color:var(--fg-sub); font-size:12px; grid-column:span 2; text-align:center;">Yükleniyor...</div>';
-            
-            const endpoint = query ? 'search' : 'trending';
-            const url = `https://api.klipy.co/v1/gifs/${endpoint}?api_key=${KLIPY_API_KEY}&q=${encodeURIComponent(query)}&limit=20`;
+
+            const trimmedQuery = query.trim();
+            const url = trimmedQuery
+                ? `https://api.klipy.co/v1/gifs/search?api_key=${KLIPY_API_KEY}&q=${encodeURIComponent(trimmedQuery)}&limit=20`
+                : `https://api.klipy.co/v1/gifs/trending?api_key=${KLIPY_API_KEY}&limit=20`;
 
             try {
                 const res = await fetch(url);
+                if (!res.ok) throw new Error('API Yanıt Hatası');
+
                 const json = await res.json();
                 gifGrid.innerHTML = '';
 
-                const gifs = json.data || json.results || [];
+                let gifs = [];
+                if (Array.isArray(json)) {
+                    gifs = json;
+                } else if (Array.isArray(json.data)) {
+                    gifs = json.data;
+                } else if (Array.isArray(json.results)) {
+                    gifs = json.results;
+                }
+
                 if (gifs.length === 0) {
                     gifGrid.innerHTML = '<div style="color:var(--fg-sub); font-size:12px; grid-column:span 2; text-align:center;">Sonuç bulunamadı.</div>';
                     return;
                 }
 
                 gifs.forEach(gif => {
-                    const imgUrl = gif.images?.downsized?.url || gif.url || gif.gif_url;
+                    const imgUrl = gif.images?.downsized?.url || gif.images?.original?.url || gif.url || gif.gif_url || (typeof gif === 'string' ? gif : null);
                     if (!imgUrl) return;
 
                     const img = document.createElement('img');
                     img.className = 'gif-item';
                     img.src = imgUrl;
                     img.addEventListener('click', () => {
-                        messageInput.value += (messageInput.value ? ' ' : '') + imgUrl;
-                        chatForm.dispatchEvent(new Event('submit'));
+                        if (!currentUser) return;
+
+                        const payload = { 
+                            sender: currentUser, 
+                            avatar: currentAvatar, 
+                            text: imgUrl, 
+                            timestamp: serverTimestamp() 
+                        };
+                        
+                        if (activeReplyTarget) payload.replyTo = activeReplyTarget;
+
+                        push(rawMessagesRef, payload);
+
+                        remove(ref(database, `typing/${currentUser}`));
+                        clearTimeout(typingTimeout);
+
+                        activeReplyTarget = null;
+                        replyPreviewBar.style.display = 'none';
                         pickerContainer.classList.remove('show');
                     });
                     gifGrid.appendChild(img);
@@ -583,7 +611,7 @@
         gifSearchInput.addEventListener('input', (e) => {
             clearTimeout(gifDebounceTimer);
             gifDebounceTimer = setTimeout(() => {
-                fetchGifs(e.target.value.trim());
+                fetchGifs(e.target.value);
             }, 400);
         });
 
@@ -606,7 +634,7 @@
                     messageInput.value += `@${username} `;
                     messageInput.focus();
                 });
-                
+
                 onlineUsersList.appendChild(img);
             });
         });
