@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>abi ayak sevmeyen kaldı mı ya</title>
+    <!-- Emoji Picker Element CDN -->
+    <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@1/index.js"></script>
     <style>
         :root {
             --bg-dark: #282828;
@@ -88,6 +90,11 @@
         .message-content-wrapper { width: 100%; display: flex; justify-content: space-between; align-items: flex-start; gap: 15px;}
         .msg-content { flex: 1; }
 
+        /* KOD KOPYALAMA */
+        .code-container { position: relative; display: inline-block; max-width: 100%; }
+        .code-copy-btn { position: absolute; right: 4px; top: 2px; background: var(--border-color); color: var(--fg-text); border: none; font-size: 10px; padding: 2px 6px; border-radius: 3px; cursor: pointer; opacity: 0.7; transition: opacity 0.2s; }
+        .code-container:hover .code-copy-btn { opacity: 1; }
+
         /* MEDYA ÖNİZLEME STİLLERİ */
         .chat-link { color: var(--accent-blue); text-decoration: none; word-break: break-all; }
         .chat-link:hover { text-decoration: underline; }
@@ -125,10 +132,16 @@
         .reply-preview-user { font-weight: bold; color: var(--accent-yellow); }
         .btn-cancel-reply { background: transparent; border: none; color: var(--danger-red); font-size: 14px; cursor: pointer; font-weight: bold; margin-left: 10px; }
 
-        .input-area { padding: 15px 20px; background: var(--bg-panel); border-top: 1px solid var(--border-color); display: flex; gap: 10px; }
+        .input-area { padding: 15px 20px; background: var(--bg-panel); border-top: 1px solid var(--border-color); display: flex; gap: 10px; position: relative; }
         .input-area textarea { flex: 1; background: var(--bg-dark); border: 1px solid var(--border-color); color: var(--fg-text); border-radius: 6px; padding: 12px; resize: none; height: 46px; font-family: inherit; font-size: 14px; outline: none; }
         .input-area textarea:focus { border-color: var(--accent-yellow); }
-        .input-area button { background: var(--accent-yellow); border: none; padding: 0 20px; border-radius: 6px; font-weight: bold; color: var(--bg-dark); cursor: pointer; }
+        .input-area button[type="submit"] { background: var(--accent-yellow); border: none; padding: 0 20px; border-radius: 6px; font-weight: bold; color: var(--bg-dark); cursor: pointer; }
+        
+        /* EMOJI PICKER CONTAINER */
+        .btn-emoji-toggle { background: transparent; border: 1px solid var(--border-color); color: var(--accent-yellow); padding: 0 12px; border-radius: 6px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; }
+        .btn-emoji-toggle:hover { background: var(--hover-bg); }
+        emoji-picker { position: absolute; bottom: 70px; right: 20px; z-index: 100; display: none; --num-columns: 8; --category-emoji-size: 1.1rem; }
+        emoji-picker.show { display: flex; }
     </style>
 </head>
 <body>
@@ -185,6 +198,8 @@
             </div>
 
             <form class="input-area" id="chatForm">
+                <button type="button" class="btn-emoji-toggle" id="emojiToggleBtn" title="Emoji Ekle">😀</button>
+                <emoji-picker id="emojiPicker" class="dark"></emoji-picker>
                 <textarea id="messageInput" placeholder="Bir mesaj yazın..." required></textarea>
                 <button type="submit">Gönder</button>
             </form>
@@ -193,7 +208,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, push, onChildAdded, onChildChanged, onChildRemoved, onValue, serverTimestamp, remove, update, onDisconnect, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, push, onChildAdded, onChildChanged, onChildRemoved, onValue, serverTimestamp, remove, update, onDisconnect, set, query, limitToLast } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDRiCdkBRsKMeUpCmznQ3Sn8R6SvBk0C9U",
@@ -207,7 +222,10 @@
 
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
-        const messagesRef = ref(database, 'messages');
+        
+        // Son 100 mesaj sınırı (Sayfalama altyapısı)
+        const messagesRef = query(ref(database, 'messages'), limitToLast(100));
+        const rawMessagesRef = ref(database, 'messages');
         const onlineRef = ref(database, 'online_users');
         const typingRef = ref(database, 'typing');
 
@@ -232,6 +250,28 @@
         const replyPreviewBar = document.getElementById('replyPreviewBar');
         const replyPreviewUser = document.getElementById('replyPreviewUser');
         const replyPreviewText = document.getElementById('replyPreviewText');
+        const emojiToggleBtn = document.getElementById('emojiToggleBtn');
+        const emojiPicker = document.getElementById('emojiPicker');
+
+        // Bildirim İzni İste
+        if ("Notification" in window && Notification.permission === "default") {
+            Notification.requestPermission();
+        }
+
+        // WebAudio Ses Efekti
+        function playBeep(freq = 587.33) {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.frequency.value = freq;
+                gain.gain.setValueAtTime(0.05, ctx.currentTime);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.12);
+            } catch (e) {}
+        }
 
         function getAvatarUrl(username, customUrl) {
             if (customUrl && customUrl.trim() !== "") return customUrl;
@@ -280,6 +320,23 @@
             localStorage.removeItem('gh_chat_username');
             localStorage.removeItem('gh_chat_avatar');
             location.reload();
+        });
+
+        /* EMOJI PICKER HANDLERS */
+        emojiToggleBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            emojiPicker.classList.toggle('show');
+        });
+
+        emojiPicker.addEventListener('emoji-click', event => {
+            messageInput.value += event.detail.unicode;
+            messageInput.focus();
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!emojiPicker.contains(e.target) && e.target !== emojiToggleBtn) {
+                emojiPicker.classList.remove('show');
+            }
         });
 
         onValue(onlineRef, (snapshot) => {
@@ -337,6 +394,24 @@
             const isSameSender = lastSender === msg.sender;
             const isWithin1Min = (msg.timestamp - lastTime) / 1000 < 60;
 
+            const isMe = msg.sender.toLowerCase() === currentUser.toLowerCase();
+            const isMentioned = currentUser && msg.text.toLowerCase().includes(`@${currentUser.toLowerCase()}`);
+
+            // Bildirim & Ses Tetikleyicileri
+            if (!isMe && (Date.now() - msg.timestamp < 10000 || !msg.timestamp)) {
+                if (isMentioned) {
+                    playBeep(880); // Yüksek frekans uyarı sesi
+                    if ("Notification" in window && Notification.permission === "granted" && document.hidden) {
+                        new Notification(`${msg.sender} senden bahsetti!`, {
+                            body: msg.text,
+                            icon: getAvatarUrl(msg.sender, msg.avatar)
+                        });
+                    }
+                } else {
+                    playBeep(440); // Normal mesaj sesi
+                }
+            }
+
             if (isSameSender && isWithin1Min && lastGroup) {
                 const textContainer = lastGroup.querySelector('.message-text-list');
                 addMessageToGroup(textContainer, msg, true);
@@ -366,7 +441,7 @@
             messagesList.scrollTop = messagesList.scrollHeight;
         });
 
-        onChildChanged(messagesRef, (snapshot) => {
+        onChildChanged(rawMessagesRef, (snapshot) => {
             const key = snapshot.key;
             const updatedData = snapshot.val();
             const item = messagesList.querySelector(`[data-msg-key="${key}"]`);
@@ -384,7 +459,7 @@
             }
         });
 
-        onChildRemoved(messagesRef, (snapshot) => {
+        onChildRemoved(rawMessagesRef, (snapshot) => {
             const key = snapshot.key;
             const item = messagesList.querySelector(`[data-msg-key="${key}"]`);
             if (item) {
@@ -444,7 +519,6 @@
 
             container.appendChild(item);
             
-            // Linklerin altında medya önizlemelerini dinamik kontrol edip oluştur
             const contentSpan = item.querySelector('.msg-content');
             renderMediaPreviews(contentSpan);
         }
@@ -453,7 +527,19 @@
             const deleteBtn = e.target.closest('.action-btn.delete');
             const editBtn = e.target.closest('.action-btn.edit');
             const replyBtn = e.target.closest('.action-btn.reply');
+            const copyBtn = e.target.closest('.code-copy-btn');
             const item = e.target.closest('.message-item');
+
+            // Kod kopyalama işlemi
+            if (copyBtn) {
+                const codeText = copyBtn.dataset.code;
+                navigator.clipboard.writeText(codeText).then(() => {
+                    const originalText = copyBtn.innerText;
+                    copyBtn.innerText = 'Kopyalandı!';
+                    setTimeout(() => copyBtn.innerText = originalText, 1500);
+                });
+                return;
+            }
 
             if (!item) return;
 
@@ -507,7 +593,7 @@
             const payload = { sender: currentUser, avatar: currentAvatar, text: text, timestamp: serverTimestamp() };
             if (activeReplyTarget) payload.replyTo = activeReplyTarget;
 
-            push(messagesRef, payload);
+            push(rawMessagesRef, payload);
 
             remove(ref(database, `typing/${currentUser}`));
             clearTimeout(typingTimeout);
@@ -515,6 +601,7 @@
             messageInput.value = "";
             activeReplyTarget = null;
             replyPreviewBar.style.display = 'none';
+            emojiPicker.classList.remove('show');
         });
 
         messageInput.addEventListener('keydown', (e) => {
@@ -535,13 +622,15 @@
             const tokens = [];
             let html = escapeHTML(str);
 
-            // 1. Kod blokları
+            // 1. Kod blokları + Kopyalama Butonu Altyapısı
             html = html.replace(/`(.*?)`/g, (m, p1) => {
-                tokens.push(`<code>${p1}</code>`);
+                const codeId = 'code_' + Math.random().toString(36).substr(2, 9);
+                const codeHTML = `<span class="code-container"><code>${p1}</code><button type="button" class="code-copy-btn" data-code="${p1.replace(/"/g, '&quot;')}">Kopyala</button></span>`;
+                tokens.push(codeHTML);
                 return `%%TOKEN_${tokens.length - 1}%%`;
             });
 
-            // 2. URL Tespiti (Sadece Tıklanabilir Link Yapılır)
+            // 2. URL Tespiti
             const urlRegex = /(https?:\/\/[^\s<]+)/g;
             html = html.replace(urlRegex, (url) => {
                 const linkHTML = `<a href="${url}" target="_blank" rel="noopener noreferrer" class="chat-link">${url}</a>`;
@@ -564,13 +653,29 @@
             return html;
         }
 
-        // BAGLANTILARIN MEDYA OLUP OLMAYADIGINI KONTROL EDEN VE ALTINDA ONIZLEME OLUSTURAN FONKSIYON
+        // BAGLANTILARIN MEDYA / YOUTUBE OLUP OLMAYADIGINI KONTROL EDEN FONKSIYON
         function renderMediaPreviews(container) {
             const links = container.querySelectorAll('.chat-link');
             links.forEach(link => {
                 const url = link.href;
 
-                // Görsel denemesi
+                // 1. YouTube Embed Kontrolü
+                const ytMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([a-zA-Z0-9_-]{11})/);
+                if (ytMatch && ytMatch[1]) {
+                    if (container.querySelector(`[data-media-url="${url}"]`)) return;
+                    const mediaBox = document.createElement('div');
+                    mediaBox.className = 'media-container';
+                    mediaBox.dataset.mediaUrl = url;
+                    mediaBox.innerHTML = `
+                        <iframe src="https://www.youtube.com/embed/${ytMatch[1]}" 
+                                style="width:100%; height:220px; border-radius:6px; border:1px solid var(--border-color);" 
+                                allowfullscreen loading="lazy"></iframe>`;
+                    container.appendChild(mediaBox);
+                    messagesList.scrollTop = messagesList.scrollHeight;
+                    return;
+                }
+
+                // 2. Görsel Denemesi
                 const img = new Image();
                 img.src = url;
                 img.onload = () => {
@@ -583,7 +688,7 @@
                     messagesList.scrollTop = messagesList.scrollHeight;
                 };
 
-                // Görsel değilse Video denemesi
+                // 3. Video Denemesi
                 img.onerror = () => {
                     const video = document.createElement('video');
                     video.src = url;
