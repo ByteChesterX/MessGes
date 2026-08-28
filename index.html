@@ -36,6 +36,7 @@
         .modal-card input { width: 100%; padding: 12px; background: var(--bg-dark); border: 1px solid var(--border-color); color: var(--fg-text); border-radius: 6px; font-size: 14px; margin-bottom: 12px; outline: none; }
         .modal-card input:focus { border-color: var(--accent-yellow); }
         .modal-card button { width: 100%; padding: 12px; background: var(--accent-yellow); border: none; font-weight: bold; color: var(--bg-dark); border-radius: 6px; cursor: pointer; font-size: 16px; margin-top: 5px; }
+        .modal-error { color: var(--danger-red); font-size: 13px; margin-bottom: 10px; display: none; }
 
         /* DÜZENLEME MODALI */
         #editModal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 100; }
@@ -90,6 +91,13 @@
         .message-content-wrapper { width: 100%; display: flex; justify-content: space-between; align-items: flex-start; gap: 15px;}
         .msg-content { flex: 1; }
 
+        /* REAKSİYONLAR (EMOJI REACTIONS) STİLİ */
+        .reactions-container { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+        .reaction-badge { background: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 12px; padding: 2px 7px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px; user-select: none; transition: background 0.15s; }
+        .reaction-badge:hover { background: var(--hover-bg); }
+        .reaction-badge.user-reacted { border-color: var(--accent-yellow); background: rgba(250, 189, 47, 0.1); }
+        .reaction-count { font-weight: bold; color: var(--fg-sub); font-size: 11px; }
+
         /* KOD KOPYALAMA */
         .code-container { position: relative; display: inline-block; max-width: 100%; }
         .code-copy-btn { position: absolute; right: 4px; top: 2px; background: var(--border-color); color: var(--fg-text); border: none; font-size: 10px; padding: 2px 6px; border-radius: 3px; cursor: pointer; opacity: 0.7; transition: opacity 0.2s; }
@@ -116,7 +124,7 @@
         .mention-tag { color: var(--accent-blue); font-weight: bold; background: rgba(131, 165, 152, 0.2); padding: 0 4px; border-radius: 3px; }
         .message-item.is-mentioned { background-color: var(--mention-bg); border-left: 3px solid var(--mention-border); }
 
-        .message-actions { display: none; flex-shrink: 0; gap: 4px; background: var(--bg-panel); border: 1px solid var(--border-color); padding: 2px 6px; border-radius: 4px; position: absolute; right: 10px; top: -6px; z-index: 10; }
+        .message-actions { display: none; flex-shrink: 0; gap: 4px; background: var(--bg-panel); border: 1px solid var(--border-color); padding: 2px 6px; border-radius: 4px; position: absolute; right: 10px; top: -6px; z-index: 10; align-items: center; }
         .action-btn { background: transparent; border: none; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; padding: 2px; }
         .action-btn.reply { color: var(--accent-blue); }
         .action-btn.reply:hover { color: var(--fg-text); }
@@ -124,6 +132,7 @@
         .action-btn.edit:hover { color: var(--fg-text); }
         .action-btn.delete { color: var(--danger-red); }
         .action-btn.delete:hover { opacity: 0.8; }
+        .action-btn.react { color: var(--accent-yellow); font-size: 13px; }
 
         .typing-indicator { padding: 4px 20px; font-size: 12px; font-style: italic; color: var(--accent-yellow); height: 20px; display: flex; align-items: center; }
 
@@ -150,6 +159,7 @@
         <div class="modal-card">
             <h3>Instant Chat</h3>
             <p style="color: var(--fg-sub); font-size: 13px; margin-bottom: 15px;">Bilgilerinizi girin ve anlık sohbete başlayın.</p>
+            <div class="modal-error" id="modalError">Bu kullanıcı adı zaten alınmış!</div>
             <input type="text" id="usernameInput" placeholder="Kullanıcı Adınız..." required />
             <input type="url" id="avatarInput" placeholder="Profil Resmi URL (İsteğe bağlı)" />
             <button id="joinBtn">Sohbete Katıl</button>
@@ -208,7 +218,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, push, onChildAdded, onChildChanged, onChildRemoved, onValue, serverTimestamp, remove, update, onDisconnect, set, query, limitToLast } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, push, onChildAdded, onChildChanged, onChildRemoved, onValue, serverTimestamp, remove, update, onDisconnect, set, query, limitToLast, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDRiCdkBRsKMeUpCmznQ3Sn8R6SvBk0C9U",
@@ -223,7 +233,6 @@
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
         
-        // Son 100 mesaj sınırı (Sayfalama altyapısı)
         const messagesRef = query(ref(database, 'messages'), limitToLast(100));
         const rawMessagesRef = ref(database, 'messages');
         const onlineRef = ref(database, 'online_users');
@@ -233,11 +242,13 @@
         let currentAvatar = localStorage.getItem('gh_chat_avatar') || "";
         let activeEditKey = null;
         let activeReplyTarget = null; 
+        let activeReactionMsgKey = null; // Reaksiyon verilmek istenen mesaj
         let typingTimeout = null;
         let myUserRef = null;
         let myTypingRef = null;
 
         const userModal = document.getElementById('userModal');
+        const modalError = document.getElementById('modalError');
         const editModal = document.getElementById('editModal');
         const editMessageInput = document.getElementById('editMessageInput');
         const displayUsername = document.getElementById('displayUsername');
@@ -253,12 +264,10 @@
         const emojiToggleBtn = document.getElementById('emojiToggleBtn');
         const emojiPicker = document.getElementById('emojiPicker');
 
-        // Bildirim İzni İste
         if ("Notification" in window && Notification.permission === "default") {
             Notification.requestPermission();
         }
 
-        // WebAudio Ses Efekti
         function playBeep(freq = 587.33) {
             try {
                 const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -302,16 +311,30 @@
             initUserSession();
         }
 
-        document.getElementById('joinBtn').addEventListener('click', () => {
+        // KULLANICI ADI BENZERSİZLİK KONTROLÜ
+        document.getElementById('joinBtn').addEventListener('click', async () => {
             const username = document.getElementById('usernameInput').value.trim();
             const avatarUrl = document.getElementById('avatarInput').value.trim();
-            if (username) {
-                currentUser = username;
-                currentAvatar = avatarUrl;
-                localStorage.setItem('gh_chat_username', currentUser);
-                localStorage.setItem('gh_chat_avatar', currentAvatar);
-                initUserSession();
+            modalError.style.display = 'none';
+
+            if (!username) return;
+
+            // Online kullanıcıları kontrol et
+            const onlineSnap = await get(onlineRef);
+            if (onlineSnap.exists()) {
+                const onlineData = onlineSnap.val();
+                const isTaken = Object.values(onlineData).some(u => u.username && u.username.toLowerCase() === username.toLowerCase());
+                if (isTaken) {
+                    modalError.style.display = 'block';
+                    return;
+                }
             }
+
+            currentUser = username;
+            currentAvatar = avatarUrl;
+            localStorage.setItem('gh_chat_username', currentUser);
+            localStorage.setItem('gh_chat_avatar', currentAvatar);
+            initUserSession();
         });
 
         document.getElementById('resetUserBtn').addEventListener('click', () => {
@@ -325,17 +348,29 @@
         /* EMOJI PICKER HANDLERS */
         emojiToggleBtn.addEventListener('click', (e) => {
             e.stopPropagation();
+            activeReactionMsgKey = null; // Genel sohbet emojisi
             emojiPicker.classList.toggle('show');
         });
 
         emojiPicker.addEventListener('emoji-click', event => {
-            messageInput.value += event.detail.unicode;
-            messageInput.focus();
+            const chosenEmoji = event.detail.unicode;
+            
+            // Eğer bir mesaja reaksiyon olarak emoji seçildiyse
+            if (activeReactionMsgKey) {
+                toggleReaction(activeReactionMsgKey, chosenEmoji);
+                activeReactionMsgKey = null;
+                emojiPicker.classList.remove('show');
+            } else {
+                // Normal mesaja emoji ekleme
+                messageInput.value += chosenEmoji;
+                messageInput.focus();
+            }
         });
 
         document.addEventListener('click', (e) => {
-            if (!emojiPicker.contains(e.target) && e.target !== emojiToggleBtn) {
+            if (!emojiPicker.contains(e.target) && e.target !== emojiToggleBtn && !e.target.closest('.action-btn.react')) {
                 emojiPicker.classList.remove('show');
+                activeReactionMsgKey = null;
             }
         });
 
@@ -397,10 +432,9 @@
             const isMe = msg.sender.toLowerCase() === currentUser.toLowerCase();
             const isMentioned = currentUser && msg.text.toLowerCase().includes(`@${currentUser.toLowerCase()}`);
 
-            // Bildirim & Ses Tetikleyicileri
             if (!isMe && (Date.now() - msg.timestamp < 10000 || !msg.timestamp)) {
                 if (isMentioned) {
-                    playBeep(880); // Yüksek frekans uyarı sesi
+                    playBeep(880);
                     if ("Notification" in window && Notification.permission === "granted" && document.hidden) {
                         new Notification(`${msg.sender} senden bahsetti!`, {
                             body: msg.text,
@@ -408,7 +442,7 @@
                         });
                     }
                 } else {
-                    playBeep(440); // Normal mesaj sesi
+                    playBeep(440);
                 }
             }
 
@@ -452,6 +486,9 @@
                     span.innerHTML = parseMarkdown(updatedData.text);
                     renderMediaPreviews(span);
                 }
+
+                // Reaksiyonları güncelle
+                renderReactions(item, updatedData.reactions || {});
                 
                 const isMentioned = currentUser && updatedData.text.toLowerCase().includes(`@${currentUser.toLowerCase()}`);
                 if (isMentioned) item.classList.add('is-mentioned');
@@ -499,8 +536,14 @@
                 deleteBtnHTML = `<button class="action-btn delete" title="Sil"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>`;
             }
 
+            // Hover Menüsündeki Emoji ve Hızlı Reaksiyon Butonları
             const actionsHTML = `
                 <div class="message-actions">
+                    <button class="action-btn react quick-react" data-emoji="👍" title="Beğen">👍</button>
+                    <button class="action-btn react quick-react" data-emoji="❤️" title="Kalp">❤️</button>
+                    <button class="action-btn react quick-react" data-emoji="😂" title="Gülme">😂</button>
+                    <button class="action-btn react quick-react" data-emoji="🔥" title="Alev">🔥</button>
+                    <button class="action-btn react open-picker-react" title="Emoji Seç">➕</button>
                     <button class="action-btn reply" title="Yanıtla">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 17 4 12 9 7"></polyline><path d="M20 18v-2a4 4 0 0 0-4-4H4"></path></svg>
                     </button>
@@ -515,22 +558,65 @@
                     <span class="msg-content">${parseMarkdown(msg.text)}</span>
                     ${actionsHTML}
                 </div>
+                <div class="reactions-container"></div>
             `;
 
             container.appendChild(item);
             
             const contentSpan = item.querySelector('.msg-content');
             renderMediaPreviews(contentSpan);
+
+            // Reaksiyonları Oluştur
+            renderReactions(item, msg.reactions || {});
+        }
+
+        /* REAKSİYON İŞLEMLERİ (FIREBASE UPDATE) */
+        function toggleReaction(msgKey, emoji) {
+            if (!currentUser) return;
+            const reactRef = ref(database, `messages/${msgKey}/reactions/${emoji}/${currentUser}`);
+            get(reactRef).then((snap) => {
+                if (snap.exists()) {
+                    remove(reactRef);
+                } else {
+                    set(reactRef, true);
+                }
+            });
+        }
+
+        function renderReactions(itemEl, reactionsData) {
+            const container = itemEl.querySelector('.reactions-container');
+            if (!container) return;
+            container.innerHTML = '';
+
+            Object.entries(reactionsData).forEach(([emoji, usersObj]) => {
+                if (!usersObj) return;
+                const users = Object.keys(usersObj);
+                if (users.length === 0) return;
+
+                const hasReacted = currentUser && users.includes(currentUser);
+                const badge = document.createElement('div');
+                badge.className = `reaction-badge${hasReacted ? ' user-reacted' : ''}`;
+                badge.title = `${users.join(', ')}`;
+                badge.innerHTML = `<span>${emoji}</span><span class="reaction-count">${users.length}</span>`;
+                
+                badge.addEventListener('click', () => {
+                    const key = itemEl.dataset.msgKey;
+                    toggleReaction(key, emoji);
+                });
+
+                container.appendChild(badge);
+            });
         }
 
         messagesList.addEventListener('click', (e) => {
             const deleteBtn = e.target.closest('.action-btn.delete');
             const editBtn = e.target.closest('.action-btn.edit');
             const replyBtn = e.target.closest('.action-btn.reply');
+            const quickReactBtn = e.target.closest('.quick-react');
+            const openPickerReactBtn = e.target.closest('.open-picker-react');
             const copyBtn = e.target.closest('.code-copy-btn');
             const item = e.target.closest('.message-item');
 
-            // Kod kopyalama işlemi
             if (copyBtn) {
                 const codeText = copyBtn.dataset.code;
                 navigator.clipboard.writeText(codeText).then(() => {
@@ -546,6 +632,20 @@
             const key = item.dataset.msgKey;
             const sender = item.dataset.sender;
             const rawText = item.dataset.rawText;
+
+            // Hızlı Emoji Ekleme
+            if (quickReactBtn) {
+                const emoji = quickReactBtn.dataset.emoji;
+                toggleReaction(key, emoji);
+                return;
+            }
+
+            // Menüden Emoji Seçerek Ekleme
+            if (openPickerReactBtn) {
+                activeReactionMsgKey = key;
+                emojiPicker.classList.add('show');
+                return;
+            }
 
             if (deleteBtn) {
                 if (confirm('Bu mesajı silmek istediğinize emin misiniz?')) remove(ref(database, `messages/${key}`));
@@ -622,15 +722,12 @@
             const tokens = [];
             let html = escapeHTML(str);
 
-            // 1. Kod blokları + Kopyalama Butonu Altyapısı
             html = html.replace(/`(.*?)`/g, (m, p1) => {
-                const codeId = 'code_' + Math.random().toString(36).substr(2, 9);
                 const codeHTML = `<span class="code-container"><code>${p1}</code><button type="button" class="code-copy-btn" data-code="${p1.replace(/"/g, '&quot;')}">Kopyala</button></span>`;
                 tokens.push(codeHTML);
                 return `%%TOKEN_${tokens.length - 1}%%`;
             });
 
-            // 2. URL Tespiti
             const urlRegex = /(https?:\/\/[^\s<]+)/g;
             html = html.replace(urlRegex, (url) => {
                 const linkHTML = `<a href="${url}" target="_blank" rel="noopener noreferrer" class="chat-link">${url}</a>`;
@@ -638,14 +735,12 @@
                 return `%%TOKEN_${tokens.length - 1}%%`;
             });
 
-            // 3. Etiketler ve Stil İşlemleri
             html = html.replace(/@([a-zA-Z0-9_ğüşıöçĞÜŞİÖÇ]+)/g, '<span class="mention-tag">@$1</span>');
             html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
             html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
             html = html.replace(/_(.*?)_/g, '<em>$1</em>');
             html = html.replace(/~~(.*?)~~/g, '<del>$1</del>');
 
-            // 4. Token'ları Geri Yerleştir
             for (let i = 0; i < tokens.length; i++) {
                 html = html.split(`%%TOKEN_${i}%%`).join(tokens[i]);
             }
@@ -653,13 +748,11 @@
             return html;
         }
 
-        // BAGLANTILARIN MEDYA / YOUTUBE OLUP OLMAYADIGINI KONTROL EDEN FONKSIYON
         function renderMediaPreviews(container) {
             const links = container.querySelectorAll('.chat-link');
             links.forEach(link => {
                 const url = link.href;
 
-                // 1. YouTube Embed Kontrolü
                 const ytMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([a-zA-Z0-9_-]{11})/);
                 if (ytMatch && ytMatch[1]) {
                     if (container.querySelector(`[data-media-url="${url}"]`)) return;
@@ -675,7 +768,6 @@
                     return;
                 }
 
-                // 2. Görsel Denemesi
                 const img = new Image();
                 img.src = url;
                 img.onload = () => {
@@ -688,7 +780,6 @@
                     messagesList.scrollTop = messagesList.scrollHeight;
                 };
 
-                // 3. Video Denemesi
                 img.onerror = () => {
                     const video = document.createElement('video');
                     video.src = url;
