@@ -284,13 +284,19 @@
            masaüstü stilleri yukarıda değiştirilmedi)
            =================================================================== */
         @media (max-width: 720px) {
-            html, body {
-                height: 100vh;
-                height: 100dvh;
+            /* body'yi görünür ekrana sabitliyoruz: adres çubuğu/klavye
+               yüzünden 100vh'nin gerçek görünür alandan büyük olması,
+               alt kısımdaki mesaj kutusunun ekran dışına taşmasına
+               sebep oluyordu. */
+            body {
+                position: fixed;
+                inset: 0;
+                height: auto;
+                width: 100%;
+                overflow: hidden;
             }
             .app-container {
-                height: 100vh;
-                height: 100dvh;
+                height: 100%;
             }
             .input-area,
             .reply-preview-bar,
@@ -299,9 +305,11 @@
                 flex-shrink: 0;
             }
             .chat-area {
+                flex: 1 1 0;
                 min-height: 0;
             }
             .messages-container {
+                flex: 1 1 0;
                 min-height: 0;
             }
             .top-bar {
