@@ -5,6 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>abi ayak sevmeyen kaldı mı ya</title>
     <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@1/index.js"></script>
+    <script>
+        /* Mobil tarayıcılarda 100vh, adres çubuğu/klavye yüzünden gerçek
+           görünür yükseklikten farklı ölçülebiliyor. Gerçek yüksekliği
+           JS ile ölçüp --app-vh değişkenine yazıyoruz; CSS bunu kullanıyor. */
+        (function () {
+            function setAppVh() {
+                var h = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
+                document.documentElement.style.setProperty('--app-vh', h + 'px');
+            }
+            setAppVh();
+            window.addEventListener('resize', setAppVh);
+            window.addEventListener('orientationchange', setAppVh);
+            if (window.visualViewport) {
+                window.visualViewport.addEventListener('resize', setAppVh);
+                window.visualViewport.addEventListener('scroll', setAppVh);
+            }
+        })();
+    </script>
     <style>
         :root {
             --bg-dark: #282828;
@@ -284,19 +302,16 @@
            masaüstü stilleri yukarıda değiştirilmedi)
            =================================================================== */
         @media (max-width: 720px) {
-            /* body'yi görünür ekrana sabitliyoruz: adres çubuğu/klavye
-               yüzünden 100vh'nin gerçek görünür alandan büyük olması,
-               alt kısımdaki mesaj kutusunun ekran dışına taşmasına
+            /* --app-vh, JS tarafından gerçek görünür yükseklik (adres
+               çubuğu/klavye hariç) olarak ölçülüyor; 100vh'nin mobilde
+               yanlış ölçülmesi input kutusunun ekran dışına taşmasına
                sebep oluyordu. */
-            body {
-                position: fixed;
-                inset: 0;
-                height: auto;
-                width: 100%;
+            html, body {
+                height: var(--app-vh, 100vh);
                 overflow: hidden;
             }
             .app-container {
-                height: 100%;
+                height: var(--app-vh, 100vh);
             }
             .input-area,
             .reply-preview-bar,
