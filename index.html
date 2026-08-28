@@ -547,24 +547,28 @@
             gifGrid.innerHTML = '<div style="color:var(--fg-sub); font-size:12px; grid-column:span 2; text-align:center;">Yükleniyor...</div>';
 
             const trimmedQuery = query.trim();
+            // Klipy API v2 endpoint'leri kullanılıyor
             const url = trimmedQuery
-                ? `https://api.klipy.co/v1/gifs/search?api_key=${KLIPY_API_KEY}&q=${encodeURIComponent(trimmedQuery)}&limit=20`
-                : `https://api.klipy.co/v1/gifs/trending?api_key=${KLIPY_API_KEY}&limit=20`;
+                ? `https://api.klipy.co/v2/search?api_key=${KLIPY_API_KEY}&q=${encodeURIComponent(trimmedQuery)}&limit=20`
+                : `https://api.klipy.co/v2/featured?api_key=${KLIPY_API_KEY}&limit=20`;
 
             try {
                 const res = await fetch(url);
-                if (!res.ok) throw new Error('API Yanıt Hatası');
+                if (!res.ok) {
+                    throw new Error(`API Hatası: ${res.status}`);
+                }
 
                 const json = await res.json();
                 gifGrid.innerHTML = '';
 
+                // API response yapısı: { results: [...] }
                 let gifs = [];
-                if (Array.isArray(json)) {
-                    gifs = json;
-                } else if (Array.isArray(json.data)) {
-                    gifs = json.data;
-                } else if (Array.isArray(json.results)) {
+                if (Array.isArray(json?.results)) {
                     gifs = json.results;
+                } else if (Array.isArray(json?.data)) {
+                    gifs = json.data;
+                } else if (Array.isArray(json)) {
+                    gifs = json;
                 }
 
                 if (gifs.length === 0) {
@@ -573,12 +577,14 @@
                 }
 
                 gifs.forEach(gif => {
-                    const imgUrl = gif.images?.downsized?.url || gif.images?.original?.url || gif.url || gif.gif_url || (typeof gif === 'string' ? gif : null);
+                    // Klipy API response yapısı: media_formats.gif.url veya url
+                    const imgUrl = gif?.media_formats?.gif?.url || gif?.url || gif?.images?.downsized?.url || gif?.images?.original?.url || gif?.gif_url;
                     if (!imgUrl) return;
 
                     const img = document.createElement('img');
                     img.className = 'gif-item';
                     img.src = imgUrl;
+                    img.alt = gif?.title || 'GIF';
                     img.addEventListener('click', () => {
                         if (!currentUser) return;
 
@@ -603,7 +609,8 @@
                     gifGrid.appendChild(img);
                 });
             } catch (err) {
-                gifGrid.innerHTML = '<div style="color:var(--danger-red); font-size:12px; grid-column:span 2; text-align:center;">GIF yüklenemedi.</div>';
+                console.error('GIF yükleme hatası:', err);
+                gifGrid.innerHTML = `<div style="color:var(--danger-red); font-size:12px; grid-column:span 2; text-align:center;">GIF yüklenemedi: ${err.message}</div>`;
             }
         }
 
@@ -988,6 +995,19 @@
             links.forEach(link => {
                 const url = link.href;
 
+                // GIF URL kontrolü - Klipy ve diğer GIF hostları için
+                const isGifUrl = /\.(gif)(\?.*)?$/i.test(url);
+                if (isGifUrl) {
+                    if (container.querySelector(`[data-media-url="${url}"]`)) return;
+                    const mediaBox = document.createElement('div');
+                    mediaBox.className = 'media-container';
+                    mediaBox.dataset.mediaUrl = url;
+                    mediaBox.innerHTML = `<img src="${url}" class="media-preview" alt="GIF" loading="lazy">`;
+                    container.appendChild(mediaBox);
+                    messagesList.scrollTop = messagesList.scrollHeight;
+                    return;
+                }
+
                 const ytMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([a-zA-Z0-9_-]{11})/);
                 if (ytMatch && ytMatch[1]) {
                     if (container.querySelector(`[data-media-url="${url}"]`)) return;
@@ -1006,6 +1026,7 @@
                 const img = new Image();
                 img.src = url;
                 img.onload = () => {
+                    // GIF'ler zaten yukarıda işlendi, tekrar eklemeyi atla
                     if (container.querySelector(`[data-media-url="${url}"]`)) return;
                     const mediaBox = document.createElement('div');
                     mediaBox.className = 'media-container';
