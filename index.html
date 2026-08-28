@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sanırım linux</title>
+    <title>olum sen hayırdır hammına</title>
     <style>
         :root {
             --bg-dark: #282828;
@@ -172,7 +172,7 @@
         <div class="top-bar">
             <div class="chat-info">
                 <span class="status-dot"></span>
-                <span>SQLite Database killers</span>
+                <span>vak vak</span>
                 <div class="online-users-list" id="onlineUsersList"></div>
             </div>
             <div class="user-profile">
@@ -383,28 +383,22 @@
         onChildChanged(messagesRef, (snapshot) => {
             const key = snapshot.key;
             const updatedData = snapshot.val();
-            const btn = messagesList.querySelector(`[data-key="${key}"]`);
-            if (btn) {
-                const item = btn.closest('.message-item');
+            const item = messagesList.querySelector(`[data-msg-key="${key}"]`);
+            if (item) {
+                item.dataset.rawText = updatedData.text;
                 const span = item.querySelector('.msg-content');
                 if (span) span.innerHTML = parseMarkdown(updatedData.text);
                 
                 const isMentioned = currentUser && updatedData.text.toLowerCase().includes(`@${currentUser.toLowerCase()}`);
                 if (isMentioned) item.classList.add('is-mentioned');
                 else item.classList.remove('is-mentioned');
-
-                const editBtn = item.querySelector('.action-btn.edit');
-                const replyBtn = item.querySelector('.action-btn.reply');
-                if (editBtn) editBtn.setAttribute('data-text', escapeHTML(updatedData.text));
-                if (replyBtn) replyBtn.setAttribute('data-text', escapeHTML(updatedData.text));
             }
         });
 
         onChildRemoved(messagesRef, (snapshot) => {
             const key = snapshot.key;
-            const btn = messagesList.querySelector(`[data-key="${key}"]`);
-            if (btn) {
-                const item = btn.closest('.message-item');
+            const item = messagesList.querySelector(`[data-msg-key="${key}"]`);
+            if (item) {
                 const group = item.closest('.message-group');
                 item.remove();
                 if (group && group.querySelectorAll('.message-item').length === 0) group.remove();
@@ -414,7 +408,10 @@
         function addMessageToGroup(container, msg, animateItem = false) {
             const item = document.createElement('div');
             item.className = 'message-item' + (animateItem ? ' animate-entry' : '');
-            
+            item.dataset.msgKey = msg.key;
+            item.dataset.sender = msg.sender;
+            item.dataset.rawText = msg.text;
+
             const isMe = msg.sender.toLowerCase() === currentUser.toLowerCase();
             const isMentioned = currentUser && msg.text.toLowerCase().includes(`@${currentUser.toLowerCase()}`);
 
@@ -434,13 +431,13 @@
             let deleteBtnHTML = '';
 
             if (isMe) {
-                editBtnHTML = `<button class="action-btn edit" data-key="${msg.key}" data-text="${escapeHTML(msg.text)}" title="Düzenle"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>`;
-                deleteBtnHTML = `<button class="action-btn delete" data-key="${msg.key}" title="Sil"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>`;
+                editBtnHTML = `<button class="action-btn edit" title="Düzenle"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>`;
+                deleteBtnHTML = `<button class="action-btn delete" title="Sil"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>`;
             }
 
             const actionsHTML = `
                 <div class="message-actions">
-                    <button class="action-btn reply" data-key="${msg.key}" data-sender="${escapeHTML(msg.sender)}" data-text="${escapeHTML(msg.text)}" title="Yanıtla">
+                    <button class="action-btn reply" title="Yanıtla">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 17 4 12 9 7"></polyline><path d="M20 18v-2a4 4 0 0 0-4-4H4"></path></svg>
                     </button>
                     ${editBtnHTML}
@@ -463,24 +460,28 @@
             const deleteBtn = e.target.closest('.action-btn.delete');
             const editBtn = e.target.closest('.action-btn.edit');
             const replyBtn = e.target.closest('.action-btn.reply');
+            const item = e.target.closest('.message-item');
+
+            if (!item) return;
+
+            const key = item.dataset.msgKey;
+            const sender = item.dataset.sender;
+            const rawText = item.dataset.rawText;
 
             if (deleteBtn) {
-                const key = deleteBtn.getAttribute('data-key');
                 if (confirm('Bu mesajı silmek istediğinize emin misiniz?')) remove(ref(database, `messages/${key}`));
             }
 
             if (editBtn) {
-                activeEditKey = editBtn.getAttribute('data-key');
-                editMessageInput.value = editBtn.getAttribute('data-text');
+                activeEditKey = key;
+                editMessageInput.value = rawText;
                 editModal.style.display = 'flex';
             }
 
             if (replyBtn) {
-                const sender = replyBtn.getAttribute('data-sender');
-                const text = replyBtn.getAttribute('data-text');
-                activeReplyTarget = { sender, text };
+                activeReplyTarget = { sender, text: rawText };
                 replyPreviewUser.innerText = `@${sender}`;
-                replyPreviewText.innerText = `"${text}"`;
+                replyPreviewText.innerText = `"${rawText}"`;
                 replyPreviewBar.style.display = 'flex';
                 messageInput.focus();
             }
@@ -537,18 +538,18 @@
 
         function parseMarkdown(str) {
             if (!str) return '';
+            
+            const tokens = [];
             let html = escapeHTML(str);
 
-            // Adım 1: Code bloklarını (``` veya `) korumaya al
-            const codeBlocks = [];
-            html = html.replace(/`(.*?)`/g, (match, p1) => {
-                codeBlocks.push(`<code>${p1}</code>`);
-                return `___CODE_BLOCK_${codeBlocks.length - 1}___`;
+            // 1. Kod bloklarını sakla
+            html = html.replace(/`(.*?)`/g, (m, p1) => {
+                tokens.push(`<code>${p1}</code>`);
+                return `%%TOKEN_${tokens.length - 1}%%`;
             });
 
-            // Adım 2: URL'leri tespit et ve Link/Medya önizlemesine çevir
-            const urlBlocks = [];
-            const urlRegex = /(https?:\/\/[^\s]+)/g;
+            // 2. URL'leri sakla (Önizleme kartları dahil)
+            const urlRegex = /(https?:\/\/[^\s<]+)/g;
             html = html.replace(urlRegex, (url) => {
                 const isImg = /\.(jpeg|jpg|gif|png|webp)(\?.*)?$/i.test(url);
                 const isVid = /\.(mp4|webm|ogg)(\?.*)?$/i.test(url);
@@ -561,25 +562,21 @@
                 }
                 
                 const linkHTML = `<a href="${url}" target="_blank" rel="noopener noreferrer" class="chat-link">${url}</a>${previewHTML}`;
-                
-                urlBlocks.push(linkHTML);
-                return `___URL_BLOCK_${urlBlocks.length - 1}___`;
+                tokens.push(linkHTML);
+                return `%%TOKEN_${tokens.length - 1}%%`;
             });
 
-            // Adım 3: Diğer Markdown kurallarını uygula
+            // 3. Markdown zenginleştirme (Kalın, yatık, üstü çizili, etiket)
             html = html.replace(/@([a-zA-Z0-9_ğüşıöçĞÜŞİÖÇ]+)/g, '<span class="mention-tag">@$1</span>');
             html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
             html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
             html = html.replace(/_(.*?)_/g, '<em>$1</em>');
             html = html.replace(/~~(.*?)~~/g, '<del>$1</del>');
 
-            // Adım 4: Korumaya alınan URL ve Code bloklarını geri yerleştir
-            urlBlocks.forEach((block, i) => { 
-                html = html.replace(new RegExp(`___URL_BLOCK_${i}___`, 'g'), block); 
-            });
-            codeBlocks.forEach((block, i) => { 
-                html = html.replace(new RegExp(`___CODE_BLOCK_${i}___`, 'g'), block); 
-            });
+            // 4. Saklanan token'ları tamamen geri yaz (String replace yerine güvenli döngü)
+            for (let i = 0; i < tokens.length; i++) {
+                html = html.split(`%%TOKEN_${i}%%`).join(tokens[i]);
+            }
 
             return html;
         }
