@@ -1335,7 +1335,7 @@
             html = html.replace(urlRegex, (url) => {
                 const linkHTML = `<a href="${url}" target="_blank" rel="noopener noreferrer" class="chat-link">${url}</a>`;
                 tokens.push(linkHTML);
-                return `%%TOKEN_${tokens.length - 1}%%`;
+                return makeToken(tokens.length - 1);
             });
 
             html = html.replace(/@([a-zA-Z0-9_ğüşıöçĞÜŞİÖÇ]+)/g, '<span class="mention-tag">@$1</span>');
