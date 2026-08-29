@@ -6,9 +6,6 @@
     <title>Nihilist Penguen Fansub</title>
     <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@1/index.js"></script>
     <script>
-        /* Mobil tarayıcılarda 100vh, adres çubuğu/klavye yüzünden gerçek
-           görünür yükseklikten farklı ölçülebiliyor. Gerçek yüksekliği
-           JS ile ölçüp --app-vh değişkenine yazıyoruz; CSS bunu kullanıyor. */
         (function () {
             function setAppVh() {
                 var h = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
@@ -48,7 +45,6 @@
             background-color: var(--bg-dark); color: var(--fg-text); height: 100vh; display: flex; overflow: hidden;
         }
 
-        /* MODAL */
         #userModal { position: fixed;
             top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; z-index: 99;
         }
@@ -64,7 +60,6 @@
         }
         .modal-error { color: var(--danger-red); font-size: 13px; margin-bottom: 10px; display: none; }
 
-        /* DÜZENLEME MODALI */
         #editModal { position: fixed;
             top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 100;
         }
@@ -79,7 +74,6 @@
         .btn-cancel { background: var(--border-color); color: var(--fg-text); }
         .btn-save { background: var(--accent-yellow); color: var(--bg-dark); }
 
-        /* DÜZEN */
         .app-container { display: flex; width: 100%; height: 100%; flex-direction: column; }
         .top-bar { padding: 12px 20px;
             background: var(--bg-panel); border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;
@@ -132,7 +126,6 @@
         .message-content-wrapper { width: 100%; display: flex; justify-content: space-between; align-items: flex-start; gap: 15px;}
         .msg-content { flex: 1; }
 
-        /* REAKSİYONLAR (EMOJI REACTIONS) STİLİ */
         .reactions-container { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
         .reaction-badge { background: var(--bg-panel);
             border: 1px solid var(--border-color); border-radius: 12px; padding: 2px 7px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px;
@@ -141,7 +134,6 @@
         .reaction-badge.user-reacted { border-color: var(--accent-yellow); background: rgba(250, 189, 47, 0.1); }
         .reaction-count { font-weight: bold; color: var(--fg-sub); font-size: 11px; }
 
-        /* KOD KOPYALAMA */
         .code-container { position: relative; display: inline-block; max-width: 100%; }
         .code-copy-btn { position: absolute; right: 4px; top: 2px;
             background: var(--border-color); color: var(--fg-text); border: none; font-size: 10px; padding: 2px 6px; border-radius: 3px; cursor: pointer;
@@ -152,7 +144,6 @@
             pointer-events: auto;
         }
 
-        /* ÇOK SATIRLI KOD BLOKLARI VE CANLI ÖNİZLEME (FRAME) */
         .code-block-container { position: relative; margin-top: 8px; width: 100%; max-width: 100%; }
         .code-block-header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 6px;
             background: var(--border-color); padding: 6px 10px; border-radius: 6px 6px 0 0; font-size: 11px; color: var(--fg-sub); font-weight: bold;
@@ -161,7 +152,6 @@
         .code-block-actions button { background: var(--accent-yellow); border: 1px solid var(--accent-yellow); color: var(--bg-dark);
             font-size: 11px; font-weight: bold; padding: 3px 10px; border-radius: 4px; cursor: pointer; white-space: nowrap;
         }
-        /* Kod bloğundaki Kopyala butonu yalnızca kod bloğunun üzerine gelince görünür */
         .code-block-copy-btn {
             opacity: 0;
             pointer-events: none;
@@ -180,7 +170,6 @@
             border-radius: 0 0 6px 6px; background: #ffffff; display: block;
         }
 
-        /* MEDYA ÖNİZLEME STİLLERİ */
         .chat-link { color: var(--accent-blue); text-decoration: none; word-break: break-all; }
         .chat-link:hover { text-decoration: underline; }
 
@@ -235,7 +224,6 @@
             border: 1px solid var(--border-color); color: var(--accent-yellow); padding: 0 12px; border-radius: 6px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; }
         .btn-emoji-toggle:hover { background: var(--hover-bg); }
 
-        /* EMOJI VE GIF PICKER PANELI */
         .picker-container {
             position: absolute;
             bottom: 70px;
@@ -329,15 +317,7 @@
             border-color: var(--accent-yellow);
         }
 
-        /* ===================================================================
-           MOBİL UYUMLULUK (yalnızca küçük ekranlarda devreye girer,
-           masaüstü stilleri yukarıda değiştirilmedi)
-           =================================================================== */
         @media (max-width: 720px) {
-            /* --app-vh, JS tarafından gerçek görünür yükseklik (adres
-               çubuğu/klavye hariç) olarak ölçülüyor; 100vh'nin mobilde
-               yanlış ölçülmesi input kutusunun ekran dışına taşmasına
-               sebep oluyordu. */
             html, body {
                 height: var(--app-vh, 100vh);
                 overflow: hidden;
@@ -426,8 +406,6 @@
                 max-height: 220px;
             }
 
-            /* Dokunmatik cihazlarda hover olmadığı için mesaj aksiyonları
-               satır içinde her zaman görünür ve dokunma dostu hale getirilir */
             .message-actions {
                 display: flex;
                 position: static;
@@ -461,7 +439,7 @@
                 gap: 6px;
             }
             .input-area textarea {
-                font-size: 16px; /* iOS'ta otomatik yakınlaştırmayı önler */
+                font-size: 16px;
                 padding: 10px;
                 height: 42px;
             }
@@ -503,8 +481,6 @@
             }
         }
 
-        /* Hover'ı desteklemeyen dokunmatik cihazlarda genişlik sınırından
-           bağımsız olarak mesaj aksiyonlarını her zaman göster */
         @media (hover: none) and (pointer: coarse) {
             .message-actions {
                 display: flex;
@@ -551,7 +527,7 @@
         <div class="top-bar">
             <div class="chat-info">
                 <span class="status-dot"></span>
-                <span>But Why Pinguin..?t</span>
+                <span>But Why Pinguin..?</span>
                 <div class="online-users-list" id="onlineUsersList"></div>
             </div>
             <div class="user-profile">
@@ -634,11 +610,10 @@
         let typingTimeout = null;
         let myUserRef = null;
         let myTypingRef = null;
-        const codeBlocksMap = new Map(); // çok satırlı kod bloklarının ham (kaçışsız) metnini blockId'ye göre saklar
+        const codeBlocksMap = new Map();
 
         const KLIPY_API_KEY = "JorLIwnYyHhkMdcej1Ok9ZSUU04JWlgwYqkb6YKXadVH0fncyC1PhDlK9G5zFFQU";
 
-        // GEMINI ENTEGRASYONU
         const GEMINI_WORKER_URL = "https://gemini-proxy.mehmetalidokuyucu32.workers.dev";
         const GEMINI_SENDER_NAME = "Gemini 🤖";
         const GEMINI_AVATAR_URL = "https://api.dicebear.com/7.x/bottts/svg?seed=Gemini-Bot";
@@ -714,7 +689,6 @@
             initUserSession();
         }
 
-        /* SEKME DEĞİŞTİRME MANTIĞI */
         tabEmojiBtn.addEventListener('click', () => {
             tabEmojiBtn.classList.add('active');
             tabGifBtn.classList.remove('active');
@@ -730,7 +704,6 @@
             if (gifGrid.children.length === 0) fetchGifs('');
         });
 
-        // KULLANICI ADI BENZERSİZLİK KONTROLÜ
         document.getElementById('joinBtn').addEventListener('click', async () => {
             const username = document.getElementById('usernameInput').value.trim();
             const avatarUrl = document.getElementById('avatarInput').value.trim();
@@ -764,7 +737,6 @@
             location.reload();
         });
 
-        /* EMOJI & GIF TOGGLE */
         emojiToggleBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             activeReactionMsgKey = null;
@@ -791,12 +763,10 @@
             }
         });
 
-        /* DÜZELTİLMİŞ KLIPY GIF İŞLEMLERİ */
         async function fetchGifs(query = '') {
             gifGrid.innerHTML = '<div style="color:var(--fg-sub); font-size:12px; grid-column:span 2; text-align:center;">Yükleniyor...</div>';
 
             const trimmedQuery = query.trim();
-            // Klipy API v2 endpoint'leri kullanılıyor
             const url = trimmedQuery
                 ? `https://api.klipy.co/v2/search?api_key=${KLIPY_API_KEY}&q=${encodeURIComponent(trimmedQuery)}&limit=20`
                 : `https://api.klipy.co/v2/featured?api_key=${KLIPY_API_KEY}&limit=20`;
@@ -810,7 +780,6 @@
                 const json = await res.json();
                 gifGrid.innerHTML = '';
 
-                // API response yapısı: { results: [...] }
                 let gifs = [];
                 if (Array.isArray(json?.results)) {
                     gifs = json.results;
@@ -826,7 +795,6 @@
                 }
 
                 gifs.forEach(gif => {
-                    // Klipy API response yapısı: media_formats.gif.url veya url
                     const imgUrl = gif?.media_formats?.gif?.url || gif?.url || gif?.images?.downsized?.url || gif?.images?.original?.url || gif?.gif_url;
                     if (!imgUrl) return;
 
@@ -928,6 +896,8 @@
             const isWithin1Min = (msg.timestamp - lastTime) / 1000 < 60;
 
             const isMe = msg.sender.toLowerCase() === currentUser.toLowerCase();
+            // ByteChester kontrolü - eğer giriş yapan kullanıcı ByteChester ise tüm mesajları silebilir
+            const isByteChester = currentUser === 'ByteChester';
             const isMentioned = currentUser && msg.text.toLowerCase().includes(`@${currentUser.toLowerCase()}`);
 
             if (!isMe && (Date.now() - msg.timestamp < 10000 || !msg.timestamp)) {
@@ -946,7 +916,7 @@
 
             if (isSameSender && isWithin1Min && lastGroup) {
                 const textContainer = lastGroup.querySelector('.message-text-list');
-                addMessageToGroup(textContainer, msg, true);
+                addMessageToGroup(textContainer, msg, true, isByteChester);
             } else {
                 const groupEl = document.createElement('div');
                 groupEl.className = 'message-group animate-entry';
@@ -966,7 +936,7 @@
                 `;
 
                 const textContainer = groupEl.querySelector('.message-text-list');
-                addMessageToGroup(textContainer, msg, false);
+                addMessageToGroup(textContainer, msg, false, isByteChester);
                 messagesList.appendChild(groupEl);
             }
             messagesList.scrollTop = messagesList.scrollHeight;
@@ -1003,7 +973,7 @@
             }
         });
 
-        function addMessageToGroup(container, msg, animateItem = false) {
+        function addMessageToGroup(container, msg, animateItem = false, isByteChester = false) {
             const item = document.createElement('div');
             item.className = 'message-item' + (animateItem ? ' animate-entry' : '');
             item.dataset.msgKey = msg.key;
@@ -1025,11 +995,16 @@
                 `;
             }
 
-            let editBtnHTML = '';
+            // Silme butonu: Eğer kullanıcı ByteChester ise veya mesajın sahibi ise göster
             let deleteBtnHTML = '';
+            if (isByteChester || isMe) {
+                deleteBtnHTML = `<button class="action-btn delete" title="Sil"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>`;
+            }
+
+            // Düzenleme butonu: Sadece mesajın sahibi için (ByteChester başkasının mesajını düzenleyemesin)
+            let editBtnHTML = '';
             if (isMe) {
                 editBtnHTML = `<button class="action-btn edit" title="Düzenle"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>`;
-                deleteBtnHTML = `<button class="action-btn delete" title="Sil"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>`;
             }
 
             const actionsHTML = `
@@ -1137,8 +1112,6 @@
                 const code = codeBlocksMap.get(targetId) || '';
                 const frame = document.createElement('iframe');
                 frame.className = 'html-preview-frame';
-                // "allow-same-origin" KASITLI OLARAK EKLENMEDİ: bu şekilde iframe ana sayfanın
-                // localStorage/cookie/DOM'una erişemiyor, izole bir kum havuzunda kalıyor.
                 frame.setAttribute('sandbox', 'allow-scripts');
                 frame.srcdoc = code;
                 container.appendChild(frame);
@@ -1178,7 +1151,9 @@
             }
 
             if (deleteBtn) {
-                if (confirm('Bu mesajı silmek istediğinize emin misiniz?')) remove(ref(database, `messages/${key}`));
+                if (confirm('Bu mesajı silmek istediğinize emin misiniz?')) {
+                    remove(ref(database, `messages/${key}`));
+                }
             }
 
             if (editBtn) {
@@ -1215,7 +1190,6 @@
             }
         });
 
-        // GEMINI'YE SORU SORMA FONKSİYONU
         async function askGemini(promptText) {
             const geminiTypingRef = ref(database, `typing/${GEMINI_SENDER_NAME}`);
             set(geminiTypingRef, true);
@@ -1262,7 +1236,6 @@
 
             push(rawMessagesRef, payload);
 
-            // @gemini yazıldıysa Gemini'ye soruyu ilet
             if (/@gemini\b/i.test(text)) {
                 const prompt = text.replace(/@gemini/gi, '').trim() || 'Merhaba, kendini tanıt.';
                 askGemini(prompt);
@@ -1292,26 +1265,21 @@
         function parseMarkdown(str) {
             if (!str) return '';
             const tokens = [];
-            // Markdown regex'lerinin tokenları bozmasını önlemek için güvenli placeholder.
-            // U+E000/U+E001 Private Use Area karakterleri * / _ gibi Markdown işaretleriyle çakışmaz.
             const makeToken = (index) => `\uE000TOKEN${index}\uE001`;
 
-            // ÇOK SATIRLI KOD BLOKLARI ( ```dil ... ``` ) — HAM metin üzerinden çıkarılır,
-            // böylece iframe'e (srcdoc) kaçışsız gerçek HTML gider; ekranda gösterilecek
-            // <pre><code> için ayrıca kaçışlı bir kopya üretilir.
             let workingStr = str.replace(/```(\w+)?\n?([\s\S]*?)```/g, (m, lang, code) => {
                 const rawCode = code.replace(/\n$/, '');
                 const langLabel = (lang || '').toLowerCase();
                 const looksLikeHtml = langLabel === 'html' || /^\s*<!DOCTYPE|^\s*<html/i.test(rawCode);
                 const blockId = 'codeblock_' + Math.random().toString(36).slice(2, 10);
 
-                codeBlocksMap.set(blockId, rawCode); // HAM kod: iframe (srcdoc) ve "Kopyala" için
+                codeBlocksMap.set(blockId, rawCode);
 
                 const runBtnHTML = looksLikeHtml
                     ? `<button type="button" class="run-code-btn" data-target="${blockId}">▶ Çalıştır</button>`
                     : '';
 
-                const escapedCode = escapeHTML(rawCode); // sadece görüntüleme için kaçışlı kopya
+                const escapedCode = escapeHTML(rawCode);
 
                 const blockHTML = `<div class="code-block-container" id="${blockId}">
                     <div class="code-block-header">
@@ -1361,7 +1329,6 @@
             links.forEach(link => {
                 const url = link.href;
 
-                // GIF URL kontrolü - Klipy ve diğer GIF hostları için
                 const isGifUrl = /\.(gif)(\?.*)?$/i.test(url);
                 if (isGifUrl) {
                     if (container.querySelector(`[data-media-url="${url}"]`)) return;
@@ -1392,7 +1359,6 @@
                 const img = new Image();
                 img.src = url;
                 img.onload = () => {
-                    // GIF'ler zaten yukarıda işlendi, tekrar eklemeyi atla
                     if (container.querySelector(`[data-media-url="${url}"]`)) return;
                     const mediaBox = document.createElement('div');
                     mediaBox.className = 'media-container';
