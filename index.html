@@ -1278,6 +1278,9 @@
         function parseMarkdown(str) {
             if (!str) return '';
             const tokens = [];
+            // Markdown regex'lerinin tokenları bozmasını önlemek için güvenli placeholder.
+            // U+E000/U+E001 Private Use Area karakterleri * / _ gibi Markdown işaretleriyle çakışmaz.
+            const makeToken = (index) => `\uE000TOKEN${index}\uE001`;
 
             // ÇOK SATIRLI KOD BLOKLARI ( ```dil ... ``` ) — HAM metin üzerinden çıkarılır,
             // böylece iframe'e (srcdoc) kaçışsız gerçek HTML gider; ekranda gösterilecek
@@ -1308,7 +1311,7 @@
                 </div>`;
 
                 tokens.push(blockHTML);
-                return `%%TOKEN_${tokens.length - 1}%%`;
+                return makeToken(tokens.length - 1);
             });
 
             let html = escapeHTML(workingStr);
@@ -1316,7 +1319,7 @@
             html = html.replace(/`(.*?)`/g, (m, p1) => {
                 const codeHTML = `<span class="code-container"><code>${p1}</code><button type="button" class="code-copy-btn" data-code="${p1.replace(/"/g, '&quot;')}">Kopyala</button></span>`;
                 tokens.push(codeHTML);
-                return `%%TOKEN_${tokens.length - 1}%%`;
+                return makeToken(tokens.length - 1);
             });
 
             const urlRegex = /(https?:\/\/[^\s<]+)/g;
@@ -1333,7 +1336,7 @@
             html = html.replace(/~~(.*?)~~/g, '<del>$1</del>');
 
             for (let i = 0; i < tokens.length; i++) {
-                html = html.split(`%%TOKEN_${i}%%`).join(tokens[i]);
+                html = html.split(makeToken(i)).join(tokens[i]);
             }
 
             return html;
