@@ -605,6 +605,11 @@
 
         const KLIPY_API_KEY = "JorLIwnYyHhkMdcej1Ok9ZSUU04JWlgwYqkb6YKXadVH0fncyC1PhDlK9G5zFFQU";
 
+        // GEMINI ENTEGRASYONU
+        const GEMINI_WORKER_URL = "https://gemini-proxy.mehmetalidokuyucu32.workers.dev";
+        const GEMINI_SENDER_NAME = "Gemini 🤖";
+        const GEMINI_AVATAR_URL = "https://api.dicebear.com/7.x/bottts/svg?seed=Gemini-Bot";
+
         const userModal = document.getElementById('userModal');
         const modalError = document.getElementById('modalError');
         const editModal = document.getElementById('editModal');
@@ -1139,6 +1144,43 @@
             }
         });
 
+        // GEMINI'YE SORU SORMA FONKSİYONU
+        async function askGemini(promptText) {
+            const geminiTypingRef = ref(database, `typing/${GEMINI_SENDER_NAME}`);
+            set(geminiTypingRef, true);
+
+            try {
+                const res = await fetch(GEMINI_WORKER_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: promptText })
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    throw new Error(data?.error || `Worker hata: ${res.status}`);
+                }
+
+                push(rawMessagesRef, {
+                    sender: GEMINI_SENDER_NAME,
+                    avatar: GEMINI_AVATAR_URL,
+                    text: data.text || 'Bir yanıt üretemedim.',
+                    timestamp: serverTimestamp()
+                });
+            } catch (err) {
+                console.error('Gemini hatası:', err);
+                push(rawMessagesRef, {
+                    sender: GEMINI_SENDER_NAME,
+                    avatar: GEMINI_AVATAR_URL,
+                    text: `Şu anda yanıt veremiyorum: ${err.message}`,
+                    timestamp: serverTimestamp()
+                });
+            } finally {
+                remove(geminiTypingRef);
+            }
+        }
+
         chatForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const text = messageInput.value.trim();
@@ -1148,6 +1190,12 @@
             if (activeReplyTarget) payload.replyTo = activeReplyTarget;
 
             push(rawMessagesRef, payload);
+
+            // @gemini yazıldıysa Gemini'ye soruyu ilet
+            if (/@gemini\b/i.test(text)) {
+                const prompt = text.replace(/@gemini/gi, '').trim() || 'Merhaba, kendini tanıt.';
+                askGemini(prompt);
+            }
 
             remove(ref(database, `typing/${currentUser}`));
             clearTimeout(typingTimeout);
