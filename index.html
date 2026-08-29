@@ -4,27 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nihilist Penguen Fansub</title>
-
     <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@1/index.js"></script>
-
     <script>
         (function () {
             function setAppVh() {
                 var h = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
                 document.documentElement.style.setProperty('--app-vh', h + 'px');
             }
-
             setAppVh();
             window.addEventListener('resize', setAppVh);
             window.addEventListener('orientationchange', setAppVh);
-
             if (window.visualViewport) {
                 window.visualViewport.addEventListener('resize', setAppVh);
                 window.visualViewport.addEventListener('scroll', setAppVh);
             }
         })();
     </script>
-
     <style>
         :root {
             --bg-dark: #282828;
@@ -45,23 +40,22 @@
             --quote-border: #fabd2f;
         }
 
+        /* YATAY SCROLL FİX - BAŞLANGIÇ */
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
             max-width: 100%;
         }
-
-        html,
-        body {
+        
+        html, body {
             overflow-x: hidden;
             width: 100%;
             height: 100vh;
             background-color: var(--bg-dark);
             color: var(--fg-text);
             display: flex;
-            font-family: 'Ubuntu', -apple-system, BlinkMacSystemFont,
-                "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Ubuntu', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
 
         .app-container {
@@ -71,552 +65,158 @@
             flex-direction: column;
             overflow: hidden;
         }
+        /* YATAY SCROLL FİX - BİTİŞ */
 
-        #userModal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.85);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 99;
+        #userModal { position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; z-index: 99;
         }
-
-        .modal-card {
-            background: var(--bg-panel);
-            border: 1px solid var(--border-color);
-            padding: 30px;
-            border-radius: 8px;
-            width: 90%;
-            max-width: 400px;
-            text-align: center;
+        .modal-card { background: var(--bg-panel); border: 1px solid var(--border-color); padding: 30px; border-radius: 8px;
+            width: 90%; max-width: 400px; text-align: center; }
+        .modal-card h3 { color: var(--accent-yellow); margin-bottom: 15px; }
+        .modal-card input { width: 100%; padding: 12px; background: var(--bg-dark);
+            border: 1px solid var(--border-color); color: var(--fg-text); border-radius: 6px; font-size: 14px; margin-bottom: 12px; outline: none;
         }
-
-        .modal-card h3 {
-            color: var(--accent-yellow);
-            margin-bottom: 15px;
+        .modal-card input:focus { border-color: var(--accent-yellow); }
+        .modal-card button { width: 100%; padding: 12px; background: var(--accent-yellow); border: none;
+            font-weight: bold; color: var(--bg-dark); border-radius: 6px; cursor: pointer; font-size: 16px; margin-top: 5px;
         }
+        .modal-error { color: var(--danger-red); font-size: 13px; margin-bottom: 10px; display: none; }
 
-        .modal-card input {
-            width: 100%;
-            padding: 12px;
-            background: var(--bg-dark);
-            border: 1px solid var(--border-color);
-            color: var(--fg-text);
-            border-radius: 6px;
-            font-size: 14px;
-            margin-bottom: 12px;
-            outline: none;
+        .modal-divider { display: flex; align-items: center; gap: 10px; margin: 16px 0; }
+        .modal-divider span { flex: 1; height: 1px; background: var(--border-color); }
+        .modal-divider p { color: var(--fg-sub); font-size: 11px; font-weight: bold; }
+
+        .btn-google { width: 100%; padding: 11px; background: #ffffff; border: 1px solid var(--border-color);
+            color: #3c4043; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold;
+            display: flex; align-items: center; justify-content: center; gap: 10px; transition: background 0.15s;
         }
+        .btn-google:hover { background: #f1f1f1; }
 
-        .modal-card input:focus {
-            border-color: var(--accent-yellow);
+        #editModal, #editProfileModal { position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 100;
         }
-
-        .modal-card button {
-            width: 100%;
-            padding: 12px;
-            background: var(--accent-yellow);
-            border: none;
-            font-weight: bold;
-            color: var(--bg-dark);
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 16px;
-            margin-top: 5px;
+        .profile-edit-input { width: 100%; padding: 12px; background: var(--bg-dark);
+            border: 1px solid var(--border-color); color: var(--fg-text); border-radius: 6px; font-size: 14px; margin-bottom: 12px; outline: none; font-family: inherit;
         }
-
-        .modal-error {
-            color: var(--danger-red);
-            font-size: 13px;
-            margin-bottom: 10px;
-            display: none;
+        .profile-edit-input:focus { border-color: var(--accent-yellow); }
+        .btn-logout-link { background: transparent; border: none; color: var(--danger-red);
+            font-size: 12px; cursor: pointer; text-decoration: underline; }
+        .btn-logout-link:hover { opacity: 0.8; }
+        .edit-card { background: var(--bg-panel); border: 1px solid var(--border-color); padding: 20px; border-radius: 8px;
+            width: 90%; max-width: 500px; }
+        .edit-card h4 { color: var(--accent-yellow); margin-bottom: 10px; }
+        .edit-card textarea { width: 100%; height: 80px; background: var(--bg-dark);
+            border: 1px solid var(--border-color); color: var(--fg-text); border-radius: 6px; padding: 10px; resize: none; outline: none; font-family: inherit; margin-bottom: 10px;
         }
+        .edit-actions { display: flex; justify-content: flex-end; gap: 10px; }
+        .edit-actions button { padding: 8px 16px; border-radius: 4px; border: none; cursor: pointer; font-weight: bold; }
+        .btn-cancel { background: var(--border-color); color: var(--fg-text); }
+        .btn-save { background: var(--accent-yellow); color: var(--bg-dark); }
 
-        #editModal,
-        #editProfileModal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.7);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 100;
-        }
-
-        .profile-edit-input {
-            width: 100%;
-            padding: 12px;
-            background: var(--bg-dark);
-            border: 1px solid var(--border-color);
-            color: var(--fg-text);
-            border-radius: 6px;
-            font-size: 14px;
-            margin-bottom: 12px;
-            outline: none;
-            font-family: inherit;
-        }
-
-        .profile-edit-input:focus {
-            border-color: var(--accent-yellow);
-        }
-
-        .btn-logout-link {
-            background: transparent;
-            border: none;
-            color: var(--danger-red);
-            font-size: 12px;
-            cursor: pointer;
-            text-decoration: underline;
-        }
-
-        .btn-logout-link:hover {
-            opacity: 0.8;
-        }
-
-        .edit-card {
-            background: var(--bg-panel);
-            border: 1px solid var(--border-color);
-            padding: 20px;
-            border-radius: 8px;
-            width: 90%;
-            max-width: 500px;
-        }
-
-        .edit-card h4 {
-            color: var(--accent-yellow);
-            margin-bottom: 10px;
-        }
-
-        .edit-card textarea {
-            width: 100%;
-            height: 80px;
-            background: var(--bg-dark);
-            border: 1px solid var(--border-color);
-            color: var(--fg-text);
-            border-radius: 6px;
-            padding: 10px;
-            resize: none;
-            outline: none;
-            font-family: inherit;
-            margin-bottom: 10px;
-        }
-
-        .edit-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-        }
-
-        .edit-actions button {
-            padding: 8px 16px;
-            border-radius: 4px;
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        .btn-cancel {
-            background: var(--border-color);
-            color: var(--fg-text);
-        }
-
-        .btn-save {
-            background: var(--accent-yellow);
-            color: var(--bg-dark);
-        }
-
-        .top-bar {
-            padding: 12px 20px;
-            background: var(--bg-panel);
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .top-bar { padding: 12px 20px;
+            background: var(--bg-panel); border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;
             flex-shrink: 0;
         }
+        .chat-info { display: flex; align-items: center; gap: 12px; font-weight: bold; font-size: 15px; }
+        .status-dot { height: 8px; width: 8px; background-color: var(--accent-green); border-radius: 50%; display: inline-block; }
 
-        .chat-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-weight: bold;
-            font-size: 15px;
-        }
+        .online-users-list { display: flex; align-items: center; margin-left: 10px; }
+        .online-user-img { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--bg-panel);
+            object-fit: cover; margin-left: -8px; transition: transform 0.2s; cursor: pointer; }
+        .online-user-img:hover { transform: translateY(-2px) scale(1.1); z-index: 5; }
 
-        .status-dot {
-            height: 8px;
-            width: 8px;
-            background-color: var(--accent-green);
-            border-radius: 50%;
-            display: inline-block;
-        }
+        .user-profile { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+        .user-profile img { width: 28px; height: 28px; border-radius: 4px; object-fit: cover; }
+        .user-profile span { font-size: 13px; color: var(--accent-blue); font-weight: bold; }
+        .btn-change-user { background: transparent; border: 1px solid var(--fg-sub); color: var(--fg-sub);
+            padding: 2px 8px; font-size: 11px; border-radius: 4px; cursor: pointer; }
 
-        .online-users-list {
-            display: flex;
-            align-items: center;
-            margin-left: 10px;
-        }
-
-        .online-user-img {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            border: 2px solid var(--bg-panel);
-            object-fit: cover;
-            margin-left: -8px;
-            transition: transform 0.2s;
-            cursor: pointer;
-        }
-
-        .online-user-img:hover {
-            transform: translateY(-2px) scale(1.1);
-            z-index: 5;
-        }
-
-        .user-profile {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-shrink: 0;
-        }
-
-        .user-profile img {
-            width: 28px;
-            height: 28px;
-            border-radius: 4px;
-            object-fit: cover;
-        }
-
-        .user-profile span {
-            font-size: 13px;
-            color: var(--accent-blue);
-            font-weight: bold;
-        }
-
-        .btn-change-user {
-            background: transparent;
-            border: 1px solid var(--fg-sub);
-            color: var(--fg-sub);
-            padding: 2px 8px;
-            font-size: 11px;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        .chat-area {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background: var(--bg-chat);
-            overflow: hidden;
-            position: relative;
+        .chat-area { flex: 1;
+            display: flex; flex-direction: column; background: var(--bg-chat); overflow: hidden; position: relative;
             min-height: 0;
         }
-
-        .messages-container {
-            flex: 1;
-            padding: 20px 0;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            overflow-x: hidden;
-        }
+        .messages-container { flex: 1; padding: 20px 0; overflow-y: auto; display: flex;
+            flex-direction: column; gap: 16px; overflow-x: hidden; }
 
         @keyframes msgSlideIn {
-            0% {
-                opacity: 0;
-                transform: translateY(6px);
-            }
-
-            100% {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            0% { opacity: 0; transform: translateY(6px); }
+            100% { opacity: 1; transform: translateY(0); }
         }
 
-        .message-group {
-            display: flex;
-            padding: 4px 20px;
-            position: relative;
-            width: 100%;
-        }
+        .message-group { display: flex; padding: 4px 20px; position: relative; width: 100%; }
+        .message-group.animate-entry { animation: msgSlideIn 0.15s ease-out forwards; }
+        .message-group:hover { background-color: var(--hover-bg); }
 
-        .message-group.animate-entry {
-            animation: msgSlideIn 0.15s ease-out forwards;
-        }
+        .group-avatar { width: 36px; height: 36px; border-radius: 4px; margin-right: 12px; flex-shrink: 0; object-fit: cover; }
+        .group-body { flex: 1; min-width: 0; }
+        .group-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+        .sender-name { font-weight: bold; font-size: 14px; color: var(--accent-pink); }
+        .header-time { font-size: 11px; color: var(--fg-sub); }
 
-        .message-group:hover {
-            background-color: var(--hover-bg);
+        .message-text-list { display: flex; flex-direction: column; gap: 6px; }
+        .message-item { font-size: 14px; line-height: 1.5; color: var(--fg-text); word-break: break-word; white-space: pre-wrap;
+            position: relative; display: flex; flex-direction: column; align-items: flex-start; padding: 4px 6px; border-radius: 4px; width: 100%;
         }
-
-        .group-avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: 4px;
-            margin-right: 12px;
-            flex-shrink: 0;
-            object-fit: cover;
+        .message-item code { background: var(--bg-panel); padding: 2px 5px; border-radius: 4px; font-family: monospace;
+            font-size: 13px; color: var(--accent-yellow); border: 1px solid var(--border-color); word-break: break-all; max-width: 100%;
         }
+        .message-item del { text-decoration: line-through; color: var(--fg-sub); }
+        .message-item.animate-entry { animation: msgSlideIn 0.15s ease-out forwards; }
+        .message-item:hover .message-actions { display: flex; }
 
-        .group-body {
-            flex: 1;
-            min-width: 0;
+        .message-content-wrapper { width: 100%; display: flex; justify-content: space-between; align-items: flex-start; gap: 15px;}
+        .msg-content { flex: 1; min-width: 0; word-break: break-word; }
+
+        .reactions-container { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+        .reaction-badge { background: var(--bg-panel);
+            border: 1px solid var(--border-color); border-radius: 12px; padding: 2px 7px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px;
+            user-select: none; transition: background 0.15s; }
+        .reaction-badge:hover { background: var(--hover-bg); }
+        .reaction-badge.user-reacted { border-color: var(--accent-yellow); background: rgba(250, 189, 47, 0.1); }
+        .reaction-count { font-weight: bold; color: var(--fg-sub); font-size: 11px; }
+
+        .code-container { position: relative; display: inline-block; max-width: 100%; }
+        .code-copy-btn { position: absolute; right: 4px; top: 2px;
+            background: var(--border-color); color: var(--fg-text); border: none; font-size: 10px; padding: 2px 6px; border-radius: 3px; cursor: pointer;
+            opacity: 0; pointer-events: none; transition: opacity 0.15s ease;
         }
-
-        .group-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: baseline;
-            margin-bottom: 4px;
-        }
-
-        .sender-name {
-            font-weight: bold;
-            font-size: 14px;
-            color: var(--accent-pink);
-        }
-
-        .header-time {
-            font-size: 11px;
-            color: var(--fg-sub);
-        }
-
-        .message-text-list {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .message-item {
-            font-size: 14px;
-            line-height: 1.5;
-            color: var(--fg-text);
-            word-break: break-word;
-            white-space: pre-wrap;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            padding: 4px 6px;
-            border-radius: 4px;
-            width: 100%;
-        }
-
-        .message-item code {
-            background: var(--bg-panel);
-            padding: 2px 5px;
-            border-radius: 4px;
-            font-family: monospace;
-            font-size: 13px;
-            color: var(--accent-yellow);
-            border: 1px solid var(--border-color);
-            word-break: break-all;
-            max-width: 100%;
-        }
-
-        .message-item del {
-            text-decoration: line-through;
-            color: var(--fg-sub);
-        }
-
-        .message-item.animate-entry {
-            animation: msgSlideIn 0.15s ease-out forwards;
-        }
-
-        .message-item:hover .message-actions {
-            display: flex;
-        }
-
-        .message-content-wrapper {
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 15px;
-        }
-
-        .msg-content {
-            flex: 1;
-            min-width: 0;
-            word-break: break-word;
-        }
-
-        .reactions-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 4px;
-            margin-top: 4px;
-        }
-
-        .reaction-badge {
-            background: var(--bg-panel);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 2px 7px;
-            font-size: 12px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            user-select: none;
-            transition: background 0.15s;
-        }
-
-        .reaction-badge:hover {
-            background: var(--hover-bg);
-        }
-
-        .reaction-badge.user-reacted {
-            border-color: var(--accent-yellow);
-            background: rgba(250, 189, 47, 0.1);
-        }
-
-        .reaction-count {
-            font-weight: bold;
-            color: var(--fg-sub);
-            font-size: 11px;
-        }
-
-        .code-container {
-            position: relative;
-            display: inline-block;
-            max-width: 100%;
-        }
-
-        .code-copy-btn {
-            position: absolute;
-            right: 4px;
-            top: 2px;
-            background: var(--border-color);
-            color: var(--fg-text);
-            border: none;
-            font-size: 10px;
-            padding: 2px 6px;
-            border-radius: 3px;
-            cursor: pointer;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.15s ease;
-        }
-
         .code-container:hover .code-copy-btn {
             opacity: 1;
             pointer-events: auto;
         }
 
-        .code-block-container {
-            position: relative;
-            margin-top: 8px;
-            width: 100%;
-            max-width: 100%;
-            overflow: hidden;
+        .code-block-container { position: relative; margin-top: 8px; width: 100%; max-width: 100%; overflow: hidden; }
+        .code-block-header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 6px;
+            background: var(--border-color); padding: 6px 10px; border-radius: 6px 6px 0 0; font-size: 11px; color: var(--fg-sub); font-weight: bold;
         }
-
-        .code-block-header {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            align-items: center;
-            gap: 6px;
-            background: var(--border-color);
-            padding: 6px 10px;
-            border-radius: 6px 6px 0 0;
-            font-size: 11px;
-            color: var(--fg-sub);
-            font-weight: bold;
+        .code-block-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+        .code-block-actions button { background: var(--accent-yellow); border: 1px solid var(--accent-yellow); color: var(--bg-dark);
+            font-size: 11px; font-weight: bold; padding: 3px 10px; border-radius: 4px; cursor: pointer; white-space: nowrap;
         }
-
-        .code-block-actions {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-        }
-
-        .code-block-actions button {
-            background: var(--accent-yellow);
-            border: 1px solid var(--accent-yellow);
-            color: var(--bg-dark);
-            font-size: 11px;
-            font-weight: bold;
-            padding: 3px 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            white-space: nowrap;
-        }
-
         .code-block-copy-btn {
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.15s ease;
         }
-
         .code-block-container:hover .code-block-copy-btn {
             opacity: 1;
             pointer-events: auto;
         }
-
-        .code-block-actions button:hover {
-            opacity: 0.85;
-        }
-
-        .code-block-container pre {
-            background: var(--bg-panel);
-            border: 1px solid var(--border-color);
-            border-top: none;
-            border-radius: 0 0 6px 6px;
-            padding: 10px;
-            overflow-x: auto;
-            margin: 0;
-            font-family: monospace;
-            font-size: 13px;
-            color: var(--fg-text);
+        .code-block-actions button:hover { opacity: 0.85; }
+        .code-block-container pre { background: var(--bg-panel); border: 1px solid var(--border-color); border-top: none;
+            border-radius: 0 0 6px 6px; padding: 10px; overflow-x: auto; margin: 0; font-family: monospace; font-size: 13px; color: var(--fg-text);
             max-width: 100%;
             word-break: break-all;
             white-space: pre-wrap;
         }
+        .code-block-container pre code { background: none; border: none; padding: 0; word-break: break-all; }
+        .html-preview-frame { width: 100%; height: 320px; border: 1px solid var(--border-color); border-top: none;
+            border-radius: 0 0 6px 6px; background: #ffffff; display: block; }
 
-        .code-block-container pre code {
-            background: none;
-            border: none;
-            padding: 0;
-            word-break: break-all;
-        }
+        .chat-link { color: var(--accent-blue); text-decoration: none; word-break: break-all; }
+        .chat-link:hover { text-decoration: underline; }
 
-        .html-preview-frame {
-            width: 100%;
-            height: 320px;
-            border: 1px solid var(--border-color);
-            border-top: none;
-            border-radius: 0 0 6px 6px;
-            background: #ffffff;
-            display: block;
-        }
-
-        .chat-link {
-            color: var(--accent-blue);
-            text-decoration: none;
-            word-break: break-all;
-        }
-
-        .chat-link:hover {
-            text-decoration: underline;
-        }
-
-        .media-container {
-            margin-top: 8px;
-            width: 100%;
-            max-width: 420px;
-            overflow: hidden;
-        }
-
+        .media-container { margin-top: 8px; width: 100%; max-width: 420px; overflow: hidden; }
         .media-preview {
             max-width: 100%;
             max-height: 280px;
@@ -627,195 +227,46 @@
             object-fit: contain;
         }
 
-        .quoted-box {
-            background-color: var(--quote-bg);
-            border-left: 3px solid var(--quote-border);
-            padding: 3px 8px;
-            border-radius: 3px;
-            font-size: 12px;
-            color: var(--fg-sub);
-            margin-bottom: 4px;
-            max-width: 100%;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+        .quoted-box { background-color: var(--quote-bg); border-left: 3px solid var(--quote-border); padding: 3px 8px;
+            border-radius: 3px; font-size: 12px; color: var(--fg-sub); margin-bottom: 4px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
         }
+        .quoted-sender { font-weight: bold; color: var(--accent-yellow); margin-right: 5px; }
 
-        .quoted-sender {
-            font-weight: bold;
-            color: var(--accent-yellow);
-            margin-right: 5px;
-        }
+        .mention-tag { color: var(--accent-blue); font-weight: bold; background: rgba(131, 165, 152, 0.2); padding: 0 4px; border-radius: 3px; }
+        .message-item.is-mentioned { background-color: var(--mention-bg); border-left: 3px solid var(--mention-border); }
 
-        .mention-tag {
-            color: var(--accent-blue);
-            font-weight: bold;
-            background: rgba(131, 165, 152, 0.2);
-            padding: 0 4px;
-            border-radius: 3px;
-        }
+        .message-actions { display: none; flex-shrink: 0; gap: 4px;
+            background: var(--bg-panel); border: 1px solid var(--border-color); padding: 2px 6px; border-radius: 4px; position: absolute; right: 10px; top: -6px; z-index: 10;
+            align-items: center; }
+        .action-btn { background: transparent; border: none; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; padding: 2px; }
+        .action-btn.reply { color: var(--accent-blue); }
+        .action-btn.reply:hover { color: var(--fg-text); }
+        .action-btn.edit { color: var(--fg-sub); }
+        .action-btn.edit:hover { color: var(--fg-text); }
+        .action-btn.delete { color: var(--danger-red); }
+        .action-btn.delete:hover { opacity: 0.8; }
+        .action-btn.react { color: var(--accent-yellow); font-size: 13px; }
 
-        .message-item.is-mentioned {
-            background-color: var(--mention-bg);
-            border-left: 3px solid var(--mention-border);
-        }
+        .typing-indicator { padding: 4px 20px; font-size: 12px; font-style: italic; color: var(--accent-yellow); height: 20px; display: flex; align-items: center; flex-shrink: 0; }
 
-        .message-actions {
-            display: none;
-            flex-shrink: 0;
-            gap: 4px;
-            background: var(--bg-panel);
-            border: 1px solid var(--border-color);
-            padding: 2px 6px;
-            border-radius: 4px;
-            position: absolute;
-            right: 10px;
-            top: -6px;
-            z-index: 10;
-            align-items: center;
-        }
-
-        .action-btn {
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 2px;
-        }
-
-        .action-btn.reply {
-            color: var(--accent-blue);
-        }
-
-        .action-btn.reply:hover {
-            color: var(--fg-text);
-        }
-
-        .action-btn.edit {
-            color: var(--fg-sub);
-        }
-
-        .action-btn.edit:hover {
-            color: var(--fg-text);
-        }
-
-        .action-btn.delete {
-            color: var(--danger-red);
-        }
-
-        .action-btn.delete:hover {
-            opacity: 0.8;
-        }
-
-        .action-btn.react {
-            color: var(--accent-yellow);
-            font-size: 13px;
-        }
-
-        .typing-indicator {
-            padding: 4px 20px;
-            font-size: 12px;
-            font-style: italic;
-            color: var(--accent-yellow);
-            height: 20px;
-            display: flex;
-            align-items: center;
+        .reply-preview-bar { background: var(--bg-panel);
+            border-top: 1px solid var(--border-color); padding: 6px 20px; display: none; justify-content: space-between; align-items: center; font-size: 12px; color: var(--fg-sub);
             flex-shrink: 0;
         }
+        .reply-preview-content { display: flex; align-items: center; gap: 6px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+        .reply-preview-user { font-weight: bold; color: var(--accent-yellow); }
+        .btn-cancel-reply { background: transparent; border: none; color: var(--danger-red); font-size: 14px; cursor: pointer; font-weight: bold; margin-left: 10px; }
 
-        .reply-preview-bar {
-            background: var(--bg-panel);
-            border-top: 1px solid var(--border-color);
-            padding: 6px 20px;
-            display: none;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 12px;
-            color: var(--fg-sub);
-            flex-shrink: 0;
+        .input-area { padding: 15px 20px; background: var(--bg-panel); border-top: 1px solid var(--border-color); display: flex; gap: 10px; position: relative; flex-shrink: 0; }
+        .input-area textarea { flex: 1; background: var(--bg-dark); border: 1px solid var(--border-color);
+            color: var(--fg-text); border-radius: 6px; padding: 12px; resize: none; height: 46px; font-family: inherit; font-size: 14px; outline: none;
         }
+        .input-area textarea:focus { border-color: var(--accent-yellow); }
+        .input-area button[type="submit"] { background: var(--accent-yellow); border: none; padding: 0 20px; border-radius: 6px; font-weight: bold; color: var(--bg-dark); cursor: pointer; }
 
-        .reply-preview-content {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            overflow: hidden;
-            white-space: nowrap;
-            text-overflow: ellipsis;
-        }
-
-        .reply-preview-user {
-            font-weight: bold;
-            color: var(--accent-yellow);
-        }
-
-        .btn-cancel-reply {
-            background: transparent;
-            border: none;
-            color: var(--danger-red);
-            font-size: 14px;
-            cursor: pointer;
-            font-weight: bold;
-            margin-left: 10px;
-        }
-
-        .input-area {
-            padding: 15px 20px;
-            background: var(--bg-panel);
-            border-top: 1px solid var(--border-color);
-            display: flex;
-            gap: 10px;
-            position: relative;
-            flex-shrink: 0;
-        }
-
-        .input-area textarea {
-            flex: 1;
-            background: var(--bg-dark);
-            border: 1px solid var(--border-color);
-            color: var(--fg-text);
-            border-radius: 6px;
-            padding: 12px;
-            resize: none;
-            height: 46px;
-            font-family: inherit;
-            font-size: 14px;
-            outline: none;
-        }
-
-        .input-area textarea:focus {
-            border-color: var(--accent-yellow);
-        }
-
-        .input-area button[type="submit"] {
-            background: var(--accent-yellow);
-            border: none;
-            padding: 0 20px;
-            border-radius: 6px;
-            font-weight: bold;
-            color: var(--bg-dark);
-            cursor: pointer;
-        }
-
-        .btn-emoji-toggle {
-            background: transparent;
-            border: 1px solid var(--border-color);
-            color: var(--accent-yellow);
-            padding: 0 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .btn-emoji-toggle:hover {
-            background: var(--hover-bg);
-        }
+        .btn-emoji-toggle { background: transparent;
+            border: 1px solid var(--border-color); color: var(--accent-yellow); padding: 0 12px; border-radius: 6px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; }
+        .btn-emoji-toggle:hover { background: var(--hover-bg); }
 
         .picker-container {
             position: absolute;
@@ -832,7 +283,6 @@
             overflow: hidden;
             box-shadow: 0 4px 12px rgba(0,0,0,0.5);
         }
-
         .picker-container.show {
             display: flex;
         }
@@ -843,7 +293,6 @@
             border-bottom: 1px solid var(--border-color);
             flex-shrink: 0;
         }
-
         .tab-btn {
             flex: 1;
             padding: 8px;
@@ -854,7 +303,6 @@
             cursor: pointer;
             font-size: 13px;
         }
-
         .tab-btn.active {
             color: var(--accent-yellow);
             border-bottom: 2px solid var(--accent-yellow);
@@ -866,7 +314,6 @@
             overflow: hidden;
             position: relative;
         }
-
         .tab-content.active {
             display: flex;
             flex-direction: column;
@@ -886,7 +333,6 @@
             border-bottom: 1px solid var(--border-color);
             flex-shrink: 0;
         }
-
         .gif-search-box input {
             width: 100%;
             padding: 6px 10px;
@@ -897,7 +343,6 @@
             outline: none;
             font-size: 12px;
         }
-
         .gif-grid {
             flex: 1;
             display: grid;
@@ -906,7 +351,6 @@
             padding: 8px;
             overflow-y: auto;
         }
-
         .gif-item {
             width: 100%;
             height: 90px;
@@ -915,77 +359,63 @@
             cursor: pointer;
             border: 1px solid transparent;
         }
-
         .gif-item:hover {
             border-color: var(--accent-yellow);
         }
 
         @media (max-width: 720px) {
-            html,
-            body {
+            html, body {
                 height: var(--app-vh, 100vh);
                 overflow: hidden;
             }
-
             .app-container {
                 height: var(--app-vh, 100vh);
                 overflow: hidden;
             }
-
             .input-area,
             .reply-preview-bar,
             .typing-indicator,
             .top-bar {
                 flex-shrink: 0;
             }
-
             .chat-area {
                 flex: 1 1 0;
                 min-height: 0;
             }
-
             .messages-container {
                 flex: 1 1 0;
                 min-height: 0;
             }
-
             .top-bar {
                 padding: 10px 12px;
                 gap: 8px;
             }
-
             .chat-info {
                 font-size: 13px;
                 gap: 8px;
                 min-width: 0;
             }
-
             .chat-info > span:nth-of-type(2) {
                 max-width: 34vw;
                 overflow: hidden;
                 text-overflow: ellipsis;
                 white-space: nowrap;
             }
-
             .online-users-list {
                 margin-left: 4px;
             }
-
             .online-user-img {
                 width: 22px;
                 height: 22px;
                 margin-left: -6px;
             }
-
             .user-profile {
                 gap: 6px;
                 flex-shrink: 0;
             }
-
             .user-profile span {
                 display: none;
             }
-
             .btn-change-user {
                 padding: 3px 7px;
                 font-size: 10px;
@@ -995,38 +425,30 @@
                 padding: 12px 0;
                 gap: 10px;
             }
-
             .message-group {
                 padding: 4px 10px;
             }
-
             .group-avatar {
                 width: 30px;
                 height: 30px;
                 margin-right: 8px;
             }
-
             .sender-name {
                 font-size: 13px;
             }
-
             .header-time {
                 font-size: 10px;
             }
-
             .message-item {
                 font-size: 14px;
             }
-
             .message-content-wrapper {
                 flex-wrap: wrap;
                 gap: 6px;
             }
-
             .media-container {
                 max-width: 100%;
             }
-
             .media-preview {
                 max-height: 220px;
             }
@@ -1042,7 +464,6 @@
                 justify-content: flex-end;
                 flex-wrap: wrap;
             }
-
             .action-btn {
                 font-size: 16px;
                 padding: 6px;
@@ -1056,7 +477,6 @@
                 padding: 6px 12px;
                 flex-wrap: nowrap;
             }
-
             .reply-preview-content {
                 max-width: 78%;
             }
@@ -1065,18 +485,15 @@
                 padding: 10px 10px;
                 gap: 6px;
             }
-
             .input-area textarea {
                 font-size: 16px;
                 padding: 10px;
                 height: 42px;
             }
-
             .input-area button[type="submit"] {
                 padding: 0 14px;
                 font-size: 13px;
             }
-
             .btn-emoji-toggle {
                 padding: 0 10px;
                 font-size: 15px;
@@ -1094,7 +511,6 @@
             .modal-card {
                 padding: 20px;
             }
-
             .edit-card {
                 padding: 16px;
             }
@@ -1104,11 +520,9 @@
             .chat-info > span:nth-of-type(2) {
                 max-width: 26vw;
             }
-
             .online-users-list {
                 display: none;
             }
-
             .quoted-box {
                 font-size: 11px;
             }
@@ -1126,36 +540,27 @@
                 justify-content: flex-end;
                 flex-wrap: wrap;
             }
-
             .message-content-wrapper {
                 flex-wrap: wrap;
             }
         }
     </style>
 </head>
-
 <body>
 
     <div id="userModal">
         <div class="modal-card">
             <h3>Instant Chat</h3>
-
-            <p style="color: var(--fg-sub); font-size: 13px; margin-bottom: 15px;">
-                Devam etmek için Google hesabınızla giriş yapın.
-            </p>
-
-            <div class="modal-error" id="modalError">
-                Giriş yapılamadı.
-            </div>
+            <p style="color: var(--fg-sub); font-size: 13px; margin-bottom: 15px;">Devam etmek için Google hesabınızla giriş yapın.</p>
+            <div class="modal-error" id="modalError">Bu kullanıcı adı zaten alınmış!</div>
 
             <button id="googleLoginBtn" type="button" class="btn-google">
                 <svg width="18" height="18" viewBox="0 0 48 48" style="flex-shrink:0;">
                     <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12s5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24s8.955,20,20,20s20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/>
                     <path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/>
                     <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/>
-                    <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-.792,2.237-2.231,4.166-4.087,5.571l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"/>
+                    <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"/>
                 </svg>
-
                 Google ile Giriş Yap
             </button>
         </div>
@@ -1164,9 +569,7 @@
     <div id="editModal">
         <div class="edit-card">
             <h4>Mesajı Düzenle</h4>
-
             <textarea id="editMessageInput"></textarea>
-
             <div class="edit-actions">
                 <button class="btn-cancel" id="cancelEditBtn">İptal</button>
                 <button class="btn-save" id="saveEditBtn">Kaydet</button>
@@ -1177,67 +580,36 @@
     <div id="editProfileModal">
         <div class="edit-card">
             <h4>Profili Düzenle</h4>
-
-            <div class="modal-error" id="profileEditError">
-                Bu kullanıcı adı zaten alınmış!
-            </div>
-
-            <input
-                type="text"
-                id="editProfileUsername"
-                class="profile-edit-input"
-                placeholder="Kullanıcı Adı"
-                maxlength="32"
-            />
-
-            <input
-                type="url"
-                id="editProfileAvatar"
-                class="profile-edit-input"
-                placeholder="Profil Resmi URL"
-                maxlength="1000"
-            />
-
+            <div class="modal-error" id="profileEditError">Bu kullanıcı adı zaten alınmış!</div>
+            <input type="text" id="editProfileUsername" class="profile-edit-input" placeholder="Kullanıcı Adı" />
+            <input type="url" id="editProfileAvatar" class="profile-edit-input" placeholder="Profil Resmi URL" />
             <div class="edit-actions">
                 <button class="btn-cancel" id="cancelProfileEditBtn">İptal</button>
                 <button class="btn-save" id="saveProfileEditBtn">Kaydet</button>
             </div>
-
             <div style="margin-top:14px; text-align:center;">
-                <button type="button" id="logoutBtn" class="btn-logout-link">
-                    Çıkış Yap
-                </button>
+                <button type="button" id="logoutBtn" class="btn-logout-link">Çıkış Yap</button>
             </div>
         </div>
     </div>
 
     <div class="app-container">
-
         <div class="top-bar">
             <div class="chat-info">
                 <span class="status-dot"></span>
                 <span>But Why Pinguin..?</span>
                 <div class="online-users-list" id="onlineUsersList"></div>
             </div>
-
             <div class="user-profile">
                 <img id="myAvatar" src="" alt="Profil">
                 <span id="displayUsername">...</span>
-                <button class="btn-change-user" id="resetUserBtn">
-                    Profili Düzenle
-                </button>
+                <button class="btn-change-user" id="resetUserBtn">Profili Düzenle</button>
             </div>
         </div>
 
         <div class="chat-area">
-
             <div class="messages-container" id="messagesList">
-                <div
-                    style="color:var(--fg-sub); text-align:center; padding-top:20px;"
-                    id="loadingText"
-                >
-                    Bağlanıyor...
-                </div>
+                <div style="color:var(--fg-sub); text-align:center; padding-top: 20px;" id="loadingText">Bağlanıyor...</div>
             </div>
 
             <div class="typing-indicator" id="typingIndicator"></div>
@@ -1248,126 +620,40 @@
                     <span class="reply-preview-user" id="replyPreviewUser">@kullanıcı</span>
                     <span id="replyPreviewText">"Mesaj içeriği..."</span>
                 </div>
-
-                <button
-                    class="btn-cancel-reply"
-                    id="cancelReplyBtn"
-                    title="İptal Et"
-                >
-                    ✕
-                </button>
+                <button class="btn-cancel-reply" id="cancelReplyBtn" title="İptal Et">✕</button>
             </div>
 
             <form class="input-area" id="chatForm">
-
-                <button
-                    type="button"
-                    class="btn-emoji-toggle"
-                    id="emojiToggleBtn"
-                    title="Emoji & GIF Ekle"
-                >
-                    😀
-                </button>
+                <button type="button" class="btn-emoji-toggle" id="emojiToggleBtn" title="Emoji & GIF Ekle">😀</button>
 
                 <div class="picker-container" id="pickerContainer">
-
                     <div class="picker-tabs">
-                        <button
-                            type="button"
-                            class="tab-btn active"
-                            id="tabEmojiBtn"
-                        >
-                            Emoji
-                        </button>
-
-                        <button
-                            type="button"
-                            class="tab-btn"
-                            id="tabGifBtn"
-                        >
-                            GIF
-                        </button>
+                        <button type="button" class="tab-btn active" id="tabEmojiBtn">Emoji</button>
+                        <button type="button" class="tab-btn" id="tabGifBtn">GIF</button>
                     </div>
 
-                    <div
-                        class="tab-content active"
-                        id="emojiTabContent"
-                    >
-                        <emoji-picker
-                            id="emojiPicker"
-                            class="dark"
-                        ></emoji-picker>
+                    <div class="tab-content active" id="emojiTabContent">
+                        <emoji-picker id="emojiPicker" class="dark"></emoji-picker>
                     </div>
 
-                    <div
-                        class="tab-content"
-                        id="gifTabContent"
-                    >
+                    <div class="tab-content" id="gifTabContent">
                         <div class="gif-search-box">
-                            <input
-                                type="text"
-                                id="gifSearchInput"
-                                placeholder="GIF Ara (Klipy)..."
-                            />
+                            <input type="text" id="gifSearchInput" placeholder="GIF Ara (Klipy)...">
                         </div>
-
-                        <div
-                            class="gif-grid"
-                            id="gifGrid"
-                        ></div>
+                        <div class="gif-grid" id="gifGrid"></div>
                     </div>
-
                 </div>
 
-                <textarea
-                    id="messageInput"
-                    placeholder="Bir mesaj yazın..."
-                    required
-                ></textarea>
-
+                <textarea id="messageInput" placeholder="Bir mesaj yazın..." required></textarea>
                 <button type="submit">Gönder</button>
-
             </form>
         </div>
     </div>
 
     <script type="module">
-
-        import {
-            initializeApp
-        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-
-        import {
-            getDatabase,
-            ref,
-            push,
-            onChildAdded,
-            onChildChanged,
-            onChildRemoved,
-            onValue,
-            serverTimestamp,
-            remove,
-            update,
-            onDisconnect,
-            set,
-            query,
-            limitToLast,
-            get,
-            runTransaction
-        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-
-        import {
-            getAuth,
-            GoogleAuthProvider,
-            signInWithPopup,
-            signOut,
-            onAuthStateChanged
-        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-
-
-        /* =========================================================
-           FIREBASE
-        ========================================================= */
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, push, onChildAdded, onChildChanged, onChildRemoved, onValue, serverTimestamp, remove, update, onDisconnect, set, query, limitToLast, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDRiCdkBRsKMeUpCmznQ3Sn8R6SvBk0C9U",
@@ -1384,3470 +670,885 @@
         const auth = getAuth(app);
         const googleProvider = new GoogleAuthProvider();
 
+        const messagesRef = query(ref(database, 'messages'), limitToLast(100));
+        const rawMessagesRef = ref(database, 'messages');
+        const onlineRef = ref(database, 'online_users');
+        const typingRef = ref(database, 'typing');
 
-        /* =========================================================
-           DATABASE REFERENCES
-        ========================================================= */
-
-        const messagesRef = query(
-            ref(database, "messages"),
-            limitToLast(100)
-        );
-
-        const rawMessagesRef = ref(database, "messages");
-        const onlineRef = ref(database, "online_users");
-        const typingRef = ref(database, "typing");
-
-
-        /* =========================================================
-           SESSION
-        ========================================================= */
-
-        let currentUser = "";
-        let currentAvatar = "";
-        let currentUid = null;
-
+        let currentUser = localStorage.getItem('gh_chat_username') || "";
+        let currentAvatar = localStorage.getItem('gh_chat_avatar') || "";
         let activeEditKey = null;
         let activeReplyTarget = null;
         let activeReactionMsgKey = null;
-
         let typingTimeout = null;
-
         let myUserRef = null;
         let myTypingRef = null;
-
         let loggedInViaGoogle = false;
-
+        let currentUserEmail = ""; // Google'dan gelir, kullanıcı tarafından değiştirilemez.
         const codeBlocksMap = new Map();
 
+        // Sadece bu e-postalarla giriş yapanlar mesaj silme (admin) yetkisine sahip olur.
+        // Kendi Google hesabının e-postasıyla değiştir.
+        const ADMIN_EMAILS = ['seninadresin@gmail.com'];
 
-        /* =========================================================
-           API
-        ========================================================= */
+        const KLIPY_API_KEY = "JorLIwnYyHhkMdcej1Ok9ZSUU04JWlgwYqkb6YKXadVH0fncyC1PhDlK9G5zFFQU";
 
-        const KLIPY_API_KEY =
-            "JorLIwnYyHhkMdcej1Ok9ZSUU04JWlgwYqkb6YKXadVH0fncyC1PhDlK9G5zFFQU";
-
-        const GEMINI_WORKER_URL =
-            "https://gemini-proxy.mehmetalidokuyucu32.workers.dev";
-
+        const GEMINI_WORKER_URL = "https://gemini-proxy.mehmetalidokuyucu32.workers.dev";
         const GEMINI_SENDER_NAME = "Gemini 🤖";
+        const GEMINI_AVATAR_URL = "https://api.dicebear.com/7.x/bottts/svg?seed=Gemini-Bot";
 
-        const GEMINI_AVATAR_URL =
-            "https://api.dicebear.com/7.x/bottts/svg?seed=Gemini-Bot";
+        const userModal = document.getElementById('userModal');
+        const modalError = document.getElementById('modalError');
+        const editModal = document.getElementById('editModal');
+        const editMessageInput = document.getElementById('editMessageInput');
+        const displayUsername = document.getElementById('displayUsername');
+        const myAvatar = document.getElementById('myAvatar');
+        const messagesList = document.getElementById('messagesList');
+        const chatForm = document.getElementById('chatForm');
+        const messageInput = document.getElementById('messageInput');
+        const onlineUsersList = document.getElementById('onlineUsersList');
+        const typingIndicator = document.getElementById('typingIndicator');
+        const replyPreviewBar = document.getElementById('replyPreviewBar');
+        const replyPreviewUser = document.getElementById('replyPreviewUser');
+        const replyPreviewText = document.getElementById('replyPreviewText');
+        const emojiToggleBtn = document.getElementById('emojiToggleBtn');
+        const pickerContainer = document.getElementById('pickerContainer');
+        const tabEmojiBtn = document.getElementById('tabEmojiBtn');
+        const tabGifBtn = document.getElementById('tabGifBtn');
+        const emojiTabContent = document.getElementById('emojiTabContent');
+        const gifTabContent = document.getElementById('gifTabContent');
+        const gifSearchInput = document.getElementById('gifSearchInput');
+        const gifGrid = document.getElementById('gifGrid');
+        const emojiPicker = document.getElementById('emojiPicker');
+        const googleLoginBtn = document.getElementById('googleLoginBtn');
+        const editProfileModal = document.getElementById('editProfileModal');
+        const editProfileUsername = document.getElementById('editProfileUsername');
+        const editProfileAvatar = document.getElementById('editProfileAvatar');
+        const profileEditError = document.getElementById('profileEditError');
+        const logoutBtn = document.getElementById('logoutBtn');
 
-
-        /* =========================================================
-           DOM
-        ========================================================= */
-
-        const userModal =
-            document.getElementById("userModal");
-
-        const modalError =
-            document.getElementById("modalError");
-
-        const editModal =
-            document.getElementById("editModal");
-
-        const editMessageInput =
-            document.getElementById("editMessageInput");
-
-        const displayUsername =
-            document.getElementById("displayUsername");
-
-        const myAvatar =
-            document.getElementById("myAvatar");
-
-        const messagesList =
-            document.getElementById("messagesList");
-
-        const chatForm =
-            document.getElementById("chatForm");
-
-        const messageInput =
-            document.getElementById("messageInput");
-
-        const onlineUsersList =
-            document.getElementById("onlineUsersList");
-
-        const typingIndicator =
-            document.getElementById("typingIndicator");
-
-        const replyPreviewBar =
-            document.getElementById("replyPreviewBar");
-
-        const replyPreviewUser =
-            document.getElementById("replyPreviewUser");
-
-        const replyPreviewText =
-            document.getElementById("replyPreviewText");
-
-        const emojiToggleBtn =
-            document.getElementById("emojiToggleBtn");
-
-        const pickerContainer =
-            document.getElementById("pickerContainer");
-
-        const tabEmojiBtn =
-            document.getElementById("tabEmojiBtn");
-
-        const tabGifBtn =
-            document.getElementById("tabGifBtn");
-
-        const emojiTabContent =
-            document.getElementById("emojiTabContent");
-
-        const gifTabContent =
-            document.getElementById("gifTabContent");
-
-        const gifSearchInput =
-            document.getElementById("gifSearchInput");
-
-        const gifGrid =
-            document.getElementById("gifGrid");
-
-        const emojiPicker =
-            document.getElementById("emojiPicker");
-
-        const googleLoginBtn =
-            document.getElementById("googleLoginBtn");
-
-        const editProfileModal =
-            document.getElementById("editProfileModal");
-
-        const editProfileUsername =
-            document.getElementById("editProfileUsername");
-
-        const editProfileAvatar =
-            document.getElementById("editProfileAvatar");
-
-        const profileEditError =
-            document.getElementById("profileEditError");
-
-        const logoutBtn =
-            document.getElementById("logoutBtn");
-
-
-        /* =========================================================
-           NOTIFICATIONS
-        ========================================================= */
-
-        if (
-            "Notification" in window &&
-            Notification.permission === "default"
-        ) {
+        if ("Notification" in window && Notification.permission === "default") {
             Notification.requestPermission();
         }
 
-
-        /* =========================================================
-           HELPERS
-        ========================================================= */
-
         function playBeep(freq = 587.33) {
             try {
-                const ctx =
-                    new (window.AudioContext ||
-                        window.webkitAudioContext)();
-
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
                 const osc = ctx.createOscillator();
                 const gain = ctx.createGain();
-
                 osc.connect(gain);
                 gain.connect(ctx.destination);
-
                 osc.frequency.value = freq;
-
-                gain.gain.setValueAtTime(
-                    0.05,
-                    ctx.currentTime
-                );
-
+                gain.gain.setValueAtTime(0.05, ctx.currentTime);
                 osc.start();
-
-                osc.stop(
-                    ctx.currentTime + 0.12
-                );
-
+                osc.stop(ctx.currentTime + 0.12);
             } catch (e) {}
         }
 
-
         function getAvatarUrl(username, customUrl) {
-            if (
-                customUrl &&
-                customUrl.trim() !== ""
-            ) {
-                return customUrl;
-            }
-
+            if (customUrl && customUrl.trim() !== "") return customUrl;
             return `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(username)}`;
         }
 
-
-        function normalizeUsername(username) {
-            return username
-                .trim()
-                .toLowerCase();
-        }
-
-
-        function sanitizeUsername(username) {
-            return username
-                .trim()
-                .replace(/[.#$[\]/]/g, "");
-        }
-
-
-        function isValidUsername(username) {
-            return (
-                username.length >= 2 &&
-                username.length <= 32 &&
-                /^[a-zA-Z0-9_ğüşıöçĞÜŞİÖÇ]+$/.test(username)
-            );
-        }
-
-
-        function escapeHTML(str) {
-            if (!str) return "";
-
-            return str.replace(
-                /[&<>'"]/g,
-                tag => ({
-                    "&": "&amp;",
-                    "<": "&lt;",
-                    ">": "&gt;",
-                    "'": "&#39;",
-                    '"': "&quot;"
-                }[tag] || tag)
-            );
-        }
-
-
-        /* =========================================================
-           USER SESSION
-        ========================================================= */
-
         function initUserSession() {
+            if (!currentUser) return;
+            userModal.style.display = 'none';
+            displayUsername.innerText = currentUser;
+            myAvatar.src = getAvatarUrl(currentUser, currentAvatar);
 
-            if (!currentUser || !currentUid) {
-                return;
-            }
+            const connectedRef = ref(database, '.info/connected');
+            onValue(connectedRef, (snap) => {
+                if (snap.val() === true) {
+                    myUserRef = push(onlineRef);
+                    myTypingRef = ref(database, `typing/${currentUser}`);
 
-            userModal.style.display = "none";
+                    onDisconnect(myUserRef).remove();
+                    onDisconnect(myTypingRef).remove();
 
-            displayUsername.innerText =
-                currentUser;
-
-            myAvatar.src =
-                getAvatarUrl(
-                    currentUser,
-                    currentAvatar
-                );
-
-
-            const connectedRef =
-                ref(database, ".info/connected");
-
-
-            onValue(
-                connectedRef,
-                snap => {
-
-                    if (
-                        snap.val() !== true ||
-                        !currentUid
-                    ) {
-                        return;
-                    }
-
-
-                    /*
-                     * Kullanıcı adı yerine Firebase UID kullanılıyor.
-                     * Böylece kullanıcı adı değişse bile online kaydı
-                     * aynı hesaba bağlı kalıyor.
-                     */
-
-                    myUserRef =
-                        ref(
-                            database,
-                            `online_users/${currentUid}`
-                        );
-
-                    myTypingRef =
-                        ref(
-                            database,
-                            `typing/${currentUid}`
-                        );
-
-
-                    onDisconnect(
-                        myUserRef
-                    ).remove();
-
-                    onDisconnect(
-                        myTypingRef
-                    ).remove();
-
-
-                    set(
-                        myUserRef,
-                        {
-                            uid: currentUid,
-                            username: currentUser,
-                            avatar: getAvatarUrl(
-                                currentUser,
-                                currentAvatar
-                            )
-                        }
-                    );
+                    set(myUserRef, { username: currentUser, avatar: getAvatarUrl(currentUser, currentAvatar) });
                 }
-            );
+            });
         }
 
-
-        /* =========================================================
-           AUTH STATE
-        ========================================================= */
-
-        onAuthStateChanged(
-            auth,
-            async user => {
-
-                if (!user) {
-
-                    loggedInViaGoogle = false;
-
-                    currentUser = "";
-                    currentAvatar = "";
-                    currentUid = null;
-
-                    userModal.style.display = "flex";
-
-                    return;
-                }
-
-
+        // Sayfa her açıldığında (F5 dahil) Firebase, mevcut Google oturumunu otomatik
+        // hatırlar. Oturum varsa direkt sohbete devam edilir, yoksa giriş modalı gösterilir.
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
                 loggedInViaGoogle = true;
-
-                currentUid = user.uid;
-
-
-                try {
-
-                    const userRef =
-                        ref(
-                            database,
-                            `users/${user.uid}`
-                        );
-
-                    const snap =
-                        await get(userRef);
-
-
-                    if (snap.exists()) {
-
-                        /*
-                         * Kullanıcı adı artık localStorage'dan
-                         * alınmıyor.
-                         *
-                         * Tek güvenilir kaynak Firebase'deki
-                         * users/<UID> kaydı.
-                         */
-
-                        const data =
-                            snap.val();
-
-                        currentUser =
-                            data.username ||
-                            user.displayName ||
-                            "Kullanıcı";
-
-                        currentAvatar =
-                            data.avatar ||
-                            user.photoURL ||
-                            "";
-
-                    } else {
-
-                        /*
-                         * İlk giriş.
-                         */
-
-                        let username =
-                            sanitizeUsername(
-                                user.displayName ||
-                                user.email?.split("@")[0] ||
-                                "Kullanıcı"
-                            );
-
-
-                        if (!isValidUsername(username)) {
-                            username =
-                                "Kullanıcı_" +
-                                Math.floor(
-                                    Math.random() * 9000 + 1000
-                                );
-                        }
-
-
-                        /*
-                         * Username claim atomik transaction
-                         * ile alınmaya çalışılıyor.
-                         */
-
-                        let normalized =
-                            normalizeUsername(username);
-
-
-                        let claimRef =
-                            ref(
-                                database,
-                                `username_claims/${normalized}`
-                            );
-
-
-                        let claimResult =
-                            await runTransaction(
-                                claimRef,
-                                currentValue => {
-
-                                    if (
-                                        currentValue === null
-                                    ) {
-                                        return user.uid;
-                                    }
-
-                                    return;
-                                }
-                            );
-
-
-                        /*
-                         * İsim alınmışsa benzersiz isim üret.
-                         */
-
-                        if (!claimResult.committed) {
-
-                            username =
-                                `${username}_${Math.floor(
-                                    Math.random() * 9000 + 1000
-                                )}`;
-
-                            normalized =
-                                normalizeUsername(username);
-
-                            claimRef =
-                                ref(
-                                    database,
-                                    `username_claims/${normalized}`
-                                );
-
-                            claimResult =
-                                await runTransaction(
-                                    claimRef,
-                                    currentValue => {
-
-                                        if (
-                                            currentValue === null
-                                        ) {
-                                            return user.uid;
-                                        }
-
-                                        return;
-                                    }
-                                );
-
-
-                            if (!claimResult.committed) {
-                                throw new Error(
-                                    "Kullanıcı adı alınamadı."
-                                );
-                            }
-                        }
-
-
-                        currentUser = username;
-                        currentAvatar =
-                            user.photoURL || "";
-
-
-                        await set(
-                            userRef,
-                            {
-                                username:
-                                    currentUser,
-
-                                avatar:
-                                    currentAvatar
-                            }
-                        );
-                    }
-
-
-                    initUserSession();
-
-                } catch (err) {
-
-                    console.error(
-                        "Kullanıcı profili yüklenemedi:",
-                        err
-                    );
-
-                    modalError.innerText =
-                        "Kullanıcı profili yüklenemedi: " +
-                        err.message;
-
-                    modalError.style.display =
-                        "block";
-                }
-            }
-        );
-
-
-        /* =========================================================
-           GOOGLE LOGIN
-        ========================================================= */
-
-        googleLoginBtn.addEventListener(
-            "click",
-            async () => {
-
-                modalError.style.display = "none";
-
-                try {
-
-                    await signInWithPopup(
-                        auth,
-                        googleProvider
-                    );
-
-                } catch (err) {
-
-                    console.error(
-                        "Google giriş hatası:",
-                        err
-                    );
-
-                    modalError.innerText =
-                        "Google ile giriş yapılamadı: " +
-                        (err.code || err.message);
-
-                    modalError.style.display =
-                        "block";
-                }
-            }
-        );
-
-
-        /* =========================================================
-           PROFILE EDIT
-        ========================================================= */
-
-        document
-            .getElementById("resetUserBtn")
-            .addEventListener(
-                "click",
-                () => {
-
-                    profileEditError.style.display =
-                        "none";
-
-                    editProfileUsername.value =
-                        currentUser;
-
-                    editProfileAvatar.value =
-                        currentAvatar;
-
-                    editProfileModal.style.display =
-                        "flex";
-                }
-            );
-
-
-        document
-            .getElementById("cancelProfileEditBtn")
-            .addEventListener(
-                "click",
-                () => {
-                    editProfileModal.style.display =
-                        "none";
-                }
-            );
-
-
-        document
-            .getElementById("saveProfileEditBtn")
-            .addEventListener(
-                "click",
-                async () => {
-
-                    if (!currentUid) {
-                        return;
-                    }
-
-
-                    let newUsername =
-                        sanitizeUsername(
-                            editProfileUsername.value
-                        );
-
-                    const newAvatar =
-                        editProfileAvatar.value.trim();
-
-
-                    profileEditError.style.display =
-                        "none";
-
-
-                    if (!isValidUsername(newUsername)) {
-
-                        profileEditError.innerText =
-                            "Kullanıcı adı 2-32 karakter olmalı ve sadece harf, rakam veya _ içermeli.";
-
-                        profileEditError.style.display =
-                            "block";
-
-                        return;
-                    }
-
-
-                    const oldUsername =
-                        currentUser;
-
-                    const oldNormalized =
-                        normalizeUsername(
-                            oldUsername
-                        );
-
-                    const newNormalized =
-                        normalizeUsername(
-                            newUsername
-                        );
-
-
-                    /*
-                     * Kullanıcı adı değişmiyorsa sadece
-                     * profil bilgisini güncelle.
-                     */
-
-                    if (
-                        oldNormalized ===
-                        newNormalized
-                    ) {
-
-                        try {
-
-                            await update(
-                                ref(
-                                    database,
-                                    `users/${currentUid}`
-                                ),
-                                {
-                                    username:
-                                        oldUsername,
-
-                                    avatar:
-                                        newAvatar
-                                }
-                            );
-
-                            currentAvatar =
-                                newAvatar;
-
-                            displayUsername.innerText =
-                                currentUser;
-
-                            myAvatar.src =
-                                getAvatarUrl(
-                                    currentUser,
-                                    currentAvatar
-                                );
-
-
-                            if (myUserRef) {
-                                await update(
-                                    myUserRef,
-                                    {
-                                        username:
-                                            currentUser,
-
-                                        avatar:
-                                            getAvatarUrl(
-                                                currentUser,
-                                                currentAvatar
-                                            )
-                                    }
-                                );
-                            }
-
-
-                            editProfileModal.style.display =
-                                "none";
-
-                        } catch (err) {
-
-                            console.error(err);
-
-                            profileEditError.innerText =
-                                "Profil güncellenemedi.";
-
-                            profileEditError.style.display =
-                                "block";
-                        }
-
-                        return;
-                    }
-
+                currentUserEmail = (user.email || '').toLowerCase();
+
+                const savedUsername = localStorage.getItem('gh_chat_username');
+                const savedAvatar = localStorage.getItem('gh_chat_avatar');
+
+                if (savedUsername) {
+                    currentUser = savedUsername;
+                    currentAvatar = savedAvatar || user.photoURL || '';
+                } else {
+                    let username = (user.displayName || user.email || 'Kullanıcı').trim();
 
                     try {
+                        const onlineSnap = await get(onlineRef);
+                        if (onlineSnap.exists()) {
+                            const onlineData = onlineSnap.val();
+                            const isTaken = Object.values(onlineData).some(u => u.username && u.username.toLowerCase() === username.toLowerCase());
+                            if (isTaken) {
+                                username = `${username} (${Math.floor(Math.random() * 900 + 100)})`;
+                            }
+                        }
+                    } catch (e) { /* yoksay */ }
 
-                        /*
-                         * Yeni kullanıcı adını atomik olarak
-                         * almaya çalış.
-                         */
+                    currentUser = username;
+                    currentAvatar = user.photoURL || '';
+                    localStorage.setItem('gh_chat_username', currentUser);
+                    localStorage.setItem('gh_chat_avatar', currentAvatar);
+                }
 
-                        const newClaimRef =
-                            ref(
-                                database,
-                                `username_claims/${newNormalized}`
-                            );
+                initUserSession();
+            } else {
+                loggedInViaGoogle = false;
+                currentUser = '';
+                currentAvatar = '';
+                currentUserEmail = '';
+                userModal.style.display = 'flex';
+            }
+        });
 
+        tabEmojiBtn.addEventListener('click', () => {
+            tabEmojiBtn.classList.add('active');
+            tabGifBtn.classList.remove('active');
+            emojiTabContent.classList.add('active');
+            gifTabContent.classList.remove('active');
+        });
 
-                        const claimResult =
-                            await runTransaction(
-                                newClaimRef,
-                                value => {
+        tabGifBtn.addEventListener('click', () => {
+            tabGifBtn.classList.add('active');
+            tabEmojiBtn.classList.remove('active');
+            gifTabContent.classList.add('active');
+            emojiTabContent.classList.remove('active');
+            if (gifGrid.children.length === 0) fetchGifs('');
+        });
 
-                                    if (
-                                        value === null
-                                    ) {
-                                        return currentUid;
-                                    }
+        googleLoginBtn.addEventListener('click', async () => {
+            modalError.style.display = 'none';
+            try {
+                await signInWithPopup(auth, googleProvider);
+                // Girişten sonrasını onAuthStateChanged halleder.
+            } catch (err) {
+                console.error('Google giriş hatası:', err);
+                modalError.innerText = 'Google ile giriş yapılamadı: ' + (err.code || err.message);
+                modalError.style.display = 'block';
+            }
+        });
 
-                                    return;
-                                }
-                            );
+        document.getElementById('resetUserBtn').addEventListener('click', () => {
+            profileEditError.style.display = 'none';
+            editProfileUsername.value = currentUser;
+            editProfileAvatar.value = currentAvatar;
+            editProfileModal.style.display = 'flex';
+        });
 
+        document.getElementById('cancelProfileEditBtn').addEventListener('click', () => {
+            editProfileModal.style.display = 'none';
+        });
 
-                        if (!claimResult.committed) {
+        document.getElementById('saveProfileEditBtn').addEventListener('click', async () => {
+            const newUsername = editProfileUsername.value.trim();
+            const newAvatar = editProfileAvatar.value.trim();
+            profileEditError.style.display = 'none';
 
-                            profileEditError.innerText =
-                                "Bu kullanıcı adı zaten alınmış!";
+            if (!newUsername) return;
 
-                            profileEditError.style.display =
-                                "block";
-
+            if (newUsername.toLowerCase() !== currentUser.toLowerCase()) {
+                try {
+                    const onlineSnap = await get(onlineRef);
+                    if (onlineSnap.exists()) {
+                        const onlineData = onlineSnap.val();
+                        const isTaken = Object.values(onlineData).some(u => u.username && u.username.toLowerCase() === newUsername.toLowerCase());
+                        if (isTaken) {
+                            profileEditError.innerText = 'Bu kullanıcı adı zaten alınmış!';
+                            profileEditError.style.display = 'block';
                             return;
                         }
-
-
-                        /*
-                         * Profil kaydını güncelle.
-                         */
-
-                        await update(
-                            ref(
-                                database,
-                                `users/${currentUid}`
-                            ),
-                            {
-                                username:
-                                    newUsername,
-
-                                avatar:
-                                    newAvatar
-                            }
-                        );
-
-
-                        /*
-                         * Eski kullanıcı adını serbest bırak.
-                         */
-
-                        const oldClaimRef =
-                            ref(
-                                database,
-                                `username_claims/${oldNormalized}`
-                            );
-
-
-                        const oldClaimSnap =
-                            await get(oldClaimRef);
-
-
-                        if (
-                            oldClaimSnap.exists() &&
-                            oldClaimSnap.val() === currentUid
-                        ) {
-                            await remove(
-                                oldClaimRef
-                            );
-                        }
-
-
-                        /*
-                         * Local state.
-                         */
-
-                        currentUser =
-                            newUsername;
-
-                        currentAvatar =
-                            newAvatar;
-
-
-                        displayUsername.innerText =
-                            currentUser;
-
-                        myAvatar.src =
-                            getAvatarUrl(
-                                currentUser,
-                                currentAvatar
-                            );
-
-
-                        /*
-                         * Online kullanıcı kaydını güncelle.
-                         */
-
-                        if (myUserRef) {
-
-                            await update(
-                                myUserRef,
-                                {
-                                    uid:
-                                        currentUid,
-
-                                    username:
-                                        currentUser,
-
-                                    avatar:
-                                        getAvatarUrl(
-                                            currentUser,
-                                            currentAvatar
-                                        )
-                                }
-                            );
-                        }
-
-
-                        /*
-                         * Typing kaydını UID ile kullandığımız
-                         * için username değişikliğinde taşımaya
-                         * gerek yok.
-                         */
-
-                        editProfileModal.style.display =
-                            "none";
-
-                    } catch (err) {
-
-                        console.error(
-                            "Profil değiştirme hatası:",
-                            err
-                        );
-
-                        profileEditError.innerText =
-                            "Profil değiştirilemedi: " +
-                            err.message;
-
-                        profileEditError.style.display =
-                            "block";
                     }
-                }
-            );
-
-
-        /* =========================================================
-           LOGOUT
-        ========================================================= */
-
-        logoutBtn.addEventListener(
-            "click",
-            async () => {
-
-                try {
-
-                    if (myUserRef) {
-                        await remove(myUserRef);
-                    }
-
-                    if (myTypingRef) {
-                        await remove(myTypingRef);
-                    }
-
-                } catch (e) {
-                    console.error(e);
-                }
-
-
-                editProfileModal.style.display =
-                    "none";
-
-
-                await signOut(auth);
-
-                location.reload();
+                } catch (e) { /* yoksay */ }
             }
-        );
 
+            const oldUsername = currentUser;
+            currentUser = newUsername;
+            currentAvatar = newAvatar;
 
-        /* =========================================================
-           EMOJI / GIF PICKER
-        ========================================================= */
+            localStorage.setItem('gh_chat_username', currentUser);
+            localStorage.setItem('gh_chat_avatar', currentAvatar);
 
-        emojiToggleBtn.addEventListener(
-            "click",
-            e => {
+            displayUsername.innerText = currentUser;
+            myAvatar.src = getAvatarUrl(currentUser, currentAvatar);
 
-                e.stopPropagation();
+            if (myUserRef) {
+                update(myUserRef, { username: currentUser, avatar: getAvatarUrl(currentUser, currentAvatar) });
+            }
 
+            // Yazıyor... göstergesindeki kullanıcı anahtarını yeni isme taşı.
+            if (oldUsername) {
+                remove(ref(database, `typing/${oldUsername}`));
+            }
+            myTypingRef = ref(database, `typing/${currentUser}`);
+            onDisconnect(myTypingRef).remove();
+
+            editProfileModal.style.display = 'none';
+        });
+
+        logoutBtn.addEventListener('click', () => {
+            if (myUserRef) remove(myUserRef);
+            if (myTypingRef) remove(myTypingRef);
+            localStorage.removeItem('gh_chat_username');
+            localStorage.removeItem('gh_chat_avatar');
+            editProfileModal.style.display = 'none';
+            signOut(auth).finally(() => location.reload());
+        });
+
+        emojiToggleBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            activeReactionMsgKey = null;
+            pickerContainer.classList.toggle('show');
+        });
+
+        emojiPicker.addEventListener('emoji-click', event => {
+            const chosenEmoji = event.detail.unicode;
+
+            if (activeReactionMsgKey) {
+                toggleReaction(activeReactionMsgKey, chosenEmoji);
                 activeReactionMsgKey = null;
-
-                pickerContainer.classList.toggle(
-                    "show"
-                );
+                pickerContainer.classList.remove('show');
+            } else {
+                messageInput.value += chosenEmoji;
+                messageInput.focus();
             }
-        );
+        });
 
-
-        emojiPicker.addEventListener(
-            "emoji-click",
-            event => {
-
-                const chosenEmoji =
-                    event.detail.unicode;
-
-
-                if (activeReactionMsgKey) {
-
-                    toggleReaction(
-                        activeReactionMsgKey,
-                        chosenEmoji
-                    );
-
-                    activeReactionMsgKey = null;
-
-                    pickerContainer.classList.remove(
-                        "show"
-                    );
-
-                } else {
-
-                    messageInput.value +=
-                        chosenEmoji;
-
-                    messageInput.focus();
-                }
+        document.addEventListener('click', (e) => {
+            if (!pickerContainer.contains(e.target) && e.target !== emojiToggleBtn && !e.target.closest('.action-btn.react')) {
+                pickerContainer.classList.remove('show');
+                activeReactionMsgKey = null;
             }
-        );
+        });
 
+        async function fetchGifs(query = '') {
+            gifGrid.innerHTML = '<div style="color:var(--fg-sub); font-size:12px; grid-column:span 2; text-align:center;">Yükleniyor...</div>';
 
-        document.addEventListener(
-            "click",
-            e => {
-
-                if (
-                    !pickerContainer.contains(e.target) &&
-                    e.target !== emojiToggleBtn &&
-                    !e.target.closest(
-                        ".action-btn.react"
-                    )
-                ) {
-
-                    pickerContainer.classList.remove(
-                        "show"
-                    );
-
-                    activeReactionMsgKey =
-                        null;
-                }
-            }
-        );
-
-
-        tabEmojiBtn.addEventListener(
-            "click",
-            () => {
-
-                tabEmojiBtn.classList.add("active");
-                tabGifBtn.classList.remove("active");
-
-                emojiTabContent.classList.add("active");
-                gifTabContent.classList.remove("active");
-            }
-        );
-
-
-        tabGifBtn.addEventListener(
-            "click",
-            () => {
-
-                tabGifBtn.classList.add("active");
-                tabEmojiBtn.classList.remove("active");
-
-                gifTabContent.classList.add("active");
-                emojiTabContent.classList.remove("active");
-
-                if (
-                    gifGrid.children.length === 0
-                ) {
-                    fetchGifs("");
-                }
-            }
-        );
-
-
-        /* =========================================================
-           GIFS
-        ========================================================= */
-
-        async function fetchGifs(queryText = "") {
-
-            gifGrid.innerHTML =
-                '<div style="color:var(--fg-sub); font-size:12px; grid-column:span 2; text-align:center;">Yükleniyor...</div>';
-
-
-            const trimmedQuery =
-                queryText.trim();
-
-
-            const url =
-                trimmedQuery
-                    ? `https://api.klipy.co/v2/search?api_key=${KLIPY_API_KEY}&q=${encodeURIComponent(trimmedQuery)}&limit=20`
-                    : `https://api.klipy.co/v2/featured?api_key=${KLIPY_API_KEY}&limit=20`;
-
+            const trimmedQuery = query.trim();
+            const url = trimmedQuery
+                ? `https://api.klipy.co/v2/search?api_key=${KLIPY_API_KEY}&q=${encodeURIComponent(trimmedQuery)}&limit=20`
+                : `https://api.klipy.co/v2/featured?api_key=${KLIPY_API_KEY}&limit=20`;
 
             try {
-
-                const res =
-                    await fetch(url);
-
-
+                const res = await fetch(url);
                 if (!res.ok) {
-                    throw new Error(
-                        `API Hatası: ${res.status}`
-                    );
+                    throw new Error(`API Hatası: ${res.status}`);
                 }
 
-
-                const json =
-                    await res.json();
-
-
-                gifGrid.innerHTML = "";
-
+                const json = await res.json();
+                gifGrid.innerHTML = '';
 
                 let gifs = [];
-
-
-                if (
-                    Array.isArray(json?.results)
-                ) {
+                if (Array.isArray(json?.results)) {
                     gifs = json.results;
-
-                } else if (
-                    Array.isArray(json?.data)
-                ) {
+                } else if (Array.isArray(json?.data)) {
                     gifs = json.data;
-
-                } else if (
-                    Array.isArray(json)
-                ) {
+                } else if (Array.isArray(json)) {
                     gifs = json;
                 }
 
-
                 if (gifs.length === 0) {
-
-                    gifGrid.innerHTML =
-                        '<div style="color:var(--fg-sub); font-size:12px; grid-column:span 2; text-align:center;">Sonuç bulunamadı.</div>';
-
+                    gifGrid.innerHTML = '<div style="color:var(--fg-sub); font-size:12px; grid-column:span 2; text-align:center;">Sonuç bulunamadı.</div>';
                     return;
                 }
 
+                gifs.forEach(gif => {
+                    const imgUrl = gif?.media_formats?.gif?.url || gif?.url || gif?.images?.downsized?.url || gif?.images?.original?.url || gif?.gif_url;
+                    if (!imgUrl) return;
 
-                gifs.forEach(
-                    gif => {
+                    const img = document.createElement('img');
+                    img.className = 'gif-item';
+                    img.src = imgUrl;
+                    img.alt = gif?.title || 'GIF';
+                    img.addEventListener('click', () => {
+                        if (!currentUser) return;
 
-                        const imgUrl =
-                            gif?.media_formats?.gif?.url ||
-                            gif?.url ||
-                            gif?.images?.downsized?.url ||
-                            gif?.images?.original?.url ||
-                            gif?.gif_url;
+                        const payload = {
+                            sender: currentUser,
+                            avatar: currentAvatar,
+                            text: imgUrl,
+                            timestamp: serverTimestamp()
+                        };
 
+                        if (activeReplyTarget) payload.replyTo = activeReplyTarget;
 
-                        if (!imgUrl) {
-                            return;
-                        }
+                        push(rawMessagesRef, payload);
 
+                        remove(ref(database, `typing/${currentUser}`));
+                        clearTimeout(typingTimeout);
 
-                        const img =
-                            document.createElement(
-                                "img"
-                            );
-
-                        img.className =
-                            "gif-item";
-
-                        img.src =
-                            imgUrl;
-
-                        img.alt =
-                            gif?.title ||
-                            "GIF";
-
-
-                        img.addEventListener(
-                            "click",
-                            async () => {
-
-                                if (
-                                    !currentUser ||
-                                    !currentUid
-                                ) {
-                                    return;
-                                }
-
-
-                                const payload = {
-                                    senderId:
-                                        currentUid,
-
-                                    sender:
-                                        currentUser,
-
-                                    avatar:
-                                        currentAvatar,
-
-                                    text:
-                                        imgUrl,
-
-                                    timestamp:
-                                        serverTimestamp()
-                                };
-
-
-                                if (
-                                    activeReplyTarget
-                                ) {
-                                    payload.replyTo =
-                                        activeReplyTarget;
-                                }
-
-
-                                try {
-
-                                    await push(
-                                        rawMessagesRef,
-                                        payload
-                                    );
-
-                                } catch (err) {
-
-                                    console.error(
-                                        "GIF mesajı gönderilemedi:",
-                                        err
-                                    );
-
-                                    return;
-                                }
-
-
-                                remove(
-                                    ref(
-                                        database,
-                                        `typing/${currentUid}`
-                                    )
-                                );
-
-                                clearTimeout(
-                                    typingTimeout
-                                );
-
-
-                                activeReplyTarget =
-                                    null;
-
-                                replyPreviewBar.style.display =
-                                    "none";
-
-                                pickerContainer.classList.remove(
-                                    "show"
-                                );
-                            }
-                        );
-
-
-                        gifGrid.appendChild(img);
-                    }
-                );
-
+                        activeReplyTarget = null;
+                        replyPreviewBar.style.display = 'none';
+                        pickerContainer.classList.remove('show');
+                    });
+                    gifGrid.appendChild(img);
+                });
             } catch (err) {
-
-                console.error(
-                    "GIF yükleme hatası:",
-                    err
-                );
-
-                gifGrid.innerHTML =
-                    `<div style="color:var(--danger-red); font-size:12px; grid-column:span 2; text-align:center;">GIF yüklenemedi: ${escapeHTML(err.message)}</div>`;
+                console.error('GIF yükleme hatası:', err);
+                gifGrid.innerHTML = `<div style="color:var(--danger-red); font-size:12px; grid-column:span 2; text-align:center;">GIF yüklenemedi: ${err.message}</div>`;
             }
         }
 
-
         let gifDebounceTimer;
+        gifSearchInput.addEventListener('input', (e) => {
+            clearTimeout(gifDebounceTimer);
+            gifDebounceTimer = setTimeout(() => {
+                fetchGifs(e.target.value);
+            }, 400);
+        });
 
+        onValue(onlineRef, (snapshot) => {
+            const data = snapshot.val();
+            onlineUsersList.innerHTML = "";
+            if (!data) return;
 
-        gifSearchInput.addEventListener(
-            "input",
-            e => {
+            const uniqueUsers = {};
+            Object.values(data).forEach(u => uniqueUsers[u.username] = u.avatar);
 
-                clearTimeout(
-                    gifDebounceTimer
-                );
+            Object.entries(uniqueUsers).forEach(([username, avatar]) => {
+                const img = document.createElement('img');
+                img.className = 'online-user-img';
+                img.src = avatar;
+                img.title = username;
+                img.alt = username;
+                img.onerror = function() { this.src = `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(username)}`; };
+                img.addEventListener('click', () => {
+                    messageInput.value += `@${username} `;
+                    messageInput.focus();
+                });
 
-                gifDebounceTimer =
-                    setTimeout(
-                        () => {
-                            fetchGifs(
-                                e.target.value
-                            );
-                        },
-                        400
-                    );
-            }
-        );
+                onlineUsersList.appendChild(img);
+            });
+        });
 
+        messageInput.addEventListener('input', () => {
+            if (!currentUser) return;
+            set(ref(database, `typing/${currentUser}`), true);
+            clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(() => remove(ref(database, `typing/${currentUser}`)), 2000);
+        });
 
-        /* =========================================================
-           ONLINE USERS
-        ========================================================= */
+        onValue(typingRef, (snapshot) => {
+            const data = snapshot.val();
+            if (!data) { typingIndicator.innerText = ""; return; }
+            const typers = Object.keys(data).filter(user => user.toLowerCase() !== currentUser.toLowerCase());
 
-        onValue(
-            onlineRef,
-            snapshot => {
+            if (typers.length === 1) typingIndicator.innerText = `${typers[0]} yazıyor...`;
+            else if (typers.length > 1) typingIndicator.innerText = `${typers.join(', ')} yazıyor...`;
+            else typingIndicator.innerText = "";
+        });
 
-                const data =
-                    snapshot.val();
+        onChildAdded(messagesRef, (snapshot) => {
+            const loadingEl = document.getElementById('loadingText');
+            if (loadingEl) loadingEl.remove();
 
-                onlineUsersList.innerHTML =
-                    "";
+            const msg = { key: snapshot.key, ...snapshot.val() };
+            const dateObj = msg.timestamp ? new Date(msg.timestamp) : new Date();
+            const timeStr = dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
 
+            const lastGroup = messagesList.lastElementChild;
+            const lastSender = lastGroup ? lastGroup.dataset.sender : null;
+            const lastTime = lastGroup ? parseInt(lastGroup.dataset.timestamp || '0') : 0;
 
-                if (!data) {
-                    return;
-                }
+            const isSameSender = lastSender === msg.sender;
+            const isWithin1Min = (msg.timestamp - lastTime) / 1000 < 60;
 
+            const isMe = msg.sender.toLowerCase() === currentUser.toLowerCase();
+            const isAdmin = currentUserEmail && ADMIN_EMAILS.includes(currentUserEmail);
+            const isMentioned = currentUser && msg.text.toLowerCase().includes(`@${currentUser.toLowerCase()}`);
 
-                const uniqueUsers = {};
-
-
-                Object.values(data).forEach(
-                    u => {
-
-                        if (
-                            u &&
-                            u.username
-                        ) {
-                            uniqueUsers[
-                                u.username
-                            ] =
-                                u.avatar;
-                        }
+            if (!isMe && (Date.now() - msg.timestamp < 10000 || !msg.timestamp)) {
+                if (isMentioned) {
+                    playBeep(880);
+                    if ("Notification" in window && Notification.permission === "granted" && document.hidden) {
+                        new Notification(`${msg.sender} senden bahsetti!`, {
+                            body: msg.text,
+                            icon: getAvatarUrl(msg.sender, msg.avatar)
+                        });
                     }
-                );
-
-
-                Object.entries(
-                    uniqueUsers
-                ).forEach(
-                    ([username, avatar]) => {
-
-                        const img =
-                            document.createElement(
-                                "img"
-                            );
-
-                        img.className =
-                            "online-user-img";
-
-                        img.src =
-                            avatar;
-
-                        img.title =
-                            username;
-
-                        img.alt =
-                            username;
-
-
-                        img.onerror =
-                            function () {
-
-                                this.src =
-                                    `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(username)}`;
-                            };
-
-
-                        img.addEventListener(
-                            "click",
-                            () => {
-
-                                messageInput.value +=
-                                    `@${username} `;
-
-                                messageInput.focus();
-                            }
-                        );
-
-
-                        onlineUsersList.appendChild(
-                            img
-                        );
-                    }
-                );
-            }
-        );
-
-
-        /* =========================================================
-           TYPING
-        ========================================================= */
-
-        messageInput.addEventListener(
-            "input",
-            () => {
-
-                if (
-                    !currentUser ||
-                    !currentUid
-                ) {
-                    return;
-                }
-
-
-                set(
-                    ref(
-                        database,
-                        `typing/${currentUid}`
-                    ),
-                    {
-                        username:
-                            currentUser
-                    }
-                );
-
-
-                clearTimeout(
-                    typingTimeout
-                );
-
-
-                typingTimeout =
-                    setTimeout(
-                        () => {
-
-                            remove(
-                                ref(
-                                    database,
-                                    `typing/${currentUid}`
-                                )
-                            );
-
-                        },
-                        2000
-                    );
-            }
-        );
-
-
-        onValue(
-            typingRef,
-            snapshot => {
-
-                const data =
-                    snapshot.val();
-
-
-                if (!data) {
-
-                    typingIndicator.innerText =
-                        "";
-
-                    return;
-                }
-
-
-                const typers =
-                    Object.entries(data)
-                        .filter(
-                            ([uid]) =>
-                                uid !== currentUid
-                        )
-                        .map(
-                            ([, value]) =>
-                                value?.username
-                        )
-                        .filter(Boolean);
-
-
-                if (
-                    typers.length === 1
-                ) {
-
-                    typingIndicator.innerText =
-                        `${typers[0]} yazıyor...`;
-
-                } else if (
-                    typers.length > 1
-                ) {
-
-                    typingIndicator.innerText =
-                        `${typers.join(", ")} yazıyor...`;
-
                 } else {
-
-                    typingIndicator.innerText =
-                        "";
+                    playBeep(440);
                 }
             }
-        );
 
-
-        /* =========================================================
-           MESSAGES - ADD
-        ========================================================= */
-
-        onChildAdded(
-            messagesRef,
-            snapshot => {
-
-                const loadingEl =
-                    document.getElementById(
-                        "loadingText"
-                    );
-
-
-                if (loadingEl) {
-                    loadingEl.remove();
-                }
-
-
-                const msg = {
-                    key: snapshot.key,
-                    ...snapshot.val()
-                };
-
-
-                const timestamp =
-                    typeof msg.timestamp === "number"
-                        ? msg.timestamp
-                        : Date.now();
-
-
-                const dateObj =
-                    new Date(timestamp);
-
-
-                const timeStr =
-                    dateObj.toLocaleTimeString(
-                        "en-US",
-                        {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            hour12: true
-                        }
-                    );
-
-
-                const lastGroup =
-                    messagesList.lastElementChild;
-
-
-                const lastSender =
-                    lastGroup
-                        ? lastGroup.dataset.sender
-                        : null;
-
-
-                const lastTime =
-                    lastGroup
-                        ? parseInt(
-                            lastGroup.dataset.timestamp ||
-                            "0"
-                        )
-                        : 0;
-
-
-                const isSameSender =
-                    lastSender ===
-                    msg.sender;
-
-
-                const isWithin1Min =
-                    (timestamp - lastTime) /
-                        1000 <
-                    60;
-
-
-                const isMe =
-                    msg.sender &&
-                    currentUser &&
-                    msg.sender.toLowerCase() ===
-                        currentUser.toLowerCase();
-
-
-                const isByteChester =
-                    currentUser ===
-                    "ByteChester";
-
-
-                const text =
-                    String(
-                        msg.text || ""
-                    );
-
-
-                const isMentioned =
-                    currentUser &&
-                    text.toLowerCase().includes(
-                        `@${currentUser.toLowerCase()}`
-                    );
-
-
-                if (
-                    !isMe &&
-                    (
-                        Date.now() - timestamp <
-                            10000 ||
-                        !msg.timestamp
-                    )
-                ) {
-
-                    if (isMentioned) {
-
-                        playBeep(880);
-
-
-                        if (
-                            "Notification" in window &&
-                            Notification.permission ===
-                                "granted" &&
-                            document.hidden
-                        ) {
-
-                            new Notification(
-                                `${msg.sender} senden bahsetti!`,
-                                {
-                                    body:
-                                        text,
-
-                                    icon:
-                                        getAvatarUrl(
-                                            msg.sender,
-                                            msg.avatar
-                                        )
-                                }
-                            );
-                        }
-
-                    } else {
-
-                        playBeep(440);
-                    }
-                }
-
-
-                if (
-                    isSameSender &&
-                    isWithin1Min &&
-                    lastGroup
-                ) {
-
-                    const textContainer =
-                        lastGroup.querySelector(
-                            ".message-text-list"
-                        );
-
-
-                    addMessageToGroup(
-                        textContainer,
-                        msg,
-                        true,
-                        isByteChester
-                    );
-
-                } else {
-
-                    const groupEl =
-                        document.createElement(
-                            "div"
-                        );
-
-
-                    groupEl.className =
-                        "message-group animate-entry";
-
-
-                    groupEl.dataset.sender =
-                        msg.sender || "";
-
-
-                    groupEl.dataset.timestamp =
-                        timestamp;
-
-
-                    const avatarUrl =
-                        getAvatarUrl(
-                            msg.sender || "Kullanıcı",
-                            msg.avatar
-                        );
-
-
-                    groupEl.innerHTML = `
-                        <img
-                            class="group-avatar"
-                            src="${escapeHTML(avatarUrl)}"
-                            alt="${escapeHTML(msg.sender || "Kullanıcı")}"
-                            onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(msg.sender || "Kullanıcı")}'"
-                        >
-
-                        <div class="group-body">
-
-                            <div class="group-header">
-                                <span class="sender-name">
-                                    ${escapeHTML(msg.sender || "Kullanıcı")}
-                                </span>
-
-                                <span class="header-time">
-                                    ${timeStr}
-                                </span>
-                            </div>
-
-                            <div class="message-text-list"></div>
-
+            if (isSameSender && isWithin1Min && lastGroup) {
+                const textContainer = lastGroup.querySelector('.message-text-list');
+                addMessageToGroup(textContainer, msg, true, isAdmin);
+            } else {
+                const groupEl = document.createElement('div');
+                groupEl.className = 'message-group animate-entry';
+                groupEl.dataset.sender = msg.sender;
+                groupEl.dataset.timestamp = msg.timestamp || Date.now();
+
+                const avatarUrl = getAvatarUrl(msg.sender, msg.avatar);
+                groupEl.innerHTML = `
+                    <img class="group-avatar" src="${escapeHTML(avatarUrl)}" alt="${escapeHTML(msg.sender)}" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(msg.sender)}'">
+                    <div class="group-body">
+                        <div class="group-header">
+                            <span class="sender-name">${escapeHTML(msg.sender)}</span>
+                            <span class="header-time">${timeStr}</span>
                         </div>
-                    `;
+                        <div class="message-text-list"></div>
+                    </div>
+                `;
 
-
-                    const textContainer =
-                        groupEl.querySelector(
-                            ".message-text-list"
-                        );
-
-
-                    addMessageToGroup(
-                        textContainer,
-                        msg,
-                        false,
-                        isByteChester
-                    );
-
-
-                    messagesList.appendChild(
-                        groupEl
-                    );
-                }
-
-
-                messagesList.scrollTop =
-                    messagesList.scrollHeight;
+                const textContainer = groupEl.querySelector('.message-text-list');
+                addMessageToGroup(textContainer, msg, false, isAdmin);
+                messagesList.appendChild(groupEl);
             }
-        );
+            messagesList.scrollTop = messagesList.scrollHeight;
+        });
 
-
-        /* =========================================================
-           MESSAGE CHANGE
-        ========================================================= */
-
-        onChildChanged(
-            rawMessagesRef,
-            snapshot => {
-
-                const key =
-                    snapshot.key;
-
-                const updatedData =
-                    snapshot.val();
-
-
-                const item =
-                    messagesList.querySelector(
-                        `[data-msg-key="${key}"]`
-                    );
-
-
-                if (!item) {
-                    return;
-                }
-
-
-                item.dataset.rawText =
-                    updatedData.text || "";
-
-
-                const span =
-                    item.querySelector(
-                        ".msg-content"
-                    );
-
+        onChildChanged(rawMessagesRef, (snapshot) => {
+            const key = snapshot.key;
+            const updatedData = snapshot.val();
+            const item = messagesList.querySelector(`[data-msg-key="${key}"]`);
+            if (item) {
+                item.dataset.rawText = updatedData.text;
+                const span = item.querySelector('.msg-content');
 
                 if (span) {
-
-                    span.innerHTML =
-                        parseMarkdown(
-                            updatedData.text || ""
-                        );
-
-                    renderMediaPreviews(
-                        span
-                    );
+                    span.innerHTML = parseMarkdown(updatedData.text);
+                    renderMediaPreviews(span);
                 }
 
+                renderReactions(item, updatedData.reactions || {});
 
-                renderReactions(
-                    item,
-                    updatedData.reactions || {}
-                );
-
-
-                const isMentioned =
-                    currentUser &&
-                    String(
-                        updatedData.text || ""
-                    )
-                        .toLowerCase()
-                        .includes(
-                            `@${currentUser.toLowerCase()}`
-                        );
-
-
-                if (isMentioned) {
-                    item.classList.add(
-                        "is-mentioned"
-                    );
-                } else {
-                    item.classList.remove(
-                        "is-mentioned"
-                    );
-                }
+                const isMentioned = currentUser && updatedData.text.toLowerCase().includes(`@${currentUser.toLowerCase()}`);
+                if (isMentioned) item.classList.add('is-mentioned');
+                else item.classList.remove('is-mentioned');
             }
-        );
+        });
 
-
-        /* =========================================================
-           MESSAGE REMOVED
-        ========================================================= */
-
-        onChildRemoved(
-            rawMessagesRef,
-            snapshot => {
-
-                const key =
-                    snapshot.key;
-
-
-                const item =
-                    messagesList.querySelector(
-                        `[data-msg-key="${key}"]`
-                    );
-
-
-                if (!item) {
-                    return;
-                }
-
-
-                const group =
-                    item.closest(
-                        ".message-group"
-                    );
-
-
+        onChildRemoved(rawMessagesRef, (snapshot) => {
+            const key = snapshot.key;
+            const item = messagesList.querySelector(`[data-msg-key="${key}"]`);
+            if (item) {
+                const group = item.closest('.message-group');
                 item.remove();
-
-
-                if (
-                    group &&
-                    group.querySelectorAll(
-                        ".message-item"
-                    ).length === 0
-                ) {
-                    group.remove();
-                }
+                if (group && group.querySelectorAll('.message-item').length === 0) group.remove();
             }
-        );
+        });
 
+        function addMessageToGroup(container, msg, animateItem = false, isAdmin = false) {
+            const item = document.createElement('div');
+            item.className = 'message-item' + (animateItem ? ' animate-entry' : '');
+            item.dataset.msgKey = msg.key;
+            item.dataset.sender = msg.sender;
+            item.dataset.rawText = msg.text;
 
-        /* =========================================================
-           ADD MESSAGE TO GROUP
-        ========================================================= */
+            const isMe = msg.sender.toLowerCase() === currentUser.toLowerCase();
+            const isMentioned = currentUser && msg.text.toLowerCase().includes(`@${currentUser.toLowerCase()}`);
 
-        function addMessageToGroup(
-            container,
-            msg,
-            animateItem = false,
-            isByteChester = false
-        ) {
+            if (isMentioned) item.classList.add('is-mentioned');
 
-            const item =
-                document.createElement(
-                    "div"
-                );
-
-
-            item.className =
-                "message-item" +
-                (
-                    animateItem
-                        ? " animate-entry"
-                        : ""
-                );
-
-
-            item.dataset.msgKey =
-                msg.key;
-
-
-            item.dataset.sender =
-                msg.sender || "";
-
-
-            item.dataset.rawText =
-                msg.text || "";
-
-
-            const isMe =
-                msg.sender &&
-                currentUser &&
-                msg.sender.toLowerCase() ===
-                    currentUser.toLowerCase();
-
-
-            const text =
-                String(
-                    msg.text || ""
-                );
-
-
-            const isMentioned =
-                currentUser &&
-                text.toLowerCase().includes(
-                    `@${currentUser.toLowerCase()}`
-                );
-
-
-            if (isMentioned) {
-                item.classList.add(
-                    "is-mentioned"
-                );
-            }
-
-
-            let quoteHTML = "";
-
-
+            let quoteHTML = '';
             if (msg.replyTo) {
-
                 quoteHTML = `
                     <div class="quoted-box">
-                        <span class="quoted-sender">
-                            @${escapeHTML(msg.replyTo.sender || "")}
-                        </span>
-
-                        <span>
-                            ${escapeHTML(msg.replyTo.text || "")}
-                        </span>
+                        <span class="quoted-sender">@${escapeHTML(msg.replyTo.sender)}</span>
+                        <span>${escapeHTML(msg.replyTo.text)}</span>
                     </div>
                 `;
             }
 
-
-            let deleteBtnHTML = "";
-
-
-            /*
-             * UI tarafındaki kontrol sadece butonun
-             * görünmesini sağlar.
-             *
-             * Asıl yetki Firebase Rules tarafından
-             * kontrol edilmelidir.
-             */
-
-            if (
-                isByteChester ||
-                isMe
-            ) {
-
-                deleteBtnHTML = `
-                    <button
-                        class="action-btn delete"
-                        title="Sil"
-                    >
-                        <svg
-                            width="14"
-                            height="14"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                        >
-                            <polyline points="3 6 5 6 21 6"></polyline>
-                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                        </svg>
-                    </button>
-                `;
+            let deleteBtnHTML = '';
+            if (isAdmin || isMe) {
+                deleteBtnHTML = `<button class="action-btn delete" title="Sil"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>`;
             }
 
-
-            let editBtnHTML = "";
-
-
+            let editBtnHTML = '';
             if (isMe) {
-
-                editBtnHTML = `
-                    <button
-                        class="action-btn edit"
-                        title="Düzenle"
-                    >
-                        <svg
-                            width="14"
-                            height="14"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                        >
-                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                        </svg>
-                    </button>
-                `;
+                editBtnHTML = `<button class="action-btn edit" title="Düzenle"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>`;
             }
-
 
             const actionsHTML = `
                 <div class="message-actions">
-
-                    <button
-                        class="action-btn react quick-react"
-                        data-emoji="👍"
-                        title="Beğen"
-                    >
-                        👍
+                    <button class="action-btn react quick-react" data-emoji="👍" title="Beğen">👍</button>
+                    <button class="action-btn react quick-react" data-emoji="❤️" title="Kalp">❤️</button>
+                    <button class="action-btn react quick-react" data-emoji="😂" title="Gülme">😂</button>
+                    <button class="action-btn react quick-react" data-emoji="🔥" title="Alev">🔥</button>
+                    <button class="action-btn react open-picker-react" title="Emoji Seç">➕</button>
+                    <button class="action-btn reply" title="Yanıtla">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 17 4 12 9 7"></polyline><path d="M20 18v-2a4 4 0 0 0-4-4H4"></path></svg>
                     </button>
-
-                    <button
-                        class="action-btn react quick-react"
-                        data-emoji="❤️"
-                        title="Kalp"
-                    >
-                        ❤️
-                    </button>
-
-                    <button
-                        class="action-btn react quick-react"
-                        data-emoji="😂"
-                        title="Gülme"
-                    >
-                        😂
-                    </button>
-
-                    <button
-                        class="action-btn react quick-react"
-                        data-emoji="🔥"
-                        title="Alev"
-                    >
-                        🔥
-                    </button>
-
-                    <button
-                        class="action-btn react open-picker-react"
-                        title="Emoji Seç"
-                    >
-                        ➕
-                    </button>
-
-                    <button
-                        class="action-btn reply"
-                        title="Yanıtla"
-                    >
-                        <svg
-                            width="14"
-                            height="14"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                        >
-                            <polyline points="9 17 4 12 9 7"></polyline>
-                            <path d="M20 18v-2a4 4 0 0 0-4-4H4"></path>
-                        </svg>
-                    </button>
-
                     ${editBtnHTML}
                     ${deleteBtnHTML}
-
                 </div>
             `;
-
 
             item.innerHTML = `
                 ${quoteHTML}
-
                 <div class="message-content-wrapper">
-
-                    <span class="msg-content">
-                        ${parseMarkdown(text)}
-                    </span>
-
+                    <span class="msg-content">${parseMarkdown(msg.text)}</span>
                     ${actionsHTML}
-
                 </div>
-
                 <div class="reactions-container"></div>
             `;
+            container.appendChild(item);
 
+            const contentSpan = item.querySelector('.msg-content');
+            renderMediaPreviews(contentSpan);
 
-            container.appendChild(
-                item
-            );
-
-
-            const contentSpan =
-                item.querySelector(
-                    ".msg-content"
-                );
-
-
-            renderMediaPreviews(
-                contentSpan
-            );
-
-
-            renderReactions(
-                item,
-                msg.reactions || {}
-            );
+            renderReactions(item, msg.reactions || {});
         }
 
+        function toggleReaction(msgKey, emoji) {
+            if (!currentUser) return;
+            const reactRef = ref(database, `messages/${msgKey}/reactions/${emoji}/${currentUser}`);
+            get(reactRef).then((snap) => {
+                if (snap.exists()) {
+                    remove(reactRef);
+                } else {
+                    set(reactRef, true);
+                }
+            });
+        }
 
-        /* =========================================================
-           REACTIONS
-        ========================================================= */
+        function renderReactions(itemEl, reactionsData) {
+            const container = itemEl.querySelector('.reactions-container');
+            if (!container) return;
+            container.innerHTML = '';
 
-        function toggleReaction(
-            msgKey,
-            emoji
-        ) {
+            Object.entries(reactionsData).forEach(([emoji, usersObj]) => {
+                if (!usersObj) return;
+                const users = Object.keys(usersObj);
+                if (users.length === 0) return;
 
-            if (!currentUid) {
+                const hasReacted = currentUser && users.includes(currentUser);
+
+                const badge = document.createElement('div');
+                badge.className = `reaction-badge${hasReacted ? ' user-reacted' : ''}`;
+                badge.title = `${users.join(', ')}`;
+                badge.innerHTML = `<span>${emoji}</span><span class="reaction-count">${users.length}</span>`;
+
+                badge.addEventListener('click', () => {
+                    const key = itemEl.dataset.msgKey;
+                    toggleReaction(key, emoji);
+                });
+
+                container.appendChild(badge);
+            });
+        }
+
+        messagesList.addEventListener('click', (e) => {
+            const deleteBtn = e.target.closest('.action-btn.delete');
+            const editBtn = e.target.closest('.action-btn.edit');
+            const replyBtn = e.target.closest('.action-btn.reply');
+            const quickReactBtn = e.target.closest('.quick-react');
+            const openPickerReactBtn = e.target.closest('.open-picker-react');
+            const copyBtn = e.target.closest('.code-copy-btn');
+            const runCodeBtn = e.target.closest('.run-code-btn');
+            const codeBlockCopyBtn = e.target.closest('.code-block-copy-btn');
+            const item = e.target.closest('.message-item');
+
+            if (copyBtn) {
+                const codeText = copyBtn.dataset.code;
+                navigator.clipboard.writeText(codeText).then(() => {
+                    const originalText = copyBtn.innerText;
+                    copyBtn.innerText = 'Kopyalandı!';
+                    setTimeout(() => copyBtn.innerText = originalText, 1500);
+                });
                 return;
             }
 
+            if (runCodeBtn) {
+                const targetId = runCodeBtn.dataset.target;
+                const container = document.getElementById(targetId);
+                if (!container) return;
 
-            const reactRef =
-                ref(
-                    database,
-                    `messages/${msgKey}/reactions/${emoji}/${currentUid}`
-                );
+                const existingFrame = container.querySelector('.html-preview-frame');
+                if (existingFrame) {
+                    existingFrame.remove();
+                    runCodeBtn.innerText = '▶ Çalıştır';
+                    return;
+                }
 
-
-            get(reactRef)
-                .then(
-                    snap => {
-
-                        if (
-                            snap.exists()
-                        ) {
-
-                            remove(
-                                reactRef
-                            );
-
-                        } else {
-
-                            set(
-                                reactRef,
-                                true
-                            );
-                        }
-                    }
-                )
-                .catch(
-                    err => {
-                        console.error(
-                            "Reaction error:",
-                            err
-                        );
-                    }
-                );
-        }
-
-
-        function renderReactions(
-            itemEl,
-            reactionsData
-        ) {
-
-            const container =
-                itemEl.querySelector(
-                    ".reactions-container"
-                );
-
-
-            if (!container) {
+                const code = codeBlocksMap.get(targetId) || '';
+                const frame = document.createElement('iframe');
+                frame.className = 'html-preview-frame';
+                frame.setAttribute('sandbox', 'allow-scripts');
+                frame.srcdoc = code;
+                container.appendChild(frame);
+                runCodeBtn.innerText = '✕ Kapat';
+                messagesList.scrollTop = messagesList.scrollHeight;
                 return;
             }
 
-
-            container.innerHTML = "";
-
-
-            Object.entries(
-                reactionsData || {}
-            ).forEach(
-                ([emoji, usersObj]) => {
-
-                    if (!usersObj) {
-                        return;
-                    }
-
-
-                    const users =
-                        Object.keys(
-                            usersObj
-                        );
-
-
-                    if (
-                        users.length === 0
-                    ) {
-                        return;
-                    }
-
-
-                    const hasReacted =
-                        currentUid &&
-                        users.includes(
-                            currentUid
-                        );
-
-
-                    const badge =
-                        document.createElement(
-                            "div"
-                        );
-
-
-                    badge.className =
-                        `reaction-badge${
-                            hasReacted
-                                ? " user-reacted"
-                                : ""
-                        }`;
-
-
-                    badge.title =
-                        `${users.length} kişi`;
-
-
-                    badge.innerHTML = `
-                        <span>${escapeHTML(emoji)}</span>
-                        <span class="reaction-count">
-                            ${users.length}
-                        </span>
-                    `;
-
-
-                    badge.addEventListener(
-                        "click",
-                        () => {
-
-                            const key =
-                                itemEl.dataset.msgKey;
-
-                            toggleReaction(
-                                key,
-                                emoji
-                            );
-                        }
-                    );
-
-
-                    container.appendChild(
-                        badge
-                    );
-                }
-            );
-        }
-
-
-        /* =========================================================
-           MESSAGE ACTIONS
-        ========================================================= */
-
-        messagesList.addEventListener(
-            "click",
-            e => {
-
-                const deleteBtn =
-                    e.target.closest(
-                        ".action-btn.delete"
-                    );
-
-                const editBtn =
-                    e.target.closest(
-                        ".action-btn.edit"
-                    );
-
-                const replyBtn =
-                    e.target.closest(
-                        ".action-btn.reply"
-                    );
-
-                const quickReactBtn =
-                    e.target.closest(
-                        ".quick-react"
-                    );
-
-                const openPickerReactBtn =
-                    e.target.closest(
-                        ".open-picker-react"
-                    );
-
-                const copyBtn =
-                    e.target.closest(
-                        ".code-copy-btn"
-                    );
-
-                const runCodeBtn =
-                    e.target.closest(
-                        ".run-code-btn"
-                    );
-
-                const codeBlockCopyBtn =
-                    e.target.closest(
-                        ".code-block-copy-btn"
-                    );
-
-                const item =
-                    e.target.closest(
-                        ".message-item"
-                    );
-
-
-                /* Inline code copy */
-
-                if (copyBtn) {
-
-                    const codeText =
-                        copyBtn.dataset.code || "";
-
-
-                    navigator.clipboard
-                        .writeText(
-                            codeText
-                        )
-                        .then(
-                            () => {
-
-                                const originalText =
-                                    copyBtn.innerText;
-
-                                copyBtn.innerText =
-                                    "Kopyalandı!";
-
-
-                                setTimeout(
-                                    () => {
-                                        copyBtn.innerText =
-                                            originalText;
-                                    },
-                                    1500
-                                );
-                            }
-                        );
-
-
-                    return;
-                }
-
-
-                /* HTML code run */
-
-                if (runCodeBtn) {
-
-                    const targetId =
-                        runCodeBtn.dataset.target;
-
-
-                    const container =
-                        document.getElementById(
-                            targetId
-                        );
-
-
-                    if (!container) {
-                        return;
-                    }
-
-
-                    const existingFrame =
-                        container.querySelector(
-                            ".html-preview-frame"
-                        );
-
-
-                    if (existingFrame) {
-
-                        existingFrame.remove();
-
-                        runCodeBtn.innerText =
-                            "▶ Çalıştır";
-
-                        return;
-                    }
-
-
-                    const code =
-                        codeBlocksMap.get(
-                            targetId
-                        ) || "";
-
-
-                    const frame =
-                        document.createElement(
-                            "iframe"
-                        );
-
-
-                    frame.className =
-                        "html-preview-frame";
-
-
-                    frame.setAttribute(
-                        "sandbox",
-                        "allow-scripts"
-                    );
-
-
-                    frame.srcdoc =
-                        code;
-
-
-                    container.appendChild(
-                        frame
-                    );
-
-
-                    runCodeBtn.innerText =
-                        "✕ Kapat";
-
-
-                    messagesList.scrollTop =
-                        messagesList.scrollHeight;
-
-
-                    return;
-                }
-
-
-                /* Code block copy */
-
-                if (codeBlockCopyBtn) {
-
-                    const targetId =
-                        codeBlockCopyBtn.dataset.target;
-
-
-                    const code =
-                        codeBlocksMap.get(
-                            targetId
-                        ) || "";
-
-
-                    navigator.clipboard
-                        .writeText(
-                            code
-                        )
-                        .then(
-                            () => {
-
-                                const originalText =
-                                    codeBlockCopyBtn.innerText;
-
-
-                                codeBlockCopyBtn.innerText =
-                                    "Kopyalandı!";
-
-
-                                setTimeout(
-                                    () => {
-                                        codeBlockCopyBtn.innerText =
-                                            originalText;
-                                    },
-                                    1500
-                                );
-                            }
-                        );
-
-
-                    return;
-                }
-
-
-                if (!item) {
-                    return;
-                }
-
-
-                const key =
-                    item.dataset.msgKey;
-
-                const sender =
-                    item.dataset.sender;
-
-                const rawText =
-                    item.dataset.rawText || "";
-
-
-                /* Quick reaction */
-
-                if (quickReactBtn) {
-
-                    const emoji =
-                        quickReactBtn.dataset.emoji;
-
-                    toggleReaction(
-                        key,
-                        emoji
-                    );
-
-                    return;
-                }
-
-
-                /* Reaction picker */
-
-                if (openPickerReactBtn) {
-
-                    activeReactionMsgKey =
-                        key;
-
-                    pickerContainer.classList.add(
-                        "show"
-                    );
-
-                    tabEmojiBtn.click();
-
-                    return;
-                }
-
-
-                /* Delete */
-
-                if (deleteBtn) {
-
-                    if (
-                        !confirm(
-                            "Bu mesajı silmek istediğinize emin misiniz?"
-                        )
-                    ) {
-                        return;
-                    }
-
-
-                    remove(
-                        ref(
-                            database,
-                            `messages/${key}`
-                        )
-                    )
-                        .catch(
-                            err => {
-
-                                console.error(
-                                    "Mesaj silme hatası:",
-                                    err
-                                );
-
-                                alert(
-                                    "Mesaj silinemedi. Firebase Rules tarafından reddedilmiş olabilir."
-                                );
-                            }
-                        );
-
-                    return;
-                }
-
-
-                /* Edit */
-
-                if (editBtn) {
-
-                    activeEditKey =
-                        key;
-
-                    editMessageInput.value =
-                        rawText;
-
-                    editModal.style.display =
-                        "flex";
-
-                    return;
-                }
-
-
-                /* Reply */
-
-                if (replyBtn) {
-
-                    activeReplyTarget = {
-                        sender:
-                            sender,
-
-                        text:
-                            rawText
-                    };
-
-
-                    replyPreviewUser.innerText =
-                        `@${sender}`;
-
-
-                    replyPreviewText.innerText =
-                        `"${rawText}"`;
-
-
-                    replyPreviewBar.style.display =
-                        "flex";
-
-
-                    messageInput.focus();
-
-                    return;
+            if (codeBlockCopyBtn) {
+                const targetId = codeBlockCopyBtn.dataset.target;
+                const code = codeBlocksMap.get(targetId) || '';
+                navigator.clipboard.writeText(code).then(() => {
+                    const originalText = codeBlockCopyBtn.innerText;
+                    codeBlockCopyBtn.innerText = 'Kopyalandı!';
+                    setTimeout(() => codeBlockCopyBtn.innerText = originalText, 1500);
+                });
+                return;
+            }
+
+            if (!item) return;
+
+            const key = item.dataset.msgKey;
+            const sender = item.dataset.sender;
+            const rawText = item.dataset.rawText;
+
+            if (quickReactBtn) {
+                const emoji = quickReactBtn.dataset.emoji;
+                toggleReaction(key, emoji);
+                return;
+            }
+
+            if (openPickerReactBtn) {
+                activeReactionMsgKey = key;
+                pickerContainer.classList.add('show');
+                tabEmojiBtn.click();
+                return;
+            }
+
+            if (deleteBtn) {
+                if (confirm('Bu mesajı silmek istediğinize emin misiniz?')) {
+                    remove(ref(database, `messages/${key}`));
                 }
             }
-        );
 
+            if (editBtn) {
+                activeEditKey = key;
+                editMessageInput.value = rawText;
+                editModal.style.display = 'flex';
+            }
 
-        /* =========================================================
-           REPLY CANCEL
-        ========================================================= */
+            if (replyBtn) {
+                activeReplyTarget = { sender, text: rawText };
+                replyPreviewUser.innerText = `@${sender}`;
+                replyPreviewText.innerText = `"${rawText}"`;
+                replyPreviewBar.style.display = 'flex';
+                messageInput.focus();
+            }
+        });
 
-        document
-            .getElementById("cancelReplyBtn")
-            .addEventListener(
-                "click",
-                () => {
+        document.getElementById('cancelReplyBtn').addEventListener('click', () => {
+            activeReplyTarget = null;
+            replyPreviewBar.style.display = 'none';
+        });
 
-                    activeReplyTarget =
-                        null;
+        document.getElementById('cancelEditBtn').addEventListener('click', () => {
+            editModal.style.display = 'none';
+            activeEditKey = null;
+        });
 
-                    replyPreviewBar.style.display =
-                        "none";
-                }
-            );
+        document.getElementById('saveEditBtn').addEventListener('click', () => {
+            const newText = editMessageInput.value.trim();
+            if (newText && activeEditKey) {
+                update(ref(database, `messages/${activeEditKey}`), { text: newText });
+                editModal.style.display = 'none';
+                activeEditKey = null;
+            }
+        });
 
-
-        /* =========================================================
-           EDIT CANCEL
-        ========================================================= */
-
-        document
-            .getElementById("cancelEditBtn")
-            .addEventListener(
-                "click",
-                () => {
-
-                    editModal.style.display =
-                        "none";
-
-                    activeEditKey =
-                        null;
-                }
-            );
-
-
-        /* =========================================================
-           EDIT SAVE
-        ========================================================= */
-
-        document
-            .getElementById("saveEditBtn")
-            .addEventListener(
-                "click",
-                async () => {
-
-                    const newText =
-                        editMessageInput.value.trim();
-
-
-                    if (
-                        !newText ||
-                        !activeEditKey ||
-                        !currentUid
-                    ) {
-                        return;
-                    }
-
-
-                    try {
-
-                        await update(
-                            ref(
-                                database,
-                                `messages/${activeEditKey}`
-                            ),
-                            {
-                                text:
-                                    newText
-                            }
-                        );
-
-
-                        editModal.style.display =
-                            "none";
-
-                        activeEditKey =
-                            null;
-
-                    } catch (err) {
-
-                        console.error(
-                            "Mesaj düzenleme hatası:",
-                            err
-                        );
-
-                        alert(
-                            "Mesaj düzenlenemedi. Firebase Rules tarafından reddedilmiş olabilir."
-                        );
-                    }
-                }
-            );
-
-
-        /* =========================================================
-           GEMINI
-        ========================================================= */
-
-        async function askGemini(
-            promptText
-        ) {
-
-            const geminiTypingRef =
-                ref(
-                    database,
-                    `typing/gemini_bot`
-                );
-
-
-            await set(
-                geminiTypingRef,
-                {
-                    username:
-                        GEMINI_SENDER_NAME
-                }
-            );
-
+        async function askGemini(promptText) {
+            const geminiTypingRef = ref(database, `typing/${GEMINI_SENDER_NAME}`);
+            set(geminiTypingRef, true);
 
             try {
+                const res = await fetch(GEMINI_WORKER_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: promptText })
+                });
 
-                const res =
-                    await fetch(
-                        GEMINI_WORKER_URL,
-                        {
-                            method: "POST",
-
-                            headers: {
-                                "Content-Type":
-                                    "application/json"
-                            },
-
-                            body:
-                                JSON.stringify({
-                                    prompt:
-                                        promptText
-                                })
-                        }
-                    );
-
-
-                const data =
-                    await res.json();
-
+                const data = await res.json();
 
                 if (!res.ok) {
-
-                    throw new Error(
-                        data?.error ||
-                        `Worker hata: ${res.status}`
-                    );
+                    throw new Error(data?.error || `Worker hata: ${res.status}`);
                 }
 
-
-                await push(
-                    rawMessagesRef,
-                    {
-                        sender:
-                            GEMINI_SENDER_NAME,
-
-                        avatar:
-                            GEMINI_AVATAR_URL,
-
-                        text:
-                            data.text ||
-                            "Bir yanıt üretemedim.",
-
-                        timestamp:
-                            serverTimestamp()
-                    }
-                );
-
+                push(rawMessagesRef, {
+                    sender: GEMINI_SENDER_NAME,
+                    avatar: GEMINI_AVATAR_URL,
+                    text: data.text || 'Bir yanıt üretemedim.',
+                    timestamp: serverTimestamp()
+                });
             } catch (err) {
-
-                console.error(
-                    "Gemini hatası:",
-                    err
-                );
-
-
-                await push(
-                    rawMessagesRef,
-                    {
-                        sender:
-                            GEMINI_SENDER_NAME,
-
-                        avatar:
-                            GEMINI_AVATAR_URL,
-
-                        text:
-                            `Şu anda yanıt veremiyorum: ${err.message}`,
-
-                        timestamp:
-                            serverTimestamp()
-                    }
-                );
-
+                console.error('Gemini hatası:', err);
+                push(rawMessagesRef, {
+                    sender: GEMINI_SENDER_NAME,
+                    avatar: GEMINI_AVATAR_URL,
+                    text: `Şu anda yanıt veremiyorum: ${err.message}`,
+                    timestamp: serverTimestamp()
+                });
             } finally {
-
-                await remove(
-                    geminiTypingRef
-                );
+                remove(geminiTypingRef);
             }
         }
 
+        chatForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const text = messageInput.value.trim();
+            if (!text || !currentUser) return;
 
-        /* =========================================================
-           SEND MESSAGE
-        ========================================================= */
+            const payload = { sender: currentUser, avatar: currentAvatar, text: text, timestamp: serverTimestamp() };
+            if (activeReplyTarget) payload.replyTo = activeReplyTarget;
 
-        chatForm.addEventListener(
-            "submit",
-            async e => {
+            push(rawMessagesRef, payload);
 
+            if (/@gemini\b/i.test(text)) {
+                const prompt = text.replace(/@gemini/gi, '').trim() || 'Merhaba, kendini tanıt.';
+                askGemini(prompt);
+            }
+
+            remove(ref(database, `typing/${currentUser}`));
+            clearTimeout(typingTimeout);
+
+            messageInput.value = "";
+            activeReplyTarget = null;
+            replyPreviewBar.style.display = 'none';
+            pickerContainer.classList.remove('show');
+        });
+
+        messageInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
-
-
-                const text =
-                    messageInput.value.trim();
-
-
-                if (
-                    !text ||
-                    !currentUser ||
-                    !currentUid
-                ) {
-                    return;
-                }
-
-
-                const payload = {
-
-                    /*
-                     * KRİTİK:
-                     * Mesaj artık Firebase UID ile
-                     * hesaba bağlanıyor.
-                     */
-
-                    senderId:
-                        currentUid,
-
-                    sender:
-                        currentUser,
-
-                    avatar:
-                        currentAvatar,
-
-                    text:
-                        text,
-
-                    timestamp:
-                        serverTimestamp()
-                };
-
-
-                if (activeReplyTarget) {
-
-                    payload.replyTo =
-                        activeReplyTarget;
-                }
-
-
-                try {
-
-                    await push(
-                        rawMessagesRef,
-                        payload
-                    );
-
-                } catch (err) {
-
-                    console.error(
-                        "Mesaj gönderme hatası:",
-                        err
-                    );
-
-                    alert(
-                        "Mesaj gönderilemedi. Firebase Rules'u kontrol et."
-                    );
-
-                    return;
-                }
-
-
-                if (
-                    /@gemini\b/i.test(
-                        text
-                    )
-                ) {
-
-                    const prompt =
-                        text.replace(
-                            /@gemini/gi,
-                            ""
-                        ).trim() ||
-                        "Merhaba, kendini tanıt.";
-
-
-                    askGemini(
-                        prompt
-                    );
-                }
-
-
-                remove(
-                    ref(
-                        database,
-                        `typing/${currentUid}`
-                    )
-                );
-
-
-                clearTimeout(
-                    typingTimeout
-                );
-
-
-                messageInput.value =
-                    "";
-
-
-                activeReplyTarget =
-                    null;
-
-
-                replyPreviewBar.style.display =
-                    "none";
-
-
-                pickerContainer.classList.remove(
-                    "show"
-                );
+                chatForm.dispatchEvent(new Event('submit'));
             }
-        );
+        });
 
-
-        /* =========================================================
-           ENTER TO SEND
-        ========================================================= */
-
-        messageInput.addEventListener(
-            "keydown",
-            e => {
-
-                if (
-                    e.key === "Enter" &&
-                    !e.shiftKey
-                ) {
-
-                    e.preventDefault();
-
-                    chatForm.dispatchEvent(
-                        new Event("submit")
-                    );
-                }
-            }
-        );
-
-
-        /* =========================================================
-           MARKDOWN
-        ========================================================= */
+        function escapeHTML(str) {
+            if (!str) return '';
+            return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
+        }
 
         function parseMarkdown(str) {
-
-            if (!str) {
-                return "";
-            }
-
-
+            if (!str) return '';
             const tokens = [];
-
-
-            const makeToken =
-                index =>
-                    `\uE000TOKEN${index}\uE001`;
-
-
-            let workingStr =
-                str.replace(
-                    /```(\w+)?\n?([\s\S]*?)```/g,
-                    (
-                        m,
-                        lang,
-                        code
-                    ) => {
-
-                        const rawCode =
-                            code.replace(
-                                /\n$/,
-                                ""
-                            );
-
-
-                        const langLabel =
-                            (
-                                lang || ""
-                            ).toLowerCase();
-
-
-                        const looksLikeHtml =
-                            langLabel ===
-                                "html" ||
-                            /^\s*<!DOCTYPE|^\s*<html/i.test(
-                                rawCode
-                            );
-
-
-                        const blockId =
-                            "codeblock_" +
-                            Math.random()
-                                .toString(36)
-                                .slice(2, 10);
-
-
-                        codeBlocksMap.set(
-                            blockId,
-                            rawCode
-                        );
-
-
-                        const runBtnHTML =
-                            looksLikeHtml
-                                ? `
-                                    <button
-                                        type="button"
-                                        class="run-code-btn"
-                                        data-target="${blockId}"
-                                    >
-                                        ▶ Çalıştır
-                                    </button>
-                                `
-                                : "";
-
-
-                        const escapedCode =
-                            escapeHTML(
-                                rawCode
-                            );
-
-
-                        const blockHTML = `
-                            <div
-                                class="code-block-container"
-                                id="${blockId}"
-                            >
-
-                                <div class="code-block-header">
-
-                                    <span>
-                                        ${escapeHTML(
-                                            langLabel ||
-                                            "kod"
-                                        )}
-                                    </span>
-
-                                    <div class="code-block-actions">
-
-                                        ${runBtnHTML}
-
-                                        <button
-                                            type="button"
-                                            class="code-block-copy-btn"
-                                            data-target="${blockId}"
-                                        >
-                                            Kopyala
-                                        </button>
-
-                                    </div>
-
-                                </div>
-
-                                <pre><code>${escapedCode}</code></pre>
-
-                            </div>
-                        `;
-
-
-                        tokens.push(
-                            blockHTML
-                        );
-
-
-                        return makeToken(
-                            tokens.length - 1
-                        );
-                    }
-                );
-
-
-            let html =
-                escapeHTML(
-                    workingStr
-                );
-
-
-            /*
-             * Inline code
-             */
-
-            html =
-                html.replace(
-                    /`(.*?)`/g,
-                    (
-                        m,
-                        p1
-                    ) => {
-
-                        const safeCode =
-                            escapeHTML(
-                                p1
-                            );
-
-
-                        const codeHTML = `
-                            <span class="code-container">
-
-                                <code>
-                                    ${safeCode}
-                                </code>
-
-                                <button
-                                    type="button"
-                                    class="code-copy-btn"
-                                    data-code="${safeCode.replace(
-                                        /"/g,
-                                        "&quot;"
-                                    )}"
-                                >
-                                    Kopyala
-                                </button>
-
-                            </span>
-                        `;
-
-
-                        tokens.push(
-                            codeHTML
-                        );
-
-
-                        return makeToken(
-                            tokens.length - 1
-                        );
-                    }
-                );
-
-
-            /*
-             * URL
-             */
-
-            const urlRegex =
-                /(https?:\/\/[^\s<]+)/g;
-
-
-            html =
-                html.replace(
-                    urlRegex,
-                    url => {
-
-                        /*
-                         * URL daha önce escape edildiği için
-                         * HTML injection yapılamaz.
-                         */
-
-                        const safeUrl =
-                            url
-                                .replace(
-                                    /&amp;/g,
-                                    "&"
-                                )
-                                .replace(
-                                    /&quot;/g,
-                                    '"'
-                                );
-
-
-                        const linkHTML = `
-                            <a
-                                href="${escapeHTML(
-                                    safeUrl
-                                )}"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                class="chat-link"
-                            >
-                                ${url}
-                            </a>
-                        `;
-
-
-                        tokens.push(
-                            linkHTML
-                        );
-
-
-                        return makeToken(
-                            tokens.length - 1
-                        );
-                    }
-                );
-
-
-            html =
-                html.replace(
-                    /@([a-zA-Z0-9_ğüşıöçĞÜŞİÖÇ]+)/g,
-                    '<span class="mention-tag">@$1</span>'
-                );
-
-
-            html =
-                html.replace(
-                    /\*\*(.*?)\*\*/g,
-                    "<strong>$1</strong>"
-                );
-
-
-            html =
-                html.replace(
-                    /\*(.*?)\*/g,
-                    "<em>$1</em>"
-                );
-
-
-            html =
-                html.replace(
-                    /_(.*?)_/g,
-                    "<em>$1</em>"
-                );
-
-
-            html =
-                html.replace(
-                    /~~(.*?)~~/g,
-                    "<del>$1</del>"
-                );
-
-
-            for (
-                let i = 0;
-                i < tokens.length;
-                i++
-            ) {
-
-                html =
-                    html.split(
-                        makeToken(i)
-                    ).join(
-                        tokens[i]
-                    );
+            const makeToken = (index) => `\uE000TOKEN${index}\uE001`;
+
+            let workingStr = str.replace(/```(\w+)?\n?([\s\S]*?)```/g, (m, lang, code) => {
+                const rawCode = code.replace(/\n$/, '');
+                const langLabel = (lang || '').toLowerCase();
+                const looksLikeHtml = langLabel === 'html' || /^\s*<!DOCTYPE|^\s*<html/i.test(rawCode);
+                const blockId = 'codeblock_' + Math.random().toString(36).slice(2, 10);
+
+                codeBlocksMap.set(blockId, rawCode);
+
+                const runBtnHTML = looksLikeHtml
+                    ? `<button type="button" class="run-code-btn" data-target="${blockId}">▶ Çalıştır</button>`
+                    : '';
+
+                const escapedCode = escapeHTML(rawCode);
+
+                const blockHTML = `<div class="code-block-container" id="${blockId}">
+                    <div class="code-block-header">
+                        <span>${escapeHTML(langLabel || 'kod')}</span>
+                        <div class="code-block-actions">
+                            ${runBtnHTML}
+                            <button type="button" class="code-block-copy-btn" data-target="${blockId}">Kopyala</button>
+                        </div>
+                    </div>
+                    <pre><code>${escapedCode}</code></pre>
+                </div>`;
+
+                tokens.push(blockHTML);
+                return makeToken(tokens.length - 1);
+            });
+
+            let html = escapeHTML(workingStr);
+
+            html = html.replace(/`(.*?)`/g, (m, p1) => {
+                const codeHTML = `<span class="code-container"><code>${p1}</code><button type="button" class="code-copy-btn" data-code="${p1.replace(/"/g, '&quot;')}">Kopyala</button></span>`;
+                tokens.push(codeHTML);
+                return makeToken(tokens.length - 1);
+            });
+
+            const urlRegex = /(https?:\/\/[^\s<]+)/g;
+            html = html.replace(urlRegex, (url) => {
+                const linkHTML = `<a href="${url}" target="_blank" rel="noopener noreferrer" class="chat-link">${url}</a>`;
+                tokens.push(linkHTML);
+                return makeToken(tokens.length - 1);
+            });
+
+            html = html.replace(/@([a-zA-Z0-9_ğüşıöçĞÜŞİÖÇ]+)/g, '<span class="mention-tag">@$1</span>');
+            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            html = html.replace(/_(.*?)_/g, '<em>$1</em>');
+            html = html.replace(/~~(.*?)~~/g, '<del>$1</del>');
+
+            for (let i = 0; i < tokens.length; i++) {
+                html = html.split(makeToken(i)).join(tokens[i]);
             }
-
 
             return html;
         }
 
-
-        /* =========================================================
-           MEDIA PREVIEWS
-        ========================================================= */
-
-        function renderMediaPreviews(
-            container
-        ) {
-
-            if (!container) {
-                return;
-            }
-
-
-            const links =
-                container.querySelectorAll(
-                    ".chat-link"
-                );
-
-
-            links.forEach(
-                link => {
-
-                    const url =
-                        link.href;
-
-
-                    const isGifUrl =
-                        /\.(gif)(\?.*)?$/i.test(
-                            url
-                        );
-
-
-                    if (isGifUrl) {
-
-                        if (
-                            container.querySelector(
-                                `[data-media-url="${CSS.escape(url)}"]`
-                            )
-                        ) {
-                            return;
-                        }
-
-
-                        const mediaBox =
-                            document.createElement(
-                                "div"
-                            );
-
-
-                        mediaBox.className =
-                            "media-container";
-
-
-                        mediaBox.dataset.mediaUrl =
-                            url;
-
-
-                        mediaBox.innerHTML = `
-                            <img
-                                src="${escapeHTML(url)}"
-                                class="media-preview"
-                                alt="GIF"
-                                loading="lazy"
-                            >
-                        `;
-
-
-                        container.appendChild(
-                            mediaBox
-                        );
-
-
-                        messagesList.scrollTop =
-                            messagesList.scrollHeight;
-
-
-                        return;
-                    }
-
-
-                    const ytMatch =
-                        url.match(
-                            /(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([a-zA-Z0-9_-]{11})/
-                        );
-
-
-                    if (
-                        ytMatch &&
-                        ytMatch[1]
-                    ) {
-
-                        if (
-                            container.querySelector(
-                                `[data-media-url="${CSS.escape(url)}"]`
-                            )
-                        ) {
-                            return;
-                        }
-
-
-                        const mediaBox =
-                            document.createElement(
-                                "div"
-                            );
-
-
-                        mediaBox.className =
-                            "media-container";
-
-
-                        mediaBox.dataset.mediaUrl =
-                            url;
-
-
-                        mediaBox.innerHTML = `
-                            <iframe
-                                src="https://www.youtube.com/embed/${ytMatch[1]}"
-                                style="width:100%; height:220px; border-radius:6px; border:1px solid var(--border-color);"
-                                allowfullscreen
-                                loading="lazy"
-                            ></iframe>
-                        `;
-
-
-                        container.appendChild(
-                            mediaBox
-                        );
-
-
-                        messagesList.scrollTop =
-                            messagesList.scrollHeight;
-
-
-                        return;
-                    }
-
-
-                    const img =
-                        new Image();
-
-
-                    img.src =
-                        url;
-
-
-                    img.onload =
-                        () => {
-
-                            if (
-                                container.querySelector(
-                                    `[data-media-url="${CSS.escape(url)}"]`
-                                )
-                            ) {
-                                return;
-                            }
-
-
-                            const mediaBox =
-                                document.createElement(
-                                    "div"
-                                );
-
-
-                            mediaBox.className =
-                                "media-container";
-
-
-                            mediaBox.dataset.mediaUrl =
-                                url;
-
-
-                            mediaBox.innerHTML = `
-                                <img
-                                    src="${escapeHTML(url)}"
-                                    class="media-preview"
-                                    alt="Görsel Önizleme"
-                                    loading="lazy"
-                                >
-                            `;
-
-
-                            container.appendChild(
-                                mediaBox
-                            );
-
-
-                            messagesList.scrollTop =
-                                messagesList.scrollHeight;
-                        };
-
-
-                    img.onerror =
-                        () => {
-
-                            const video =
-                                document.createElement(
-                                    "video"
-                                );
-
-
-                            video.src =
-                                url;
-
-
-                            video.onloadedmetadata =
-                                () => {
-
-                                    if (
-                                        container.querySelector(
-                                            `[data-media-url="${CSS.escape(url)}"]`
-                                        )
-                                    ) {
-                                        return;
-                                    }
-
-
-                                    const mediaBox =
-                                        document.createElement(
-                                            "div"
-                                        );
-
-
-                                    mediaBox.className =
-                                        "media-container";
-
-
-                                    mediaBox.dataset.mediaUrl =
-                                        url;
-
-
-                                    mediaBox.innerHTML = `
-                                        <video
-                                            src="${escapeHTML(url)}"
-                                            class="media-preview"
-                                            controls
-                                            preload="metadata"
-                                        ></video>
-                                    `;
-
-
-                                    container.appendChild(
-                                        mediaBox
-                                    );
-
-
-                                    messagesList.scrollTop =
-                                        messagesList.scrollHeight;
-                                };
-                        };
+        function renderMediaPreviews(container) {
+            const links = container.querySelectorAll('.chat-link');
+            links.forEach(link => {
+                const url = link.href;
+
+                const isGifUrl = /\.(gif)(\?.*)?$/i.test(url);
+                if (isGifUrl) {
+                    if (container.querySelector(`[data-media-url="${url}"]`)) return;
+                    const mediaBox = document.createElement('div');
+                    mediaBox.className = 'media-container';
+                    mediaBox.dataset.mediaUrl = url;
+                    mediaBox.innerHTML = `<img src="${url}" class="media-preview" alt="GIF" loading="lazy">`;
+                    container.appendChild(mediaBox);
+                    messagesList.scrollTop = messagesList.scrollHeight;
+                    return;
                 }
-            );
-        }
 
+                const ytMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([a-zA-Z0-9_-]{11})/);
+                if (ytMatch && ytMatch[1]) {
+                    if (container.querySelector(`[data-media-url="${url}"]`)) return;
+                    const mediaBox = document.createElement('div');
+                    mediaBox.className = 'media-container';
+                    mediaBox.dataset.mediaUrl = url;
+                    mediaBox.innerHTML = `
+                        <iframe src="https://www.youtube.com/embed/${ytMatch[1]}"
+                            style="width:100%; height:220px; border-radius:6px; border:1px solid var(--border-color);"
+                            allowfullscreen loading="lazy"></iframe>`;
+                    container.appendChild(mediaBox);
+                    messagesList.scrollTop = messagesList.scrollHeight;
+                    return;
+                }
+
+                const img = new Image();
+                img.src = url;
+                img.onload = () => {
+                    if (container.querySelector(`[data-media-url="${url}"]`)) return;
+                    const mediaBox = document.createElement('div');
+                    mediaBox.className = 'media-container';
+                    mediaBox.dataset.mediaUrl = url;
+                    mediaBox.innerHTML = `<img src="${url}" class="media-preview" alt="Görsel Önizleme" loading="lazy">`;
+                    container.appendChild(mediaBox);
+                    messagesList.scrollTop = messagesList.scrollHeight;
+                };
+
+                img.onerror = () => {
+                    const video = document.createElement('video');
+                    video.src = url;
+                    video.onloadedmetadata = () => {
+                        if (container.querySelector(`[data-media-url="${url}"]`)) return;
+                        const mediaBox = document.createElement('div');
+                        mediaBox.className = 'media-container';
+                        mediaBox.dataset.mediaUrl = url;
+                        mediaBox.innerHTML = `<video src="${url}" class="media-preview" controls preload="metadata"></video>`;
+                        container.appendChild(mediaBox);
+                        messagesList.scrollTop = messagesList.scrollHeight;
+                    };
+                };
+            });
+        }
     </script>
 </body>
 </html>
