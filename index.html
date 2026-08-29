@@ -1278,20 +1278,23 @@
         function parseMarkdown(str) {
             if (!str) return '';
             const tokens = [];
-            let html = escapeHTML(str);
 
-            // ÇOK SATIRLI KOD BLOKLARI ( ```dil ... ``` ) — tek satırlık backtick'ten önce işlenmeli
-            html = html.replace(/```(\w+)?\n?([\s\S]*?)```/g, (m, lang, code) => {
+            // ÇOK SATIRLI KOD BLOKLARI ( ```dil ... ``` ) — HAM metin üzerinden çıkarılır,
+            // böylece iframe'e (srcdoc) kaçışsız gerçek HTML gider; ekranda gösterilecek
+            // <pre><code> için ayrıca kaçışlı bir kopya üretilir.
+            let workingStr = str.replace(/```(\w+)?\n?([\s\S]*?)```/g, (m, lang, code) => {
                 const rawCode = code.replace(/\n$/, '');
                 const langLabel = (lang || '').toLowerCase();
                 const looksLikeHtml = langLabel === 'html' || /^\s*<!DOCTYPE|^\s*<html/i.test(rawCode);
                 const blockId = 'codeblock_' + Math.random().toString(36).slice(2, 10);
 
-                codeBlocksMap.set(blockId, rawCode);
+                codeBlocksMap.set(blockId, rawCode); // HAM kod: iframe (srcdoc) ve "Kopyala" için
 
                 const runBtnHTML = looksLikeHtml
                     ? `<button type="button" class="run-code-btn" data-target="${blockId}">▶ Çalıştır</button>`
                     : '';
+
+                const escapedCode = escapeHTML(rawCode); // sadece görüntüleme için kaçışlı kopya
 
                 const blockHTML = `<div class="code-block-container" id="${blockId}">
                     <div class="code-block-header">
@@ -1301,12 +1304,14 @@
                             <button type="button" class="code-block-copy-btn" data-target="${blockId}">Kopyala</button>
                         </div>
                     </div>
-                    <pre><code>${code}</code></pre>
+                    <pre><code>${escapedCode}</code></pre>
                 </div>`;
 
                 tokens.push(blockHTML);
                 return `%%TOKEN_${tokens.length - 1}%%`;
             });
+
+            let html = escapeHTML(workingStr);
 
             html = html.replace(/`(.*?)`/g, (m, p1) => {
                 const codeHTML = `<span class="code-container"><code>${p1}</code><button type="button" class="code-copy-btn" data-code="${p1.replace(/"/g, '&quot;')}">Kopyala</button></span>`;
