@@ -148,6 +148,24 @@
         }
         .code-container:hover .code-copy-btn { opacity: 1; }
 
+        /* ÇOK SATIRLI KOD BLOKLARI VE CANLI ÖNİZLEME (FRAME) */
+        .code-block-container { position: relative; margin-top: 8px; width: 100%; max-width: 100%; }
+        .code-block-header { display: flex; justify-content: space-between; align-items: center;
+            background: var(--border-color); padding: 4px 10px; border-radius: 6px 6px 0 0; font-size: 11px; color: var(--fg-sub); font-weight: bold;
+        }
+        .code-block-actions { display: flex; gap: 6px; }
+        .code-block-actions button { background: var(--bg-panel); border: 1px solid var(--fg-sub); color: var(--fg-text);
+            font-size: 11px; padding: 2px 8px; border-radius: 4px; cursor: pointer;
+        }
+        .code-block-actions button:hover { border-color: var(--accent-yellow); color: var(--accent-yellow); }
+        .code-block-container pre { background: var(--bg-panel); border: 1px solid var(--border-color); border-top: none;
+            border-radius: 0 0 6px 6px; padding: 10px; overflow-x: auto; margin: 0; font-family: monospace; font-size: 13px; color: var(--fg-text);
+        }
+        .code-block-container pre code { background: none; border: none; padding: 0; }
+        .html-preview-frame { width: 100%; height: 320px; border: 1px solid var(--border-color); border-top: none;
+            border-radius: 0 0 6px 6px; background: #ffffff; display: block;
+        }
+
         /* MEDYA ÖNİZLEME STİLLERİ */
         .chat-link { color: var(--accent-blue); text-decoration: none; word-break: break-all; }
         .chat-link:hover { text-decoration: underline; }
@@ -602,6 +620,7 @@
         let typingTimeout = null;
         let myUserRef = null;
         let myTypingRef = null;
+        const codeBlocksMap = new Map(); // çok satırlı kod bloklarının ham (kaçışsız) metnini blockId'ye göre saklar
 
         const KLIPY_API_KEY = "JorLIwnYyHhkMdcej1Ok9ZSUU04JWlgwYqkb6YKXadVH0fncyC1PhDlK9G5zFFQU";
 
@@ -1075,6 +1094,8 @@
             const quickReactBtn = e.target.closest('.quick-react');
             const openPickerReactBtn = e.target.closest('.open-picker-react');
             const copyBtn = e.target.closest('.code-copy-btn');
+            const runCodeBtn = e.target.closest('.run-code-btn');
+            const codeBlockCopyBtn = e.target.closest('.code-block-copy-btn');
             const item = e.target.closest('.message-item');
 
             if (copyBtn) {
@@ -1083,6 +1104,42 @@
                     const originalText = copyBtn.innerText;
                     copyBtn.innerText = 'Kopyalandı!';
                     setTimeout(() => copyBtn.innerText = originalText, 1500);
+                });
+                return;
+            }
+
+            if (runCodeBtn) {
+                const targetId = runCodeBtn.dataset.target;
+                const container = document.getElementById(targetId);
+                if (!container) return;
+
+                const existingFrame = container.querySelector('.html-preview-frame');
+                if (existingFrame) {
+                    existingFrame.remove();
+                    runCodeBtn.innerText = '▶ Çalıştır';
+                    return;
+                }
+
+                const code = codeBlocksMap.get(targetId) || '';
+                const frame = document.createElement('iframe');
+                frame.className = 'html-preview-frame';
+                // "allow-same-origin" KASITLI OLARAK EKLENMEDİ: bu şekilde iframe ana sayfanın
+                // localStorage/cookie/DOM'una erişemiyor, izole bir kum havuzunda kalıyor.
+                frame.setAttribute('sandbox', 'allow-scripts');
+                frame.srcdoc = code;
+                container.appendChild(frame);
+                runCodeBtn.innerText = '✕ Kapat';
+                messagesList.scrollTop = messagesList.scrollHeight;
+                return;
+            }
+
+            if (codeBlockCopyBtn) {
+                const targetId = codeBlockCopyBtn.dataset.target;
+                const code = codeBlocksMap.get(targetId) || '';
+                navigator.clipboard.writeText(code).then(() => {
+                    const originalText = codeBlockCopyBtn.innerText;
+                    codeBlockCopyBtn.innerText = 'Kopyalandı!';
+                    setTimeout(() => codeBlockCopyBtn.innerText = originalText, 1500);
                 });
                 return;
             }
@@ -1222,6 +1279,34 @@
             if (!str) return '';
             const tokens = [];
             let html = escapeHTML(str);
+
+            // ÇOK SATIRLI KOD BLOKLARI ( ```dil ... ``` ) — tek satırlık backtick'ten önce işlenmeli
+            html = html.replace(/```(\w+)?\n?([\s\S]*?)```/g, (m, lang, code) => {
+                const rawCode = code.replace(/\n$/, '');
+                const langLabel = (lang || '').toLowerCase();
+                const looksLikeHtml = langLabel === 'html' || /^\s*<!DOCTYPE|^\s*<html/i.test(rawCode);
+                const blockId = 'codeblock_' + Math.random().toString(36).slice(2, 10);
+
+                codeBlocksMap.set(blockId, rawCode);
+
+                const runBtnHTML = looksLikeHtml
+                    ? `<button type="button" class="run-code-btn" data-target="${blockId}">▶ Çalıştır</button>`
+                    : '';
+
+                const blockHTML = `<div class="code-block-container" id="${blockId}">
+                    <div class="code-block-header">
+                        <span>${escapeHTML(langLabel || 'kod')}</span>
+                        <div class="code-block-actions">
+                            ${runBtnHTML}
+                            <button type="button" class="code-block-copy-btn" data-target="${blockId}">Kopyala</button>
+                        </div>
+                    </div>
+                    <pre><code>${code}</code></pre>
+                </div>`;
+
+                tokens.push(blockHTML);
+                return `%%TOKEN_${tokens.length - 1}%%`;
+            });
 
             html = html.replace(/`(.*?)`/g, (m, p1) => {
                 const codeHTML = `<span class="code-container"><code>${p1}</code><button type="button" class="code-copy-btn" data-code="${p1.replace(/"/g, '&quot;')}">Kopyala</button></span>`;
