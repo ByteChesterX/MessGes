@@ -150,14 +150,14 @@
 
         /* ÇOK SATIRLI KOD BLOKLARI VE CANLI ÖNİZLEME (FRAME) */
         .code-block-container { position: relative; margin-top: 8px; width: 100%; max-width: 100%; }
-        .code-block-header { display: flex; justify-content: space-between; align-items: center;
-            background: var(--border-color); padding: 4px 10px; border-radius: 6px 6px 0 0; font-size: 11px; color: var(--fg-sub); font-weight: bold;
+        .code-block-header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 6px;
+            background: var(--border-color); padding: 6px 10px; border-radius: 6px 6px 0 0; font-size: 11px; color: var(--fg-sub); font-weight: bold;
         }
-        .code-block-actions { display: flex; gap: 6px; }
-        .code-block-actions button { background: var(--bg-panel); border: 1px solid var(--fg-sub); color: var(--fg-text);
-            font-size: 11px; padding: 2px 8px; border-radius: 4px; cursor: pointer;
+        .code-block-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+        .code-block-actions button { background: var(--accent-yellow); border: 1px solid var(--accent-yellow); color: var(--bg-dark);
+            font-size: 11px; font-weight: bold; padding: 3px 10px; border-radius: 4px; cursor: pointer; white-space: nowrap;
         }
-        .code-block-actions button:hover { border-color: var(--accent-yellow); color: var(--accent-yellow); }
+        .code-block-actions button:hover { opacity: 0.85; }
         .code-block-container pre { background: var(--bg-panel); border: 1px solid var(--border-color); border-top: none;
             border-radius: 0 0 6px 6px; padding: 10px; overflow-x: auto; margin: 0; font-family: monospace; font-size: 13px; color: var(--fg-text);
         }
