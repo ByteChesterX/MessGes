@@ -686,6 +686,7 @@
         let loggedInViaGoogle = false;
         let currentUserEmail = ""; // Google'dan gelir, kullanıcı tarafından değiştirilemez.
         const codeBlocksMap = new Map();
+        const typingUsers = new Map();
 
         // Sadece bu e-postalarla giriş yapanlar mesaj silme (admin) yetkisine sahip olur.
         // Kendi Google hesabının e-postasıyla değiştir.
@@ -756,15 +757,15 @@
             displayUsername.innerText = currentUser;
             myAvatar.src = getAvatarUrl(currentUser, currentAvatar);
 
+            myUserRef = ref(database, `online_users/${currentUser}`);
+            myTypingRef = ref(database, `typing/${currentUser}`);
+
+            onDisconnect(myUserRef).remove();
+            onDisconnect(myTypingRef).remove();
+
             const connectedRef = ref(database, '.info/connected');
             onValue(connectedRef, (snap) => {
                 if (snap.val() === true) {
-                    myUserRef = push(onlineRef);
-                    myTypingRef = ref(database, `typing/${currentUser}`);
-
-                    onDisconnect(myUserRef).remove();
-                    onDisconnect(myTypingRef).remove();
-
                     set(myUserRef, { username: currentUser, avatar: getAvatarUrl(currentUser, currentAvatar) });
                 }
             });
@@ -884,8 +885,11 @@
             myAvatar.src = getAvatarUrl(currentUser, currentAvatar);
 
             if (myUserRef) {
-                update(myUserRef, { username: currentUser, avatar: getAvatarUrl(currentUser, currentAvatar) });
+                remove(myUserRef);
             }
+            myUserRef = ref(database, `online_users/${currentUser}`);
+            onDisconnect(myUserRef).remove();
+            set(myUserRef, { username: currentUser, avatar: getAvatarUrl(currentUser, currentAvatar) });
 
             // Yazıyor... göstergesindeki kullanıcı anahtarını yeni isme taşı.
             if (oldUsername) {
@@ -1013,18 +1017,16 @@
             onlineUsersList.innerHTML = "";
             if (!data) return;
 
-            const uniqueUsers = {};
-            Object.values(data).forEach(u => uniqueUsers[u.username] = u.avatar);
-
-            Object.entries(uniqueUsers).forEach(([username, avatar]) => {
+            Object.values(data).forEach(u => {
+                if (!u || !u.username) return;
                 const img = document.createElement('img');
                 img.className = 'online-user-img';
-                img.src = avatar;
-                img.title = username;
-                img.alt = username;
-                img.onerror = function() { this.src = `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(username)}`; };
+                img.src = u.avatar || '';
+                img.title = u.username;
+                img.alt = u.username;
+                img.onerror = function() { this.src = `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(u.username)}`; };
                 img.addEventListener('click', () => {
-                    messageInput.value += `@${username} `;
+                    messageInput.value += `@${u.username} `;
                     messageInput.focus();
                 });
 
@@ -1039,15 +1041,26 @@
             typingTimeout = setTimeout(() => remove(ref(database, `typing/${currentUser}`)), 2000);
         });
 
-        onValue(typingRef, (snapshot) => {
-            const data = snapshot.val();
-            if (!data) { typingIndicator.innerText = ""; return; }
-            const typers = Object.keys(data).filter(user => user.toLowerCase() !== currentUser.toLowerCase());
+        onChildAdded(typingRef, (snapshot) => {
+            const username = snapshot.key;
+            typingUsers.set(username, true);
+            updateTypingDisplay();
+        });
+
+        onChildRemoved(typingRef, (snapshot) => {
+            const username = snapshot.key;
+            typingUsers.delete(username);
+            updateTypingDisplay();
+        });
+
+        function updateTypingDisplay() {
+            const me = (currentUser || '').toLowerCase();
+            const typers = [...typingUsers.keys()].filter(u => u.toLowerCase() !== me);
 
             if (typers.length === 1) typingIndicator.innerText = `${typers[0]} yazıyor...`;
             else if (typers.length > 1) typingIndicator.innerText = `${typers.join(', ')} yazıyor...`;
             else typingIndicator.innerText = "";
-        });
+        }
 
         onChildAdded(messagesRef, (snapshot) => {
             const loadingEl = document.getElementById('loadingText');
