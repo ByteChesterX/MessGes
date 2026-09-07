@@ -8,7 +8,7 @@
 
     // Update last read timestamp for current room
     function updateLastRead(roomId = 'general') {
-        if (!window.AppConfig || !window.AppConfig.AppState || !window.AppConfig.AppState.currentUser) {
+        if (!AppConfig || !AppConfig.AppState || !AppConfig.AppState.currentUser) {
             return;
         }
 
@@ -16,16 +16,16 @@
         lastReadTimestamps[roomId] = now;
         
         // Save to Firestore
-        if (window.AppConfig.FB && window.AppConfig.FB.database) {
-            const userId = window.AppConfig.AppState.currentUser;
-            const ref = window.AppConfig.FB.database.ref(
+        if (AppConfig.FB && AppConfig.FB.database) {
+            const userId = AppConfig.AppState.currentUser;
+            const ref = AppConfig.FB.database.ref(
                 `read_receipts/${roomId}/${userId}`
             );
             ref.set({ lastRead: now });
         }
         
         // Also save locally
-        window.AppConfig.AppState.lastRead = lastReadTimestamps;
+        AppConfig.AppState.lastRead = lastReadTimestamps;
         localStorage.setItem('lastRead_timestamps', JSON.stringify(lastReadTimestamps));
     }
 
@@ -54,7 +54,7 @@
 
     // Listen for new messages and auto-update last read
     function setupReadReceiptListeners() {
-        if (!window.AppConfig || !window.AppConfig.FB || !window.AppConfig.FB.messagesRef) {
+        if (!AppConfig || !AppConfig.FB || !AppConfig.FB.messagesRef) {
             setTimeout(setupReadReceiptListeners, 500);
             return;
         }
@@ -69,7 +69,7 @@
                     const isAtBottom = messagesContainer.scrollHeight - messagesContainer.scrollTop <= 
                                        messagesContainer.clientHeight + 100;
                     if (isAtBottom) {
-                        const roomId = window.AppConfig.AppState.currentRoom || 'general';
+                        const roomId = AppConfig.AppState.currentRoom || 'general';
                         updateLastRead(roomId);
                     }
                 }, 200);
@@ -78,7 +78,7 @@
 
         // Update last read when new message is received (if at bottom)
         const observer = new MutationObserver((mutations) => {
-            const roomId = window.AppConfig.AppState.currentRoom || 'general';
+            const roomId = AppConfig.AppState.currentRoom || 'general';
             const messagesContainer = document.getElementById('messagesList');
             if (messagesContainer) {
                 const isAtBottom = messagesContainer.scrollHeight - messagesContainer.scrollTop <= 
@@ -97,11 +97,11 @@
 
     // Render read receipt indicator for a message
     function renderReadReceiptIndicator(msgKey, msgSender, msgTimestamp, roomId = 'general') {
-        if (!window.AppConfig || !window.AppConfig.AppState || !window.AppConfig.AppState.currentUser) {
+        if (!AppConfig || !AppConfig.AppState || !AppConfig.AppState.currentUser) {
             return '';
         }
 
-        const isMe = msgSender === window.AppConfig.AppState.currentUser;
+        const isMe = msgSender === AppConfig.AppState.currentUser;
         if (!isMe) return '';
 
         // For now, we'll show a simple indicator

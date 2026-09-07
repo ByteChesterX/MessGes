@@ -29,8 +29,8 @@
         }
         
         // Update AppState
-        if (window.AppConfig && window.AppConfig.AppState) {
-            window.AppConfig.AppState.theme = theme;
+        if (AppConfig && AppConfig.AppState) {
+            AppConfig.AppState.theme = theme;
         }
     }
 

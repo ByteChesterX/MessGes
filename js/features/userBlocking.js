@@ -14,50 +14,50 @@
 
     // Load blocked users
     function loadBlockedUsers() {
-        if (window.AppConfig && window.AppConfig.AppState) {
+        if (AppConfig && AppConfig.AppState) {
             const saved = localStorage.getItem('blocked_users');
-            window.AppConfig.AppState.blockedUsers = saved ? JSON.parse(saved) : [];
+            AppConfig.AppState.blockedUsers = saved ? JSON.parse(saved) : [];
         }
     }
 
     // Save blocked users
     function saveBlockedUsers() {
-        if (window.AppConfig && window.AppConfig.AppState) {
-            localStorage.setItem('blocked_users', JSON.stringify(window.AppConfig.AppState.blockedUsers));
+        if (AppConfig && AppConfig.AppState) {
+            localStorage.setItem('blocked_users', JSON.stringify(AppConfig.AppState.blockedUsers));
         }
     }
 
     // Block a user
     function blockUser(userId) {
-        if (!window.AppConfig || !window.AppConfig.AppState) return;
+        if (!AppConfig || !AppConfig.AppState) return;
 
-        if (!window.AppConfig.AppState.blockedUsers.includes(userId)) {
-            window.AppConfig.AppState.blockedUsers.push(userId);
+        if (!AppConfig.AppState.blockedUsers.includes(userId)) {
+            AppConfig.AppState.blockedUsers.push(userId);
             saveBlockedUsers();
         }
     }
 
     // Unblock a user
     function unblockUser(userId) {
-        if (!window.AppConfig || !window.AppConfig.AppState) return;
+        if (!AppConfig || !AppConfig.AppState) return;
 
-        const index = window.AppConfig.AppState.blockedUsers.indexOf(userId);
+        const index = AppConfig.AppState.blockedUsers.indexOf(userId);
         if (index > -1) {
-            window.AppConfig.AppState.blockedUsers.splice(index, 1);
+            AppConfig.AppState.blockedUsers.splice(index, 1);
             saveBlockedUsers();
         }
     }
 
     // Check if user is blocked
     function isBlocked(userId) {
-        if (!window.AppConfig || !window.AppConfig.AppState) return false;
-        return window.AppConfig.AppState.blockedUsers.includes(userId);
+        if (!AppConfig || !AppConfig.AppState) return false;
+        return AppConfig.AppState.blockedUsers.includes(userId);
     }
 
     // Get list of blocked users
     function getBlockedUsers() {
-        if (!window.AppConfig || !window.AppConfig.AppState) return [];
-        return window.AppConfig.AppState.blockedUsers || [];
+        if (!AppConfig || !AppConfig.AppState) return [];
+        return AppConfig.AppState.blockedUsers || [];
     }
 
     // Filter blocked users from online list

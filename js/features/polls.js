@@ -16,7 +16,7 @@
 
         if (pollBtn) {
             pollBtn.addEventListener('click', () => {
-                if (!window.AppConfig || !window.AppConfig.AppState || !window.AppConfig.AppState.currentUser) {
+                if (!AppConfig || !AppConfig.AppState || !AppConfig.AppState.currentUser) {
                     alert('Lütfen önce giriş yapın.');
                     return;
                 }
@@ -130,7 +130,7 @@
         const poll = {
             question: question,
             options: options.map(opt => ({ text: opt, votes: [] })),
-            createdBy: window.AppConfig.AppState.currentUser,
+            createdBy: AppConfig.AppState.currentUser,
             createdAt: Date.now(),
             totalVotes: 0,
             votedUsers: []
@@ -138,14 +138,14 @@
 
         // Send poll as message
         const payload = {
-            sender: window.AppConfig.AppState.currentUser,
-            avatar: window.AppConfig.AppState.currentAvatar,
-            timestamp: window.AppConfig.FB.serverTimestamp(),
+            sender: AppConfig.AppState.currentUser,
+            avatar: AppConfig.AppState.currentAvatar,
+            timestamp: AppConfig.FB.serverTimestamp(),
             poll: poll,
             type: 'poll'
         };
 
-        window.AppConfig.FB.rawMessagesRef.push(payload);
+        AppConfig.FB.rawMessagesRef.push(payload);
 
         // Close modal
         if (pollModal) pollModal.style.display = 'none';
@@ -153,12 +153,12 @@
 
     // Vote on a poll
     function voteOnPoll(msgKey, optionIndex) {
-        if (!window.AppConfig || !window.AppConfig.AppState || !window.AppConfig.AppState.currentUser) {
+        if (!AppConfig || !AppConfig.AppState || !AppConfig.AppState.currentUser) {
             return;
         }
 
-        const userId = window.AppConfig.AppState.currentUser;
-        const pollRef = window.AppConfig.FB.database.ref(`messages/${msgKey}/poll`);
+        const userId = AppConfig.AppState.currentUser;
+        const pollRef = AppConfig.FB.database.ref(`messages/${msgKey}/poll`);
 
         // Check if user already voted
         pollRef.once('value', (snapshot) => {
@@ -176,7 +176,7 @@
             updates[`messages/${msgKey}/poll/totalVotes`] = (poll.totalVotes || 0) + 1;
             updates[`messages/${msgKey}/poll/votedUsers/${userId}`] = true;
 
-            window.AppConfig.FB.database.ref().update(updates);
+            AppConfig.FB.database.ref().update(updates);
         });
     }
 
@@ -187,12 +187,12 @@
         const pollContainer = document.createElement('div');
         pollContainer.className = 'poll-container';
 
-        const question = window.ChatUtils.escapeHTML(poll.question);
+        const question = ChatUtils.escapeHTML(poll.question);
         const totalVotes = poll.totalVotes || 0;
 
         let optionsHTML = '';
         poll.options.forEach((option, index) => {
-            const optionText = window.ChatUtils.escapeHTML(option.text);
+            const optionText = ChatUtils.escapeHTML(option.text);
             const voteCount = option.votes ? Object.keys(option.votes).length : 0;
             const percentage = totalVotes > 0 ? Math.round((voteCount / totalVotes) * 100) : 0;
             const isMyVote = myVote === index;

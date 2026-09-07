@@ -161,7 +161,7 @@
         const elapsed = Math.floor((Date.now() - recordingStartTime) / 1000);
         const timerEl = document.getElementById('recordingTimer');
         if (timerEl) {
-            timerEl.textContent = window.ChatUtils.formatDuration(elapsed);
+            timerEl.textContent = ChatUtils.formatDuration(elapsed);
         }
     }
 
@@ -219,10 +219,10 @@
 
         try {
             // Upload to Firebase Storage
-            const storageRef = window.AppConfig.FB.storage.ref();
+            const storageRef = AppConfig.FB.storage.ref();
             const timestamp = Date.now();
-            const username = window.AppConfig.AppState.currentUser || 'unknown';
-            const filePath = `voice_messages/${window.AppConfig.AppState.currentRoom || 'general'}/${username}_${timestamp}.wav`;
+            const username = AppConfig.AppState.currentUser || 'unknown';
+            const filePath = `voice_messages/${AppConfig.AppState.currentRoom || 'general'}/${username}_${timestamp}.wav`;
 
             const uploadRef = storageRef.child(filePath);
             await uploadRef.put(audioBlob, { contentType: 'audio/wav' });
@@ -234,9 +234,9 @@
 
             // Send message
             const payload = {
-                sender: window.AppConfig.AppState.currentUser,
-                avatar: window.AppConfig.AppState.currentAvatar,
-                timestamp: window.AppConfig.FB.serverTimestamp(),
+                sender: AppConfig.AppState.currentUser,
+                avatar: AppConfig.AppState.currentAvatar,
+                timestamp: AppConfig.FB.serverTimestamp(),
                 voice: {
                     url: downloadURL,
                     duration: duration
@@ -249,7 +249,7 @@
                 payload.replyTo = window.activeReplyTarget;
             }
 
-            await window.AppConfig.FB.rawMessagesRef.push(payload);
+            await AppConfig.FB.rawMessagesRef.push(payload);
 
             // Clear reply target
             if (window.activeReplyTarget) {
@@ -285,7 +285,7 @@
         const voiceContainer = document.createElement('div');
         voiceContainer.className = 'voice-message-container';
 
-        const duration = window.ChatUtils.formatDuration(voiceInfo.duration || 0);
+        const duration = ChatUtils.formatDuration(voiceInfo.duration || 0);
         const icon = voiceInfo.isPlaying ? '⏸' : '▶';
 
         voiceContainer.innerHTML = `

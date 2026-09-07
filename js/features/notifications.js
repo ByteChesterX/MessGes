@@ -7,8 +7,8 @@
     function requestPermission() {
         if ('Notification' in window && Notification.permission === 'default') {
             return Notification.requestPermission().then(permission => {
-                if (window.AppConfig && window.AppConfig.AppState) {
-                    window.AppConfig.AppState.notificationsEnabled = permission === 'granted';
+                if (AppConfig && AppConfig.AppState) {
+                    AppConfig.AppState.notificationsEnabled = permission === 'granted';
                     localStorage.setItem('notifications_enabled', permission === 'granted');
                 }
                 return permission;
@@ -27,23 +27,23 @@
 
     // Show notification for new message
     function showNewMessageNotification(sender, text, avatar) {
-        if (!window.AppConfig || !window.AppConfig.AppState) return;
+        if (!AppConfig || !AppConfig.AppState) return;
         
-        const isMentioned = window.AppConfig.AppState.currentUser && 
-                          text.toLowerCase().includes(`@${window.AppConfig.AppState.currentUser.toLowerCase()}`);
+        const isMentioned = AppConfig.AppState.currentUser && 
+                          text.toLowerCase().includes(`@${AppConfig.AppState.currentUser.toLowerCase()}`);
         
         // Only show notification if:
         // 1. Notifications are enabled
         // 2. Page is not visible (user is not looking at it)
         // 3. User is mentioned OR it's a direct message
-        if (window.AppConfig.AppState.notificationsEnabled && document.hidden) {
+        if (AppConfig.AppState.notificationsEnabled && document.hidden) {
             const notificationTitle = isMentioned 
                 ? `${sender} senden bahsetti!` 
                 : `Yeni mesaj: ${sender}`;
             
             showNotification(notificationTitle, {
                 body: text.length > 100 ? text.substring(0, 100) + '...' : text,
-                icon: avatar || window.ChatUtils.getAvatarUrl(sender, ''),
+                icon: avatar || ChatUtils.getAvatarUrl(sender, ''),
                 tag: 'new-message',
                 renotify: true
             });

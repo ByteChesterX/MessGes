@@ -237,18 +237,18 @@ function renderMediaPreviews(container) {
 
 // Check if user is admin
 function isAdmin() {
-    return window.AppConfig && 
-           window.AppConfig.AppState && 
-           window.AppConfig.ADMIN_EMAILS &&
-           window.AppConfig.ADMIN_EMAILS.includes(window.AppConfig.AppState.currentUserEmail);
+    return AppConfig && 
+           AppConfig.AppState && 
+           AppConfig.ADMIN_EMAILS &&
+           AppConfig.ADMIN_EMAILS.includes(AppConfig.AppState.currentUserEmail);
 }
 
 // Check if user is blocked
 function isUserBlocked(username) {
-    return window.AppConfig && 
-           window.AppConfig.AppState && 
-           window.AppConfig.AppState.blockedUsers &&
-           window.AppConfig.AppState.blockedUsers.includes(username);
+    return AppConfig && 
+           AppConfig.AppState && 
+           AppConfig.AppState.blockedUsers &&
+           AppConfig.AppState.blockedUsers.includes(username);
 }
 
 // Export utilities

@@ -200,19 +200,19 @@
 
     // Send game result as message
     function sendGameResult(gameName, resultText) {
-        if (!window.AppConfig || !window.AppConfig.FB || !window.AppConfig.AppState.currentUser) {
+        if (!AppConfig || !AppConfig.FB || !AppConfig.AppState.currentUser) {
             return;
         }
 
         const payload = {
-            sender: window.AppConfig.AppState.currentUser,
-            avatar: window.AppConfig.AppState.currentAvatar,
+            sender: AppConfig.AppState.currentUser,
+            avatar: AppConfig.AppState.currentAvatar,
             text: `[${gameName}] ${resultText}`,
-            timestamp: window.AppConfig.FB.serverTimestamp(),
+            timestamp: AppConfig.FB.serverTimestamp(),
             type: 'game'
         };
 
-        window.AppConfig.FB.rawMessagesRef.push(payload);
+        AppConfig.FB.rawMessagesRef.push(payload);
     }
 
     // Render game result in message
@@ -228,13 +228,13 @@
             const result = match[2];
 
             gameContainer.innerHTML = `
-                <div class="game-label">${window.ChatUtils.escapeHTML(gameName)}</div>
-                <div class="game-value">${window.ChatUtils.escapeHTML(result)}</div>
+                <div class="game-label">${ChatUtils.escapeHTML(gameName)}</div>
+                <div class="game-value">${ChatUtils.escapeHTML(result)}</div>
             `;
         } else {
             gameContainer.innerHTML = `
                 <div class="game-label">Oyun</div>
-                <div class="game-value">${window.ChatUtils.escapeHTML(msg.text)}</div>
+                <div class="game-value">${ChatUtils.escapeHTML(msg.text)}</div>
             `;
         }
 

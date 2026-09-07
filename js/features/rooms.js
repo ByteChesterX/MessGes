@@ -31,19 +31,19 @@
         }
 
         // Update current room display
-        if (roomNameEl && window.AppConfig && window.AppConfig.AppState) {
-            roomNameEl.textContent = window.AppConfig.AppState.currentRoom || 'general';
+        if (roomNameEl && AppConfig && AppConfig.AppState) {
+            roomNameEl.textContent = AppConfig.AppState.currentRoom || 'general';
         }
     }
 
     // Load rooms from Firebase
     function loadRooms() {
-        if (!window.AppConfig || !window.AppConfig.FB || !window.AppConfig.FB.database) {
+        if (!AppConfig || !AppConfig.FB || !AppConfig.FB.database) {
             setTimeout(loadRooms, 500);
             return;
         }
 
-        const roomsRef = window.AppConfig.FB.database.ref('rooms');
+        const roomsRef = AppConfig.FB.database.ref('rooms');
         roomsRef.on('value', (snapshot) => {
             rooms = [];
             const data = snapshot.val();
@@ -96,8 +96,8 @@
             roomItem.innerHTML = `
                 <span class="room-icon">${icon}</span>
                 <div class="room-info">
-                    <div class="room-name">${window.ChatUtils.escapeHTML(room.name)}</div>
-                    ${room.description ? `<div class="room-desc">${window.ChatUtils.escapeHTML(room.description)}</div>` : ''}
+                    <div class="room-name">${ChatUtils.escapeHTML(room.name)}</div>
+                    ${room.description ? `<div class="room-desc">${ChatUtils.escapeHTML(room.description)}</div>` : ''}
                 </div>
             `;
 
@@ -124,7 +124,7 @@
 
     // Create a new room
     function createRoom() {
-        if (!window.AppConfig || !window.AppConfig.AppState || !window.AppConfig.AppState.currentUser) {
+        if (!AppConfig || !AppConfig.AppState || !AppConfig.AppState.currentUser) {
             alert('Lütfen önce giriş yapın.');
             return;
         }
@@ -137,11 +137,11 @@
         const newRoom = {
             name: roomName.trim(),
             description: roomDesc ? roomDesc.trim() : '',
-            createdBy: window.AppConfig.AppState.currentUser,
+            createdBy: AppConfig.AppState.currentUser,
             createdAt: Date.now()
         };
 
-        const roomsRef = window.AppConfig.FB.database.ref('rooms');
+        const roomsRef = AppConfig.FB.database.ref('rooms');
         const newRoomRef = roomsRef.push();
         newRoomRef.set(newRoom);
 
@@ -160,16 +160,16 @@
         currentRoom = roomId;
         
         // Update AppState
-        if (window.AppConfig && window.AppConfig.AppState) {
-            window.AppConfig.AppState.currentRoom = roomId;
+        if (AppConfig && AppConfig.AppState) {
+            AppConfig.AppState.currentRoom = roomId;
             localStorage.setItem('current_room', roomId);
         }
 
         // Update messages reference
-        if (window.AppConfig && window.AppConfig.FB && window.AppConfig.FB.database) {
-            const roomMsgsRef = window.AppConfig.FB.database.ref(`room_messages/${roomId}`);
-            window.AppConfig.FB.messagesRef = roomMsgsRef.query.limitToLast(100);
-            window.AppConfig.FB.rawMessagesRef = window.AppConfig.FB.database.ref(`room_messages/${roomId}`);
+        if (AppConfig && AppConfig.FB && AppConfig.FB.database) {
+            const roomMsgsRef = AppConfig.FB.database.ref(`room_messages/${roomId}`);
+            AppConfig.FB.messagesRef = roomMsgsRef.query.limitToLast(100);
+            AppConfig.FB.rawMessagesRef = AppConfig.FB.database.ref(`room_messages/${roomId}`);
         }
 
         // Update UI
@@ -223,8 +223,8 @@
     // Start
     domReady().then(() => {
         // Load saved room
-        if (window.AppConfig && window.AppConfig.AppState) {
-            currentRoom = window.AppConfig.AppState.currentRoom || 'general';
+        if (AppConfig && AppConfig.AppState) {
+            currentRoom = AppConfig.AppState.currentRoom || 'general';
         }
         initRooms();
     });

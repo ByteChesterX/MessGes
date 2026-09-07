@@ -8,12 +8,12 @@
 
     // Index messages for search
     function indexMessages() {
-        if (!window.AppConfig || !window.AppConfig.FB || !window.AppConfig.FB.rawMessagesRef) {
+        if (!AppConfig || !AppConfig.FB || !AppConfig.FB.rawMessagesRef) {
             return;
         }
 
         // Get all messages from Firebase
-        window.AppConfig.FB.rawMessagesRef.once('value', (snapshot) => {
+        AppConfig.FB.rawMessagesRef.once('value', (snapshot) => {
             allMessages = [];
             searchIndex = [];
             
@@ -89,9 +89,9 @@
             resultEl.style.borderBottom = '1px solid var(--border-color)';
             resultEl.style.cursor = 'pointer';
             
-            const sender = window.ChatUtils.escapeHTML(msg.sender || 'Bilinmeyen');
-            const text = window.ChatUtils.escapeHTML(msg.text || '');
-            const time = window.ChatUtils.formatTime(msg.timestamp);
+            const sender = ChatUtils.escapeHTML(msg.sender || 'Bilinmeyen');
+            const text = ChatUtils.escapeHTML(msg.text || '');
+            const time = ChatUtils.formatTime(msg.timestamp);
 
             // Highlight search terms
             const highlightedText = highlightText(text, query);
@@ -132,7 +132,7 @@
         let result = text;
         words.forEach(word => {
             if (word.length > 2) {
-                const regex = new RegExp(`(${window.ChatUtils.escapeHTML(word)})`, 'gi');
+                const regex = new RegExp(`(${ChatUtils.escapeHTML(word)})`, 'gi');
                 result = result.replace(regex, '<mark style="background:var(--accent-yellow); color:var(--bg-dark); padding:0 2px; border-radius:2px;">$1</mark>');
             }
         });

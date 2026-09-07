@@ -8,8 +8,8 @@
 
     // Initialize Firebase Storage reference
     function getStorageRef() {
-        if (window.AppConfig && window.AppConfig.FB && window.AppConfig.FB.storage) {
-            return window.AppConfig.FB.storage.ref();
+        if (AppConfig && AppConfig.FB && AppConfig.FB.storage) {
+            return AppConfig.FB.storage.ref();
         }
         return null;
     }
@@ -35,7 +35,7 @@
         }
 
         selectedFile = file;
-        showStatus(`Dosya seçildi: ${file.name} (${window.ChatUtils.formatFileSize(file.size)})`);
+        showStatus(`Dosya seçildi: ${file.name} (${ChatUtils.formatFileSize(file.size)})`);
         return file;
     }
 
@@ -126,9 +126,9 @@
 
             // Create unique filename
             const timestamp = Date.now();
-            const username = window.AppConfig.AppState.currentUser || 'unknown';
+            const username = AppConfig.AppState.currentUser || 'unknown';
             const sanitizedName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
-            const filePath = `uploads/${window.AppConfig.AppState.currentRoom || 'general'}/${username}_${timestamp}_${sanitizedName}`;
+            const filePath = `uploads/${AppConfig.AppState.currentRoom || 'general'}/${username}_${timestamp}_${sanitizedName}`;
 
             // Upload file
             const uploadRef = storageRef.child(filePath);
@@ -166,14 +166,14 @@
 
     // Send file message
     async function sendFileMessage(fileInfo) {
-        if (!fileInfo || !window.AppConfig || !window.AppConfig.FB) {
+        if (!fileInfo || !AppConfig || !AppConfig.FB) {
             return;
         }
 
         const payload = {
-            sender: window.AppConfig.AppState.currentUser,
-            avatar: window.AppConfig.AppState.currentAvatar,
-            timestamp: window.AppConfig.FB.serverTimestamp(),
+            sender: AppConfig.AppState.currentUser,
+            avatar: AppConfig.AppState.currentAvatar,
+            timestamp: AppConfig.FB.serverTimestamp(),
             file: fileInfo,
             type: 'file'
         };
@@ -184,7 +184,7 @@
         }
 
         // Send to Firebase
-        await window.AppConfig.FB.rawMessagesRef.push(payload);
+        await AppConfig.FB.rawMessagesRef.push(payload);
 
         // Clear reply target
         if (window.activeReplyTarget) {
@@ -218,8 +218,8 @@
         fileContainer.className = 'file-attachment-container';
 
         const icon = fileInfo.icon || '📁';
-        const name = window.ChatUtils.escapeHTML(fileInfo.name);
-        const size = window.ChatUtils.formatFileSize(fileInfo.size);
+        const name = ChatUtils.escapeHTML(fileInfo.name);
+        const size = ChatUtils.formatFileSize(fileInfo.size);
 
         fileContainer.innerHTML = `
             <div class="file-attachment-header">

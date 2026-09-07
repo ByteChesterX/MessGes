@@ -59,18 +59,18 @@
     // Initialize Firebase
     function initFirebase() {
         // Import Firebase modules
-        const { initializeApp } = window.firebase;
-        const { getDatabase, ref, push, onChildAdded, onChildChanged, onChildRemoved, onValue, serverTimestamp, remove, update, set, query, limitToLast, get } = window.firebase.database;
-        const { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } = window.firebase.auth;
-        const { getStorage } = window.firebase.storage;
+        const { initializeApp } = firebase;
+        const { getDatabase, ref, push, onChildAdded, onChildChanged, onChildRemoved, onValue, serverTimestamp, remove, update, set, query, limitToLast, get } = firebase.database;
+        const { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } = firebase.auth;
+        const { getStorage } = firebase.storage;
 
         // Initialize Firebase
-        window.AppConfig.FB.app = initializeApp(window.AppConfig.firebaseConfig);
-        window.AppConfig.FB.database = getDatabase(window.AppConfig.FB.app);
-        window.AppConfig.FB.auth = getAuth(window.AppConfig.FB.app);
-        window.AppConfig.FB.storage = getStorage(window.AppConfig.FB.app);
-        window.AppConfig.FB.googleProvider = new GoogleAuthProvider();
-        window.AppConfig.FB.serverTimestamp = serverTimestamp;
+        AppConfig.FB.app = initializeApp(AppConfig.firebaseConfig);
+        AppConfig.FB.database = getDatabase(AppConfig.FB.app);
+        AppConfig.FB.auth = getAuth(AppConfig.FB.app);
+        AppConfig.FB.storage = getStorage(AppConfig.FB.app);
+        AppConfig.FB.googleProvider = new GoogleAuthProvider();
+        AppConfig.FB.serverTimestamp = serverTimestamp;
 
         // Set up references
         updateFirebaseReferences();
@@ -81,11 +81,11 @@
 
     // Update Firebase references (for room switching)
     function updateFirebaseReferences() {
-        const roomId = window.AppConfig.AppState.currentRoom || 'general';
+        const roomId = AppConfig.AppState.currentRoom || 'general';
         
         // For backward compatibility, check if we're using the old structure
         // If room_messages exists, use it; otherwise use messages
-        const db = window.AppConfig.FB.database;
+        const db = AppConfig.FB.database;
         
         // Try to use room_messages first
         const roomMsgsRef = ref(db, `room_messages/${roomId}`);
@@ -94,29 +94,29 @@
         get(roomMsgsRef).then(snapshot => {
             if (snapshot.exists()) {
                 // Use room_messages
-                window.AppConfig.FB.messagesRef = query(roomMsgsRef, limitToLast(100));
-                window.AppConfig.FB.rawMessagesRef = roomMsgsRef;
+                AppConfig.FB.messagesRef = query(roomMsgsRef, limitToLast(100));
+                AppConfig.FB.rawMessagesRef = roomMsgsRef;
             } else {
                 // Fall back to old messages structure
-                window.AppConfig.FB.messagesRef = query(ref(db, 'messages'), limitToLast(100));
-                window.AppConfig.FB.rawMessagesRef = ref(db, 'messages');
+                AppConfig.FB.messagesRef = query(ref(db, 'messages'), limitToLast(100));
+                AppConfig.FB.rawMessagesRef = ref(db, 'messages');
             }
         }).catch(() => {
             // Fall back to old messages structure
-            window.AppConfig.FB.messagesRef = query(ref(db, 'messages'), limitToLast(100));
-            window.AppConfig.FB.rawMessagesRef = ref(db, 'messages');
+            AppConfig.FB.messagesRef = query(ref(db, 'messages'), limitToLast(100));
+            AppConfig.FB.rawMessagesRef = ref(db, 'messages');
         });
 
-        window.AppConfig.FB.onlineRef = ref(db, 'online_users');
-        window.AppConfig.FB.typingRef = ref(db, 'typing');
-        window.AppConfig.FB.roomsRef = ref(db, 'rooms');
-        window.AppConfig.FB.readReceiptsRef = ref(db, 'read_receipts');
+        AppConfig.FB.onlineRef = ref(db, 'online_users');
+        AppConfig.FB.typingRef = ref(db, 'typing');
+        AppConfig.FB.roomsRef = ref(db, 'rooms');
+        AppConfig.FB.readReceiptsRef = ref(db, 'read_receipts');
     }
 
     // Enable Firebase persistence for offline support
     function enablePersistence() {
-        if (window.AppConfig && window.AppConfig.FB && window.AppConfig.FB.database) {
-            window.AppConfig.FB.database.enablePersistence()
+        if (AppConfig && AppConfig.FB && AppConfig.FB.database) {
+            AppConfig.FB.database.enablePersistence()
                 .catch((err) => {
                     if (err.code === 'failed-precondition') {
                         console.warn('Multiple tabs open, persistence can only be enabled in one tab at a time.');
@@ -129,31 +129,31 @@
 
     // Initialize user session
     function initUserSession() {
-        if (!window.AppConfig || !window.AppConfig.AppState || !window.AppConfig.AppState.currentUser) return;
+        if (!AppConfig || !AppConfig.AppState || !AppConfig.AppState.currentUser) return;
 
         DOM.userModal.style.display = 'none';
-        DOM.displayUsername.innerText = window.AppConfig.AppState.currentUser;
-        DOM.myAvatar.src = window.ChatUtils.getAvatarUrl(
-            window.AppConfig.AppState.currentUser,
-            window.AppConfig.AppState.currentAvatar
+        DOM.displayUsername.innerText = AppConfig.AppState.currentUser;
+        DOM.myAvatar.src = ChatUtils.getAvatarUrl(
+            AppConfig.AppState.currentUser,
+            AppConfig.AppState.currentAvatar
         );
 
         // Set up online presence
-        const userId = window.AppConfig.AppState.currentUser;
-        myUserRef = ref(window.AppConfig.FB.database, `online_users/${userId}`);
-        myTypingRef = ref(window.AppConfig.FB.database, `typing/${userId}`);
+        const userId = AppConfig.AppState.currentUser;
+        myUserRef = ref(AppConfig.FB.database, `online_users/${userId}`);
+        myTypingRef = ref(AppConfig.FB.database, `typing/${userId}`);
 
         // Clean up on disconnect
         onDisconnect(myUserRef).remove();
         onDisconnect(myTypingRef).remove();
 
         // Set user as online
-        const connectedRef = ref(window.AppConfig.FB.database, '.info/connected');
+        const connectedRef = ref(AppConfig.FB.database, '.info/connected');
         onValue(connectedRef, (snap) => {
             if (snap.val() === true) {
                 set(myUserRef, {
                     username: userId,
-                    avatar: window.ChatUtils.getAvatarUrl(userId, window.AppConfig.AppState.currentAvatar)
+                    avatar: ChatUtils.getAvatarUrl(userId, AppConfig.AppState.currentAvatar)
                 });
             }
         });
@@ -161,7 +161,7 @@
 
     // Initialize message listeners
     function initMessageListeners() {
-        if (!window.AppConfig || !window.AppConfig.FB) {
+        if (!AppConfig || !AppConfig.FB) {
             setTimeout(initMessageListeners, 500);
             return;
         }
@@ -174,8 +174,8 @@
             rawMessagesRef.off();
         }
 
-        messagesRef = window.AppConfig.FB.messagesRef;
-        rawMessagesRef = window.AppConfig.FB.rawMessagesRef;
+        messagesRef = AppConfig.FB.messagesRef;
+        rawMessagesRef = AppConfig.FB.rawMessagesRef;
 
         // Listen for new messages
         onChildAdded(messagesRef, (snapshot) => {
@@ -198,7 +198,7 @@
         const msg = { key: snapshot.key, ...snapshot.val() };
         
         // Filter blocked users' messages
-        if (window.UserBlockingManager && window.UserBlockingManager.isBlocked(msg.sender)) {
+        if (UserBlockingManager && UserBlockingManager.isBlocked(msg.sender)) {
             return;
         }
 
@@ -217,22 +217,22 @@
         const isSameSender = lastSender === msg.sender;
         const isWithin1Min = (msg.timestamp - lastTime) / 1000 < 60;
 
-        const isMe = msg.sender.toLowerCase() === window.AppConfig.AppState.currentUser.toLowerCase();
-        const isAdmin = window.ChatUtils.isAdmin();
-        const isMentioned = window.AppConfig.AppState.currentUser && 
-                          msg.text && msg.text.toLowerCase().includes(`@${window.AppConfig.AppState.currentUser.toLowerCase()}`);
+        const isMe = msg.sender.toLowerCase() === AppConfig.AppState.currentUser.toLowerCase();
+        const isAdmin = ChatUtils.isAdmin();
+        const isMentioned = AppConfig.AppState.currentUser && 
+                          msg.text && msg.text.toLowerCase().includes(`@${AppConfig.AppState.currentUser.toLowerCase()}`);
 
         // Play notification sound for new messages
         if (!isMe && (Date.now() - msg.timestamp < 10000 || !msg.timestamp)) {
             if (isMentioned) {
-                window.ChatUtils.playBeep(880);
-                window.NotificationManager.showNewMessageNotification(
+                ChatUtils.playBeep(880);
+                NotificationManager.showNewMessageNotification(
                     msg.sender,
                     msg.text || msg.file?.name || msg.voice?.duration ? 'Sesli mesaj' : 'Yeni mesaj',
                     msg.avatar
                 );
             } else {
-                window.ChatUtils.playBeep(440);
+                ChatUtils.playBeep(440);
             }
         }
 
@@ -246,14 +246,14 @@
             groupEl.dataset.sender = msg.sender;
             groupEl.dataset.timestamp = msg.timestamp || Date.now();
 
-            const avatarUrl = window.ChatUtils.getAvatarUrl(msg.sender, msg.avatar);
+            const avatarUrl = ChatUtils.getAvatarUrl(msg.sender, msg.avatar);
             groupEl.innerHTML = `
-                <img class="group-avatar" src="${window.ChatUtils.escapeHTML(avatarUrl)}" 
-                     alt="${window.ChatUtils.escapeHTML(msg.sender)}" 
+                <img class="group-avatar" src="${ChatUtils.escapeHTML(avatarUrl)}" 
+                     alt="${ChatUtils.escapeHTML(msg.sender)}" 
                      onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(msg.sender)}'">
                 <div class="group-body">
                     <div class="group-header">
-                        <span class="sender-name">${window.ChatUtils.escapeHTML(msg.sender)}</span>
+                        <span class="sender-name">${ChatUtils.escapeHTML(msg.sender)}</span>
                         <span class="header-time">${timeStr}</span>
                     </div>
                     <div class="message-text-list"></div>
@@ -277,9 +277,9 @@
         item.dataset.sender = msg.sender;
         item.dataset.rawText = msg.text || '';
 
-        const isMe = msg.sender.toLowerCase() === window.AppConfig.AppState.currentUser.toLowerCase();
-        const isMentioned = window.AppConfig.AppState.currentUser && 
-                          msg.text && msg.text.toLowerCase().includes(`@${window.AppConfig.AppState.currentUser.toLowerCase()}`);
+        const isMe = msg.sender.toLowerCase() === AppConfig.AppState.currentUser.toLowerCase();
+        const isMentioned = AppConfig.AppState.currentUser && 
+                          msg.text && msg.text.toLowerCase().includes(`@${AppConfig.AppState.currentUser.toLowerCase()}`);
 
         if (isMentioned) item.classList.add('is-mentioned');
 
@@ -305,7 +305,7 @@
         setTimeout(() => {
             const contentSpan = item.querySelector('.msg-content');
             if (contentSpan) {
-                window.ChatUtils.renderMediaPreviews(contentSpan);
+                ChatUtils.renderMediaPreviews(contentSpan);
             }
         }, 100);
     }
@@ -316,8 +316,8 @@
         if (msg.replyTo) {
             quoteHTML = `
                 <div class="quoted-box">
-                    <span class="quoted-sender">@${window.ChatUtils.escapeHTML(msg.replyTo.sender)}</span>
-                    <span>${window.ChatUtils.escapeHTML(msg.replyTo.text)}</span>
+                    <span class="quoted-sender">@${ChatUtils.escapeHTML(msg.replyTo.sender)}</span>
+                    <span>${ChatUtils.escapeHTML(msg.replyTo.text)}</span>
                 </div>
             `;
         }
@@ -348,7 +348,7 @@
         `;
 
         const text = msg.text || '';
-        const parsedText = window.ChatUtils.parseMarkdown(text);
+        const parsedText = ChatUtils.parseMarkdown(text);
 
         return `
             ${quoteHTML}
@@ -365,9 +365,9 @@
         const fileInfo = msg.file;
         let fileHTML = '';
         
-        if (window.FileUploadManager) {
+        if (FileUploadManager) {
             const tempContainer = document.createElement('div');
-            window.FileUploadManager.renderFileAttachment(fileInfo, tempContainer);
+            FileUploadManager.renderFileAttachment(fileInfo, tempContainer);
             fileHTML = tempContainer.innerHTML;
         } else {
             fileHTML = `
@@ -375,8 +375,8 @@
                     <div class="file-attachment-header">
                         <span class="file-attachment-icon">📁</span>
                         <div class="file-attachment-info">
-                            <div class="file-attachment-name">${window.ChatUtils.escapeHTML(fileInfo.name)}</div>
-                            <div class="file-attachment-size">${window.ChatUtils.formatFileSize(fileInfo.size)}</div>
+                            <div class="file-attachment-name">${ChatUtils.escapeHTML(fileInfo.name)}</div>
+                            <div class="file-attachment-size">${ChatUtils.formatFileSize(fileInfo.size)}</div>
                         </div>
                     </div>
                     <button class="file-attachment-download" onclick="window.open('${fileInfo.url}', '_blank')">İndir</button>
@@ -392,16 +392,16 @@
         const voiceInfo = msg.voice;
         let voiceHTML = '';
         
-        if (window.VoiceMessageManager) {
+        if (VoiceMessageManager) {
             const tempContainer = document.createElement('div');
-            window.VoiceMessageManager.renderVoiceMessage(voiceInfo, tempContainer);
+            VoiceMessageManager.renderVoiceMessage(voiceInfo, tempContainer);
             voiceHTML = tempContainer.innerHTML;
         } else {
             voiceHTML = `
                 <div class="voice-message-container">
                     <button class="voice-message-play" onclick="window.open('${voiceInfo.url}', '_blank')">▶</button>
                     <div class="voice-message-info">
-                        <div class="voice-message-duration">${window.ChatUtils.formatDuration(voiceInfo.duration || 0)}</div>
+                        <div class="voice-message-duration">${ChatUtils.formatDuration(voiceInfo.duration || 0)}</div>
                         <div class="voice-message-wave">
                             <span></span><span></span><span></span><span></span><span></span>
                         </div>
@@ -418,19 +418,19 @@
         const poll = msg.poll;
         let pollHTML = '';
         
-        if (window.PollManager) {
+        if (PollManager) {
             const tempContainer = document.createElement('div');
-            const hasVoted = window.PollManager.hasUserVoted(poll, window.AppConfig.AppState.currentUser);
-            const myVote = window.PollManager.getUserVote(poll, window.AppConfig.AppState.currentUser);
-            window.PollManager.renderPoll(poll, msg.key, tempContainer, hasVoted, myVote);
+            const hasVoted = PollManager.hasUserVoted(poll, AppConfig.AppState.currentUser);
+            const myVote = PollManager.getUserVote(poll, AppConfig.AppState.currentUser);
+            PollManager.renderPoll(poll, msg.key, tempContainer, hasVoted, myVote);
             pollHTML = tempContainer.innerHTML;
         } else {
             pollHTML = `
                 <div class="poll-container">
-                    <div class="poll-question">${window.ChatUtils.escapeHTML(poll.question)}</div>
+                    <div class="poll-question">${ChatUtils.escapeHTML(poll.question)}</div>
                     ${poll.options.map((opt, i) => `
                         <div class="poll-result">
-                            <div style="flex:1;">${window.ChatUtils.escapeHTML(opt.text)}</div>
+                            <div style="flex:1;">${ChatUtils.escapeHTML(opt.text)}</div>
                             <div style="color:var(--fg-sub);">0%</div>
                         </div>
                     `).join('')}
@@ -445,15 +445,15 @@
     function renderGameMessage(msg) {
         let gameHTML = '';
         
-        if (window.GameManager) {
+        if (GameManager) {
             const tempContainer = document.createElement('div');
-            window.GameManager.renderGameResult(msg, tempContainer);
+            GameManager.renderGameResult(msg, tempContainer);
             gameHTML = tempContainer.innerHTML;
         } else {
             gameHTML = `
                 <div class="game-result">
                     <div class="game-label">Oyun</div>
-                    <div class="game-value">${window.ChatUtils.escapeHTML(msg.text)}</div>
+                    <div class="game-value">${ChatUtils.escapeHTML(msg.text)}</div>
                 </div>
             `;
         }
@@ -472,14 +472,14 @@
             const span = item.querySelector('.msg-content');
 
             if (span) {
-                span.innerHTML = window.ChatUtils.parseMarkdown(updatedData.text);
-                window.ChatUtils.renderMediaPreviews(span);
+                span.innerHTML = ChatUtils.parseMarkdown(updatedData.text);
+                ChatUtils.renderMediaPreviews(span);
             }
 
             renderReactions(item, updatedData.reactions || {});
 
-            const isMentioned = window.AppConfig.AppState.currentUser && 
-                              updatedData.text && updatedData.text.toLowerCase().includes(`@${window.AppConfig.AppState.currentUser.toLowerCase()}`);
+            const isMentioned = AppConfig.AppState.currentUser && 
+                              updatedData.text && updatedData.text.toLowerCase().includes(`@${AppConfig.AppState.currentUser.toLowerCase()}`);
             if (isMentioned) item.classList.add('is-mentioned');
             else item.classList.remove('is-mentioned');
         }
@@ -507,7 +507,7 @@
             const users = Object.keys(usersObj);
             if (users.length === 0) return;
 
-            const hasReacted = window.AppConfig.AppState.currentUser && users.includes(window.AppConfig.AppState.currentUser);
+            const hasReacted = AppConfig.AppState.currentUser && users.includes(AppConfig.AppState.currentUser);
 
             const badge = document.createElement('div');
             badge.className = `reaction-badge${hasReacted ? ' user-reacted' : ''}`;
@@ -525,9 +525,9 @@
 
     // Toggle reaction
     function toggleReaction(msgKey, emoji) {
-        if (!window.AppConfig || !window.AppConfig.AppState || !window.AppConfig.AppState.currentUser) return;
+        if (!AppConfig || !AppConfig.AppState || !AppConfig.AppState.currentUser) return;
         
-        const reactRef = ref(window.AppConfig.FB.database, `messages/${msgKey}/reactions/${emoji}/${window.AppConfig.AppState.currentUser}`);
+        const reactRef = ref(AppConfig.FB.database, `messages/${msgKey}/reactions/${emoji}/${AppConfig.AppState.currentUser}`);
         get(reactRef).then((snap) => {
             if (snap.exists()) {
                 remove(reactRef);
@@ -539,7 +539,7 @@
 
     // Initialize online users
     function initOnlineUsers() {
-        onlineRef = window.AppConfig.FB.onlineRef;
+        onlineRef = AppConfig.FB.onlineRef;
         
         onValue(onlineRef, (snapshot) => {
             const data = snapshot.val();
@@ -549,15 +549,15 @@
             if (!data) return;
 
             // Filter blocked users
-            const filteredUsers = window.UserBlockingManager ? 
-                window.UserBlockingManager.filterBlockedUsers(Object.values(data)) : 
+            const filteredUsers = UserBlockingManager ? 
+                UserBlockingManager.filterBlockedUsers(Object.values(data)) : 
                 Object.values(data);
 
             filteredUsers.forEach(u => {
                 if (!u || !u.username) return;
                 
                 // Don't show self in online list
-                if (u.username === window.AppConfig.AppState.currentUser) return;
+                if (u.username === AppConfig.AppState.currentUser) return;
 
                 const img = document.createElement('img');
                 img.className = 'online-user-img';
@@ -581,15 +581,15 @@
 
     // Initialize typing indicator
     function initTypingIndicator() {
-        typingRef = window.AppConfig.FB.typingRef;
+        typingRef = AppConfig.FB.typingRef;
 
         // Listen for typing events
         DOM.messageInput.addEventListener('input', () => {
-            if (!window.AppConfig.AppState.currentUser) return;
-            set(ref(window.AppConfig.FB.database, `typing/${window.AppConfig.AppState.currentUser}`), true);
+            if (!AppConfig.AppState.currentUser) return;
+            set(ref(AppConfig.FB.database, `typing/${AppConfig.AppState.currentUser}`), true);
             clearTimeout(typingTimeout);
             typingTimeout = setTimeout(() => {
-                remove(ref(window.AppConfig.FB.database, `typing/${window.AppConfig.AppState.currentUser}`));
+                remove(ref(AppConfig.FB.database, `typing/${AppConfig.AppState.currentUser}`));
             }, 2000);
         });
 
@@ -611,7 +611,7 @@
     function updateTypingDisplay() {
         if (!DOM.typingIndicator) return;
         
-        const me = (window.AppConfig.AppState.currentUser || '').toLowerCase();
+        const me = (AppConfig.AppState.currentUser || '').toLowerCase();
         const typers = [...typingUsers.keys()].filter(u => u.toLowerCase() !== me);
 
         if (typers.length === 1) {
@@ -659,8 +659,8 @@
 
         const trimmedQuery = query.trim();
         const url = trimmedQuery
-            ? `https://api.klipy.co/v2/search?api_key=${window.AppConfig.KLIPY_API_KEY}&q=${encodeURIComponent(trimmedQuery)}&limit=20`
-            : `https://api.klipy.co/v2/featured?api_key=${window.AppConfig.KLIPY_API_KEY}&limit=20`;
+            ? `https://api.klipy.co/v2/search?api_key=${AppConfig.KLIPY_API_KEY}&q=${encodeURIComponent(trimmedQuery)}&limit=20`
+            : `https://api.klipy.co/v2/featured?api_key=${AppConfig.KLIPY_API_KEY}&limit=20`;
 
         try {
             const res = await fetch(url);
@@ -694,11 +694,11 @@
                 img.src = imgUrl;
                 img.alt = gif?.title || 'GIF';
                 img.addEventListener('click', () => {
-                    if (!window.AppConfig.AppState.currentUser) return;
+                    if (!AppConfig.AppState.currentUser) return;
 
                     const payload = {
-                        sender: window.AppConfig.AppState.currentUser,
-                        avatar: window.AppConfig.AppState.currentAvatar,
+                        sender: AppConfig.AppState.currentUser,
+                        avatar: AppConfig.AppState.currentAvatar,
                         text: imgUrl,
                         timestamp: serverTimestamp()
                     };
@@ -707,7 +707,7 @@
 
                     push(rawMessagesRef, payload);
 
-                    remove(ref(window.AppConfig.FB.database, `typing/${window.AppConfig.AppState.currentUser}`));
+                    remove(ref(AppConfig.FB.database, `typing/${AppConfig.AppState.currentUser}`));
                     clearTimeout(typingTimeout);
 
                     activeReplyTarget = null;
@@ -732,7 +732,7 @@
             if (DOM.modalError) DOM.modalError.style.display = 'none';
             
             try {
-                await signInWithPopup(window.AppConfig.FB.auth, window.AppConfig.FB.googleProvider);
+                await signInWithPopup(AppConfig.FB.auth, AppConfig.FB.googleProvider);
             } catch (err) {
                 console.error('Google giriş hatası:', err);
                 if (DOM.modalError) {
@@ -748,8 +748,8 @@
         if (DOM.resetUserBtn) {
             DOM.resetUserBtn.addEventListener('click', () => {
                 if (DOM.profileEditError) DOM.profileEditError.style.display = 'none';
-                if (DOM.editProfileUsername) DOM.editProfileUsername.value = window.AppConfig.AppState.currentUser;
-                if (DOM.editProfileAvatar) DOM.editProfileAvatar.value = window.AppConfig.AppState.currentAvatar;
+                if (DOM.editProfileUsername) DOM.editProfileUsername.value = AppConfig.AppState.currentUser;
+                if (DOM.editProfileAvatar) DOM.editProfileAvatar.value = AppConfig.AppState.currentAvatar;
                 if (DOM.editProfileModal) DOM.editProfileModal.style.display = 'flex';
             });
         }
@@ -768,7 +768,7 @@
 
                 if (!newUsername) return;
 
-                if (newUsername.toLowerCase() !== window.AppConfig.AppState.currentUser.toLowerCase()) {
+                if (newUsername.toLowerCase() !== AppConfig.AppState.currentUser.toLowerCase()) {
                     try {
                         const onlineSnap = await get(onlineRef);
                         if (onlineSnap.exists()) {
@@ -785,28 +785,28 @@
                     } catch (e) { /* ignore */ }
                 }
 
-                const oldUsername = window.AppConfig.AppState.currentUser;
-                window.AppConfig.AppState.currentUser = newUsername;
-                window.AppConfig.AppState.currentAvatar = newAvatar;
+                const oldUsername = AppConfig.AppState.currentUser;
+                AppConfig.AppState.currentUser = newUsername;
+                AppConfig.AppState.currentAvatar = newAvatar;
 
                 localStorage.setItem('gh_chat_username', newUsername);
                 localStorage.setItem('gh_chat_avatar', newAvatar);
 
                 if (DOM.displayUsername) DOM.displayUsername.innerText = newUsername;
-                if (DOM.myAvatar) DOM.myAvatar.src = window.ChatUtils.getAvatarUrl(newUsername, newAvatar);
+                if (DOM.myAvatar) DOM.myAvatar.src = ChatUtils.getAvatarUrl(newUsername, newAvatar);
 
                 // Update online user reference
                 if (myUserRef) {
                     remove(myUserRef);
                 }
-                myUserRef = ref(window.AppConfig.FB.database, `online_users/${newUsername}`);
-                set(myUserRef, { username: newUsername, avatar: window.ChatUtils.getAvatarUrl(newUsername, newAvatar) });
+                myUserRef = ref(AppConfig.FB.database, `online_users/${newUsername}`);
+                set(myUserRef, { username: newUsername, avatar: ChatUtils.getAvatarUrl(newUsername, newAvatar) });
 
                 // Update typing reference
                 if (oldUsername) {
-                    remove(ref(window.AppConfig.FB.database, `typing/${oldUsername}`));
+                    remove(ref(AppConfig.FB.database, `typing/${oldUsername}`));
                 }
-                myTypingRef = ref(window.AppConfig.FB.database, `typing/${newUsername}`);
+                myTypingRef = ref(AppConfig.FB.database, `typing/${newUsername}`);
 
                 if (DOM.editProfileModal) DOM.editProfileModal.style.display = 'none';
             });
@@ -819,7 +819,7 @@
                 localStorage.removeItem('gh_chat_username');
                 localStorage.removeItem('gh_chat_avatar');
                 if (DOM.editProfileModal) DOM.editProfileModal.style.display = 'none';
-                signOut(window.AppConfig.FB.auth).finally(() => location.reload());
+                signOut(AppConfig.FB.auth).finally(() => location.reload());
             });
         }
     }
@@ -830,11 +830,11 @@
             DOM.chatForm.addEventListener('submit', (e) => {
                 e.preventDefault();
                 const text = DOM.messageInput.value.trim();
-                if (!text || !window.AppConfig.AppState.currentUser) return;
+                if (!text || !AppConfig.AppState.currentUser) return;
 
                 const payload = {
-                    sender: window.AppConfig.AppState.currentUser,
-                    avatar: window.AppConfig.AppState.currentAvatar,
+                    sender: AppConfig.AppState.currentUser,
+                    avatar: AppConfig.AppState.currentAvatar,
                     text: text,
                     timestamp: serverTimestamp()
                 };
@@ -842,7 +842,7 @@
 
                 push(rawMessagesRef, payload);
 
-                remove(ref(window.AppConfig.FB.database, `typing/${window.AppConfig.AppState.currentUser}`));
+                remove(ref(AppConfig.FB.database, `typing/${AppConfig.AppState.currentUser}`));
                 clearTimeout(typingTimeout);
 
                 DOM.messageInput.value = "";
@@ -939,7 +939,7 @@
 
                 if (deleteBtn) {
                     if (confirm('Bu mesajı silmek istediğinize emin misiniz?')) {
-                        remove(ref(window.AppConfig.FB.database, `messages/${key}`));
+                        remove(ref(AppConfig.FB.database, `messages/${key}`));
                     }
                 }
 
@@ -977,7 +977,7 @@
             DOM.saveEditBtn.addEventListener('click', () => {
                 const newText = DOM.editMessageInput.value.trim();
                 if (newText && activeEditKey) {
-                    update(ref(window.AppConfig.FB.database, `messages/${activeEditKey}`), { text: newText });
+                    update(ref(AppConfig.FB.database, `messages/${activeEditKey}`), { text: newText });
                     if (DOM.editModal) DOM.editModal.style.display = 'none';
                     activeEditKey = null;
                 }
@@ -1023,22 +1023,22 @@
 
     // Initialize auth state listener
     function initAuthStateListener() {
-        onAuthStateChanged(window.AppConfig.FB.auth, async (user) => {
+        onAuthStateChanged(AppConfig.FB.auth, async (user) => {
             if (user) {
-                window.AppConfig.AppState.loggedInViaGoogle = true;
-                window.AppConfig.AppState.currentUserEmail = (user.email || '').toLowerCase();
+                AppConfig.AppState.loggedInViaGoogle = true;
+                AppConfig.AppState.currentUserEmail = (user.email || '').toLowerCase();
 
                 const savedUsername = localStorage.getItem('gh_chat_username');
                 const savedAvatar = localStorage.getItem('gh_chat_avatar');
 
                 if (savedUsername) {
-                    window.AppConfig.AppState.currentUser = savedUsername;
-                    window.AppConfig.AppState.currentAvatar = savedAvatar || user.photoURL || '';
+                    AppConfig.AppState.currentUser = savedUsername;
+                    AppConfig.AppState.currentAvatar = savedAvatar || user.photoURL || '';
                 } else {
                     let username = (user.displayName || user.email || 'Kullanıcı').trim();
 
                     try {
-                        const onlineSnap = await get(window.AppConfig.FB.onlineRef);
+                        const onlineSnap = await get(AppConfig.FB.onlineRef);
                         if (onlineSnap.exists()) {
                             const onlineData = onlineSnap.val();
                             const isTaken = Object.values(onlineData).some(u => u.username && u.username.toLowerCase() === username.toLowerCase());
@@ -1048,18 +1048,18 @@
                         }
                     } catch (e) { /* ignore */ }
 
-                    window.AppConfig.AppState.currentUser = username;
-                    window.AppConfig.AppState.currentAvatar = user.photoURL || '';
+                    AppConfig.AppState.currentUser = username;
+                    AppConfig.AppState.currentAvatar = user.photoURL || '';
                     localStorage.setItem('gh_chat_username', username);
-                    localStorage.setItem('gh_chat_avatar', window.AppConfig.AppState.currentAvatar);
+                    localStorage.setItem('gh_chat_avatar', AppConfig.AppState.currentAvatar);
                 }
 
                 initUserSession();
             } else {
-                window.AppConfig.AppState.loggedInViaGoogle = false;
-                window.AppConfig.AppState.currentUser = '';
-                window.AppConfig.AppState.currentAvatar = '';
-                window.AppConfig.AppState.currentUserEmail = '';
+                AppConfig.AppState.loggedInViaGoogle = false;
+                AppConfig.AppState.currentUser = '';
+                AppConfig.AppState.currentAvatar = '';
+                AppConfig.AppState.currentUserEmail = '';
                 if (DOM.userModal) DOM.userModal.style.display = 'flex';
             }
         });
@@ -1072,7 +1072,7 @@
 
         // Wait for Firebase to be ready
         const firebaseReady = setInterval(() => {
-            if (window.AppConfig && window.AppConfig.FB && window.AppConfig.FB.database) {
+            if (AppConfig && AppConfig.FB && AppConfig.FB.database) {
                 clearInterval(firebaseReady);
                 
                 // Initialize everything
@@ -1110,7 +1110,7 @@
     });
 
     // Export for other modules
-    window.ChatManager = {
+    ChatManager = {
         initMessageListeners,
         handleNewMessage,
         addMessageToGroup,
@@ -1126,6 +1126,6 @@
     };
 
     // Make functions globally available for inline handlers
-    window.toggleReaction = toggleReaction;
-    window.codeBlocksMap = codeBlocksMap;
+    toggleReaction = toggleReaction;
+    codeBlocksMap = codeBlocksMap;
 })();

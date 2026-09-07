@@ -61,7 +61,7 @@ const Features = {
 };
 
 // Export for use in other modules
-window.AppConfig = {
+AppConfig = {
     firebaseConfig,
     KLIPY_API_KEY,
     ADMIN_EMAILS,
